@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// --------------------------------------
+
+// User represents a single human being.
+model User {
+  id            Int          @id @default(autoincrement())
+  name          String?
+  email         String?      @unique
+  emailVerified DateTime?    @map(name: "email_verified")
+  image         String?
+  createdAt     DateTime     @default(now()) @map(name: "created_at")
+  updatedAt     DateTime     @updatedAt @map(name: "updated_at")
+  siteRole      UserSiteRole @default(USER)
+  orgs          OrgUser[]
+
+  @@map(name: "users")
+}
+
+// UserSiteRole dictates permissions outside of all orgs. ADMIN allows
+// a user to add themselves to any org.
+enum UserSiteRole {
+  USER
+  ADMIN
+}
+
+// Account represents a foreign credential (for example a Google user account),
+// which is used to authenticate a User.
+model Account {
+  id                 Int       @id @default(autoincrement())
+  compoundId         String    @unique @map(name: "compound_id")
+  userId             Int       @map(name: "user_id")
+  providerType       String    @map(name: "provider_type")
+  providerId         String    @map(name: "provider_id")
+  providerAccountId  String    @map(name: "provider_account_id")
+  refreshToken       String?   @map(name: "refresh_token")
+  accessToken        String?   @map(name: "access_token")
+  accessTokenExpires DateTime? @map(name: "access_token_expires")
+  createdAt          DateTime  @default(now()) @map(name: "created_at")
+  updatedAt          DateTime  @default(now()) @map(name: "updated_at")
+
+
+  @@index([providerAccountId], name: "providerAccountId")
+  @@index([providerId], name: "providerId")
+  @@index([userId], name: "userId")
+  @@map(name: "accounts")
+}
+
+model Session {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map(name: "user_id")
+  expires      DateTime
+  sessionToken String   @unique @map(name: "session_token")
+  accessToken  String   @unique @map(name: "access_token")
+  createdAt    DateTime @default(now()) @map(name: "created_at")
+  updatedAt    DateTime @default(now()) @map(name: "updated_at")
+
+  @@map(name: "sessions")
+}
+
+// Org is the main unit of resource isolation in Sierra. Most objects should be
+// owned by an Org, and users have access to the Org through the OrgUser
+// relation.
+model Org {
+  id          Int          @id @default(autoincrement())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  name        String
+  users       OrgUser[]
+  datasources Datasource[]
+}
+
+// OrgUser represents membership in an organization.
+model OrgUser {
+  id        Int         @id @default(autoincrement())
+  user      User        @relation(fields: [userId], references: [id])
+  userId    Int
+  org       Org         @relation(fields: [orgId], references: [id])
+  orgId     Int
+  role      UserOrgRole @default(USER)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  @@unique([userId, orgId])
+}
+
+// UserOrgRole dictates permissions of a user in a specific role.
+enum UserOrgRole {
+  USER
+  ADMIN
+}
+
+// Represents a remote datasource which can be queried.
+model Datasource {
+  id        Int            @id @default(autoincrement())
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  // A Datasource belongs to Org
+  org       Org            @relation(fields: [orgId], references: [id])
+  orgId     Int
+  name      String
+  type      DatasourceType
+  info      Json
+}
+
+enum DatasourceType {
+  ELASTICSEARCH
+}
