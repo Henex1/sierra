@@ -4,9 +4,10 @@
 
 ### Libraries used
 
-- The application is based on Next.JS and Material UI on the frontend.
-- Prisma 2 is used to interact with a PostgreSQL database. Prisma handles all migrations and also provides an admin GUI.
-- Zod is used for data validation. It's a TypeScript analog to Joi.
+- The application is based on [Next.js](https://nextjs.org/docs/getting-started) and [Material UI](https://material-ui.com/getting-started/usage/) on the frontend.
+- [Prisma 2](https://www.prisma.io/docs/concepts/overview/what-is-prisma) is used to interact with a PostgreSQL database. Prisma handles all migrations and also provides an admin GUI.
+- [Zod](https://github.com/colinhacks/zod) is used for data validation. It's a TypeScript analog to Joi.
+- [React Final Form](https://final-form.org/docs/react-final-form/getting-started) is used for managing form state, especially in combination with [mui-rff](https://github.com/lookfirst/mui-rff) for the integration between Material UI and React Final Form.
 
 ### File structure
 
@@ -14,6 +15,7 @@
 | -------------------------- | ------------------------------------------------------------ |
 | `components/COMPONENT/...` | Reusable components related to the named component.          |
 | `components/common/...`    | Reusable components that aren't specifically related to Sierra. |
+| `lib/COMPONENT/...`        | Utility code related to the named component.                 |
 | `lib/...`                  | Utility code that isn't React components.                    |
 | `pages/api/COMPONENT/...`  | API methods related to the named component.                  |
 | `pages/COMPONENT/...`      | Full-page React components related to the named component.   |
