@@ -118,7 +118,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 type AppLayoutProps = {
-  children?: React.Node;
+  children?: React.ReactNode;
 };
 
 export default function AppLayout({ children }: AppLayoutProps) {

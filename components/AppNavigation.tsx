@@ -16,15 +16,15 @@ import Link, { LinkProps } from "./common/Link";
 
 type NavigationItemProps = {
   href: LinkProps["href"];
-  icon: React.Node;
+  icon: React.ReactNode;
   text: ListItemTextProps;
 };
 
-const NavigationItem: React.FC = ({
+const NavigationItem: React.FC<NavigationItemProps> = ({
   icon,
   text,
   ...rest
-}: NavigationItemProps) => (
+}) => (
   <ListItem button {...rest} component={Link}>
     <ListItemIcon children={icon} />
     <ListItemText {...text} />
@@ -41,19 +41,18 @@ export const mainListItems = (
     <NavigationItem
       href="/datasources"
       icon={<StorageIcon />}
-      text={{ primary: "Orders" }}
+      text={{ primary: "Datasources" }}
+    />
+    <NavigationItem
+      href="/cases"
+      icon={<BarChartIcon />}
+      text={{ primary: "Cases" }}
     />
     <ListItem button>
       <ListItemIcon>
         <PeopleIcon />
       </ListItemIcon>
       <ListItemText primary="Customers" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <BarChartIcon />
-      </ListItemIcon>
-      <ListItemText primary="Reports" />
     </ListItem>
     <ListItem button>
       <ListItemIcon>
@@ -66,7 +65,7 @@ export const mainListItems = (
 
 export const secondaryListItems = (
   <div>
-    <ListSubheader inset>Saved reports</ListSubheader>
+    <ListSubheader inset>Recent cases</ListSubheader>
     <ListItem button>
       <ListItemIcon>
         <AssignmentIcon />

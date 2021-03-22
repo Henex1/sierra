@@ -1,13 +1,14 @@
+import { IncomingMessage } from "http";
 import { NextApiRequest } from "next";
 import { Session, getSession } from "next-auth/client";
 import prisma, { User } from "./prisma";
 
-type UserSession = {
+export type UserSession = {
   session?: Session;
   user?: User;
 };
 
-export async function getUser(req: NextApiRequest): Promise<UserSession> {
+export async function getUser(req: IncomingMessage): Promise<UserSession> {
   const session = await getSession({ req });
   if (!session) {
     return {};
