@@ -1,4 +1,5 @@
 import * as React from "react";
+import { GetServerSideProps } from "next";
 import Button from "@material-ui/core/Button";
 import MaUTable from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -6,30 +7,35 @@ import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import { useTable, Column } from "react-table";
-import { getSession, signIn } from "next-auth/client";
+import { getSession } from "next-auth/client";
 
 import Link from "../../components/common/Link";
 import { authenticatedPage } from "../../lib/auth";
-import { listDatasources, ExposedDatasource } from "../../lib/datasources";
+import { redirectToLogin } from "../../lib/errors";
+import {
+  userCanAccessProject,
+  formatProject,
+  ExposedProject,
+} from "../../lib/projects";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const datasources = await listDatasources(context);
-  return { props: { datasources } };
+  const projects = await prisma.project.findMany({
+    where: userCanAccessProject(context.user),
+  });
+  return { props: { projects: projects.map(formatProject) } };
 });
 
 type Props = {
-  datasources: ExposedDatasource[];
+  projects: ExposedProject[];
 };
 
-export default function Datasources({ datasources }: Props) {
-  const columns: Column<ExposedDatasource>[] = React.useMemo(
+export default function Projects({ projects }: Props) {
+  const columns: Column<ExposedProject>[] = React.useMemo(
     () => [
       {
         Header: "Name",
         Cell: ({ row }) => (
-          <Link href={`/datasources/${row.original.id}`}>
-            {row.original.name}
-          </Link>
+          <Link href={`/projects/${row.original.id}`}>{row.original.name}</Link>
         ),
         accessor: "name",
       },
@@ -41,7 +47,7 @@ export default function Datasources({ datasources }: Props) {
     []
   );
 
-  const tableInstance = useTable({ columns, data: datasources });
+  const tableInstance = useTable({ columns, data: projects });
   const {
     getTableProps,
     getTableBodyProps,
@@ -52,8 +58,8 @@ export default function Datasources({ datasources }: Props) {
 
   return (
     <div>
-      <Button href="/datasources/create" variant="contained">
-        Add datasource
+      <Button href="/projects/create" variant="contained">
+        Add project
       </Button>
       <MaUTable {...getTableProps()}>
         <TableHead>

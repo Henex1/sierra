@@ -10,3 +10,14 @@ services:
       POSTGRES_PASSWORD: example
     ports:
       - 5432:5432
+
+  elasticsearch:
+    image: elasticsearch:7.11.2
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+    ports:
+      - 9200:9200
+

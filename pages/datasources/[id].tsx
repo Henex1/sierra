@@ -13,22 +13,22 @@ import { useTable } from "react-table";
 
 import Form from "../../components/datasources/Form";
 import Link from "../../components/common/Link";
-import { getUser } from "../../lib/auth";
+import { authenticatedPage } from "../../lib/auth";
 import { getDatasource, ExposedDatasource } from "../../lib/datasources";
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getUser(context.req);
-  const datasource = session.user
-    ? await getDatasource(session.user, context.params!.id as string)
-    : null;
+export const getServerSideProps = authenticatedPage(async (context) => {
+  const datasource = await getDatasource(
+    context.user,
+    context.params!.id as string
+  );
   return { props: { datasource } };
-};
+});
 
 type Props = {
   datasource: ExposedDatasource;
 };
 
-export default function Datasources({ datasource }: Props) {
+export default function EditDatasource({ datasource }: Props) {
   const router = useRouter();
 
   async function onSubmit(values: ExposedDatasource) {

@@ -44,28 +44,28 @@ export const mainListItems = (
       text={{ primary: "Datasources" }}
     />
     <NavigationItem
-      href="/cases"
+      href="/projects"
       icon={<BarChartIcon />}
-      text={{ primary: "Cases" }}
+      text={{ primary: "Projects" }}
     />
-    <ListItem button>
-      <ListItemIcon>
-        <PeopleIcon />
-      </ListItemIcon>
-      <ListItemText primary="Customers" />
-    </ListItem>
     <ListItem button>
       <ListItemIcon>
         <LayersIcon />
       </ListItemIcon>
-      <ListItemText primary="Integrations" />
+      <ListItemText primary="Rulesets" />
+    </ListItem>
+    <ListItem button>
+      <ListItemIcon>
+        <PeopleIcon />
+      </ListItemIcon>
+      <ListItemText primary="Teams" />
     </ListItem>
   </div>
 );
 
 export const secondaryListItems = (
   <div>
-    <ListSubheader inset>Recent cases</ListSubheader>
+    <ListSubheader inset>Recent projects</ListSubheader>
     <ListItem button>
       <ListItemIcon>
         <AssignmentIcon />

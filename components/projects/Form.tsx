@@ -3,15 +3,15 @@ import { Form, FormProps as BaseFormProps } from "react-final-form";
 import { TextField, Select } from "mui-rff";
 import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
-import MenuItem from "@material-ui/core/MenuItem";
 
-import { ExposedDatasource } from "../../lib/datasources";
+import { parseNonnegativeInt } from "../common/form";
+import { ExposedProject } from "../../lib/projects";
 
-export type FormProps = BaseFormProps<ExposedDatasource> & {
+export type FormProps = BaseFormProps<ExposedProject> & {
   onDelete?: () => void;
 };
 
-export default function DatasourceForm({ onDelete, ...rest }: FormProps) {
+export default function ProjectForm({ onDelete, ...rest }: FormProps) {
   const isNew = rest.initialValues?.id === undefined;
   return (
     <Form
@@ -26,24 +26,17 @@ export default function DatasourceForm({ onDelete, ...rest }: FormProps) {
               variant="filled"
             />
           </Box>
-          <Box pb={2}>
-            <Select
-              label="Type"
-              name="type"
-              required={true}
-              variant="filled"
-              readOnly={!isNew}
-            >
-              <MenuItem value="ELASTICSEARCH">Elasticsearch</MenuItem>
-            </Select>
-          </Box>
-          {values.type === "ELASTICSEARCH" && (
+          {isNew && (
             <Box pb={2}>
               <TextField
-                label="Elasticsearch URL"
-                name="info.endpoint"
+                label="Initial Datasource ID"
+                helperText="Datasource can be changed to a different datasource of the same type later."
+                name="datasourceId"
                 required={true}
                 variant="filled"
+                fieldProps={{
+                  parse: parseNonnegativeInt,
+                }}
               />
             </Box>
           )}
