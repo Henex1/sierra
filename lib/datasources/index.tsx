@@ -1,9 +1,9 @@
-import { NextApiRequest, NextApiResponse } from "next";
-
 import { HttpError } from "../errors";
-import prisma, { User, Datasource } from "../prisma";
+import prisma, { Prisma, User, Datasource } from "../prisma";
 import { DatasourceSchema } from "../schema";
 import { getUser, UserSession } from "../auth";
+import { userCanAccessOrg } from "../org";
+import { handleElasticsearchQuery } from "./elasticsearch";
 
 // This is the list of keys which are included in user requests for Datasource
 // by default.
@@ -17,13 +17,24 @@ const selectKeys = {
 
 export type ExposedDatasource = Pick<Datasource, keyof typeof selectKeys>;
 
+export function userCanAccessDatasource(
+  user: User,
+  rest?: Prisma.DatasourceWhereInput
+): Prisma.DatasourceWhereInput {
+  const result: Prisma.DatasourceWhereInput = { org: userCanAccessOrg(user) };
+  if (rest) {
+    result.AND = rest;
+  }
+  return result;
+}
+
 export async function getDatasource(
   user: User,
   idStr: string
 ): Promise<ExposedDatasource | null> {
   const id = parseInt(idStr, 10);
   const ds = await prisma.datasource.findFirst({
-    where: { id, org: { users: { some: { userId: user.id } } } },
+    where: userCanAccessDatasource(user, { id }),
     select: selectKeys,
   });
   return ds;
@@ -31,13 +42,12 @@ export async function getDatasource(
 
 export async function listDatasources({
   user,
-  session,
 }: UserSession): Promise<ExposedDatasource[]> {
   if (!user) {
     return [];
   }
   const datasources = await prisma.datasource.findMany({
-    where: { org: { users: { some: { userId: user.id } } } },
+    where: userCanAccessDatasource(user),
     select: selectKeys,
   });
   return datasources;
@@ -47,7 +57,11 @@ export async function createDatasource(
   user: User,
   input: ExposedDatasource
 ): Promise<ExposedDatasource> {
-  const result = DatasourceSchema.omit({ id: true }).safeParse(input);
+  const result = DatasourceSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  }).safeParse(input);
   if (!result.success) {
     return Promise.reject(new HttpError(400, result.error));
   }
@@ -108,4 +122,16 @@ export async function updateDatasource(
     select: selectKeys,
   });
   return ds;
+}
+
+export async function handleQuery(
+  datasource: Datasource,
+  query: string
+): Promise<unknown> {
+  if (datasource.type === "ELASTICSEARCH") {
+    return handleElasticsearchQuery(datasource, query);
+  }
+  throw new Error(
+    `unsupported datasource type ${JSON.stringify(datasource.type)}`
+  );
 }

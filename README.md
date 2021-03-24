@@ -37,11 +37,18 @@ Set up a Google app for SSO. From [the console](https://console.cloud.google.com
 
 ```bash
 docker-compose -f docker-compose.local.yml up -d
-cp .env.sample .env
-# Edit this file
+curl -X PUT localhost:9200/tmpdb # Set up the test index
+cp .env.sample .env # Edit the .env file appropriately.
 prisma migrate reset
 yarn dev
 ```
+
+Once the server is running, you need to set up the data:
+
+1. Log into the site using a google account that matches `ALLOW_REGISTRATION_FROM` in `.env`.
+2. Create a Datasource. You can use `localhost:9200/tmpdb/_search` as the endpoint for the locally created index.
+3. Create a Project.
+4. Use the Project page to issue queries and see the results.
 
 ### Set up development environment (normal)
 

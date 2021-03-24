@@ -8,7 +8,7 @@ import {
   deleteDatasource,
   updateDatasource,
 } from "../../../lib/datasources";
-import { HttpError } from "../../../lib/errors";
+import { notAuthorized, HttpError } from "../../../lib/errors";
 
 async function handleCreateDatasource(
   req: NextApiRequest,
@@ -16,13 +16,13 @@ async function handleCreateDatasource(
 ): Promise<void> {
   const { user, session } = await getUser(req);
   if (!user) {
-    return res.status(401).json({ error: "not authorized" });
+    return notAuthorized(res);
   }
   const org = await prisma.org.findFirst({
     where: { users: { some: { userId: user.id } } },
   });
   if (!org) {
-    return res.status(401).json({ error: "not authorized" });
+    return res.status(500).json({ error: "user has no attached org" });
   }
   const data = req.body;
   data.orgId = org.id;
@@ -45,7 +45,7 @@ async function handleDeleteDatasource(
 ): Promise<void> {
   const { user } = await getUser(req);
   if (!user) {
-    return res.status(401).json({ error: "not authorized" });
+    return notAuthorized(res);
   }
   try {
     const ds = await deleteDatasource(user, idStr);
@@ -66,7 +66,7 @@ async function handleUpdateDatasource(
 ): Promise<void> {
   const { user } = await getUser(req);
   if (!user) {
-    return res.status(401).json({ error: "not authorized" });
+    return notAuthorized(res);
   }
   try {
     const datasource = await updateDatasource(user, idStr, req.body);
