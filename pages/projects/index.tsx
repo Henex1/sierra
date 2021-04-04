@@ -1,6 +1,5 @@
 import * as React from "react";
 import { GetServerSideProps } from "next";
-import Button from "@material-ui/core/Button";
 import MaUTable from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -9,7 +8,7 @@ import TableRow from "@material-ui/core/TableRow";
 import { useTable, Column } from "react-table";
 import { getSession } from "next-auth/client";
 
-import Link from "../../components/common/Link";
+import Link, { LinkButton } from "../../components/common/Link";
 import { authenticatedPage } from "../../lib/auth";
 import { redirectToLogin } from "../../lib/errors";
 import {
@@ -54,9 +53,9 @@ export default function Projects({ projects }: Props) {
 
   return (
     <div>
-      <Button href="/projects/create" variant="contained">
+      <LinkButton href="/projects/create" variant="contained">
         Add project
-      </Button>
+      </LinkButton>
       <MaUTable {...getTableProps()}>
         <TableHead>
           {headerGroups.map((headerGroup) => (

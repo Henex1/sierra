@@ -1,5 +1,4 @@
 import * as React from "react";
-import Button from "@material-ui/core/Button";
 import MaUTable from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -8,7 +7,7 @@ import TableRow from "@material-ui/core/TableRow";
 import { useTable, Column } from "react-table";
 import { getSession, signIn } from "next-auth/client";
 
-import Link from "../../components/common/Link";
+import Link, { LinkButton } from "../../components/common/Link";
 import { authenticatedPage } from "../../lib/auth";
 import { listDatasources, ExposedDatasource } from "../../lib/datasources";
 
@@ -52,9 +51,9 @@ export default function Datasources({ datasources }: Props) {
 
   return (
     <div>
-      <Button href="/datasources/create" variant="contained">
+      <LinkButton href="/datasources/create" variant="contained">
         Add datasource
-      </Button>
+      </LinkButton>
       <MaUTable {...getTableProps()}>
         <TableHead>
           {headerGroups.map((headerGroup) => (

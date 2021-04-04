@@ -1,7 +1,7 @@
 import { HttpError } from "../errors";
 import prisma, { Prisma, User, Datasource } from "../prisma";
 import { DatasourceSchema } from "../schema";
-import { getUser, UserSession } from "../auth";
+import { UserSession } from "../authServer";
 import { userCanAccessOrg } from "../org";
 import { handleElasticsearchQuery } from "./elasticsearch";
 

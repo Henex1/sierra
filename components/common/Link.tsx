@@ -4,13 +4,18 @@ import clsx from "clsx";
 import { useRouter } from "next/router";
 import NextLink, { LinkProps as NextLinkProps } from "next/link";
 import MuiLink, { LinkProps as MuiLinkProps } from "@material-ui/core/Link";
+import MenuItem, {
+  MenuItemProps as MuiMenuItemProps,
+} from "@material-ui/core/MenuItem";
+import MuiButton, {
+  ButtonProps as MuiButtonProps,
+} from "@material-ui/core/Button";
 
 interface NextLinkComposedProps
   extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href">,
     Omit<NextLinkProps, "href" | "as"> {
-  to: NextLinkProps["href"];
   linkAs?: NextLinkProps["as"];
-  href?: NextLinkProps["href"];
+  href: NextLinkProps["href"];
 }
 
 export const NextLinkComposed = React.forwardRef<
@@ -18,7 +23,6 @@ export const NextLinkComposed = React.forwardRef<
   NextLinkComposedProps
 >(function NextLinkComposed(props, ref) {
   const {
-    to,
     linkAs,
     href,
     replace,
@@ -32,7 +36,7 @@ export const NextLinkComposed = React.forwardRef<
 
   return (
     <NextLink
-      href={to}
+      href={href}
       prefetch={prefetch}
       as={linkAs}
       replace={replace}
@@ -51,7 +55,7 @@ export type LinkProps = {
   as?: NextLinkProps["as"];
   href: NextLinkProps["href"];
   noLinkStyle?: boolean;
-} & Omit<NextLinkComposedProps, "to" | "linkAs" | "href"> &
+} & Omit<NextLinkComposedProps, "linkAs" | "href"> &
   Omit<MuiLinkProps, "href">;
 
 // A styled version of the Next.js Link component:
@@ -107,7 +111,7 @@ const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(function Link(
       <NextLinkComposed
         className={className}
         ref={ref as any}
-        to={href}
+        href={href}
         {...other}
       />
     );
@@ -119,10 +123,75 @@ const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(function Link(
       linkAs={linkAs}
       className={className}
       ref={ref}
-      to={href}
+      href={href}
       {...other}
     />
   );
 });
+
+export type MenuItemLinkProps = MuiMenuItemProps & NextLinkComposedProps;
+
+export const MenuItemLink = React.forwardRef<
+  HTMLAnchorElement,
+  MenuItemLinkProps
+>((props: MenuItemLinkProps, ref) => {
+  const {
+    linkAs,
+    href,
+    replace,
+    scroll,
+    passHref,
+    shallow,
+    prefetch,
+    locale,
+    ...other
+  } = props;
+
+  return (
+    <NextLink
+      href={href}
+      prefetch={prefetch}
+      as={linkAs}
+      replace={replace}
+      scroll={scroll}
+      shallow={shallow}
+      passHref={true}
+      locale={locale}
+    >
+      <MenuItem component="a" ref={ref as any} {...other} />
+    </NextLink>
+  );
+});
+
+export type ButtonProps = MuiButtonProps & NextLinkComposedProps;
+
+export const LinkButton = (props: ButtonProps) => {
+  const {
+    linkAs,
+    href,
+    replace,
+    scroll,
+    passHref,
+    shallow,
+    prefetch,
+    locale,
+    ...other
+  } = props;
+
+  return (
+    <NextLink
+      href={href}
+      prefetch={prefetch}
+      as={linkAs}
+      replace={replace}
+      scroll={scroll}
+      shallow={shallow}
+      passHref={true}
+      locale={locale}
+    >
+      <MuiButton {...other} />
+    </NextLink>
+  );
+};
 
 export default Link;

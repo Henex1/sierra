@@ -1,19 +1,14 @@
 import React, { useCallback } from "react";
-import { signIn, useSession } from "next-auth/client";
-import Link from 'next/link';
+import { signIn } from "next-auth/client";
 
-import {
-  AppBar,
-  Avatar,
-  Box,
-  Typography,
-  Button,
-} from "@material-ui/core";
-import HomeOutlinedIcon from '@material-ui/icons/HomeOutlined';
-import DomainOutlinedIcon from '@material-ui/icons/DomainOutlined';
+import { AppBar, Avatar, Box, Typography, Button } from "@material-ui/core";
+import HomeOutlinedIcon from "@material-ui/icons/HomeOutlined";
+import DomainOutlinedIcon from "@material-ui/icons/DomainOutlined";
 
 import ResourcesMenu from "./ResourcesMenu";
 
+import { useSession } from "../Session";
+import Link, { LinkButton } from "../common/Link";
 import useStyles from "./AppTopBarStyles";
 import SettingsMenu from "./SettingsMenu";
 import UserMenu from "./UserMenu";
@@ -21,7 +16,7 @@ import ProjectsMenu from "./ProjectsMenu";
 
 export default function AppTopBar() {
   const classes = useStyles();
-  const [ session ] = useSession();
+  const { session } = useSession();
 
   const handleUserLoginClick = useCallback(() => {
     return signIn();
@@ -31,46 +26,43 @@ export default function AppTopBar() {
     <AppBar position="absolute" className={classes.appBar}>
       <Box className={classes.appBarWrapper}>
         <Box className={classes.leftWrapper}>
-          <Typography variant="h5">Project Sierra</Typography>
-          <Link href="/">
-            <Button
-              className={classes.topButton}
-              size="large"
-              color="inherit"
-              startIcon={<HomeOutlinedIcon />}
-            >
-              Home
-            </Button>
+          <Link href="/" color="inherit" underline="none">
+            <Typography variant="h5">Project Sierra</Typography>
           </Link>
-          {session && (
-            <>
-              <Link href="/lab">
-                <Button
-                  className={classes.topButton}
-                  size="large"
-                  color="inherit"
-                  startIcon={<DomainOutlinedIcon />}
-                >
-                  Lab
-                </Button>
-              </Link>
-              <ResourcesMenu />
-            </>
-          )}
+          <LinkButton
+            href="/"
+            className={classes.topButton}
+            size="large"
+            color="inherit"
+            startIcon={<HomeOutlinedIcon />}
+          >
+            Home
+          </LinkButton>
+          <LinkButton
+            href="/lab"
+            color="inherit"
+            className={classes.topButton}
+            size="large"
+            startIcon={<DomainOutlinedIcon />}
+          >
+            Lab
+          </LinkButton>
+          <ResourcesMenu />
         </Box>
-        {session ? (
-          <Box className={classes.rightWrapper}>
-            <ProjectsMenu />
-            <SettingsMenu />
-            <Avatar
-              className={classes.userAvatar}
-              alt={session.user.name || ""}
-              src={session.user.image || ""}
-            />
-            <UserMenu />
-          </Box>
-        ) : (
-          <Box className={classes.rightWrapper}>
+        <Box className={classes.rightWrapper}>
+          <ProjectsMenu />
+          <SettingsMenu />
+          {session.user ? (
+            <>
+              <Avatar
+                className={classes.userAvatar}
+                alt={session.user.name || ""}
+                title={`Signed in as ${session.user.name}`}
+                src={session.user.image || ""}
+              />
+              <UserMenu />
+            </>
+          ) : (
             <Button
               className={classes.topButton}
               size="large"
@@ -79,8 +71,8 @@ export default function AppTopBar() {
             >
               Log In
             </Button>
-          </Box>
-        )}
+          )}
+        </Box>
       </Box>
     </AppBar>
   );
