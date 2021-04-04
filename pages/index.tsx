@@ -1,53 +1,76 @@
+import React from "react";
 import Head from "next/head";
-import { GetStaticProps } from "next";
+
+import Drawer from "@material-ui/core/Drawer";
+import Divider from "@material-ui/core/Divider";
+import List from "@material-ui/core/List";
+import Toolbar from '@material-ui/core/Toolbar';
+import { makeStyles } from "@material-ui/core/styles";
+
+import { mainListItems, secondaryListItems } from "../components/AppNavigation";
 
 import styles from "../styles/Home.module.css";
-import prisma from "../lib/prisma";
+
+const useStyles = makeStyles(() => ({
+  drawer: {
+    width: 240,
+    flexShrink: 0,
+  },
+  drawerPaper: {
+    width: 240,
+  }
+}));
 
 export default function Home() {
+  const classes = useStyles();
+
   return (
     <div className={styles.container}>
       <Head>
-        <title>Create Next App</title>
+        <title>Project Sierra</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
+      <Drawer
+        variant="permanent"
+        className={classes.drawer}
+        classes={{
+          paper: classes.drawerPaper,
+        }}
+      >
+        <Toolbar />
+        <List>{ mainListItems }</List>
+        <Divider />
+        <List>{ secondaryListItems }</List>
+      </Drawer>
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+          Project Sierra
         </h1>
 
         <p className={styles.description}>
-          Get started by editing{" "}
-          <code className={styles.code}>pages/index.js</code>
+          Get started by setting up your first project.
         </p>
 
         <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
+          <a href="/projects" className={styles.card}>
+            <h3>Projects &rarr;</h3>
+            <p>Access the Relevance Lab for testing and improving relevance for your projects.</p>
+          </a>
+
+          <a href="/datasources" className={styles.card}>
+            <h3>Datasources &rarr;</h3>
+            <p>Manage connection to your Elasticsearch and Solr clusters.</p>
+          </a>
+
+          <a href="#" className={styles.card}>
+            <h3>Teams &rarr;</h3>
+            <p>Get your team members access.</p>
+          </a>
+
+          <a href="#" className={styles.card}>
             <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
             <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
+              &nbsp;
             </p>
           </a>
         </div>
