@@ -1,10 +1,25 @@
-import { User, InitOptions } from "next-auth";
+import { IncomingMessage } from "http";
+import { User as UserBase, InitOptions } from "next-auth";
 import { SessionBase } from "next-auth/_utils";
 import Providers from "next-auth/providers";
 import Adapters from "next-auth/adapters";
+import { Session, getSession } from "next-auth/client";
 
-import prisma, { UserOrgRole } from "./prisma";
+import prisma, { User, UserOrgRole } from "./prisma";
 import { requireEnv } from "./env";
+import {
+  formatProject,
+  userCanAccessProject,
+  ExposedProject,
+} from "./projects";
+
+export type ValidUserSession = {
+  session: Session;
+  user: User;
+  projects: ExposedProject[];
+};
+
+export type UserSession = Partial<ValidUserSession>;
 
 const googleId = requireEnv("GOOGLE_ID");
 const googleSecret = requireEnv("GOOGLE_SECRET");
@@ -23,7 +38,15 @@ export const authOptions: InitOptions = {
     async session(session: SessionBase, user: User) {
       // For some reason next auth doesn't include this by default.
       (session as any).user.id = (user as any).id;
-      return session;
+
+      // We stuff some extra values in the session as well
+      const projects = (
+        await prisma.project.findMany({
+          where: userCanAccessProject(user),
+        })
+      ).map(formatProject);
+
+      return { ...session, projects };
     },
     async signIn(user: any, account: any, profile: any) {
       const email = profile.verified_email ? profile.email : "";
@@ -72,3 +95,19 @@ export const authOptions: InitOptions = {
     },
   },
 };
+
+export async function getUser(req: IncomingMessage): Promise<UserSession> {
+  const session = await getSession({ req });
+  if (!session) {
+    return {};
+  }
+  const userId = (session.user as any)?.id;
+  if (!userId) {
+    return { session };
+  }
+  const user =
+    (await prisma.user.findUnique({
+      where: { id: userId },
+    })) ?? undefined;
+  return { session, user };
+}

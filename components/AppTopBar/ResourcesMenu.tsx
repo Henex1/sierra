@@ -1,61 +1,23 @@
-import React, { useCallback, useState } from "react";
-import { useRouter } from "next/router";
+import LandscapeIcon from "@material-ui/icons/Landscape";
 
-import { Button, Menu, MenuItem } from "@material-ui/core";
-import LandscapeIcon from '@material-ui/icons/Landscape';
-
+import { MenuItemLink } from "../common/Link";
+import MenuButton from "../common/MenuButton";
 import useStyles from "./AppTopBarStyles";
 
 export default function ResourcesMenu() {
-  const router = useRouter()
   const classes = useStyles();
 
-  const [resourcesAnchorEl, setResourcesAnchorEl] = useState<null | HTMLElement>(null);
-
-  const handleDataSourcesClick = useCallback(() => {
-    handleResourcesMenuClose();
-    return router.push("/datasources");
-  }, []);
-
-  const handleResourcesMenuOpen = useCallback((event: React.MouseEvent<HTMLElement>) => {
-    setResourcesAnchorEl(event.currentTarget);
-  }, []);
-
-  const handleResourcesMenuClose = useCallback(() => {
-    setResourcesAnchorEl(null);
-  }, []);
-
   return (
-    <>
-      <Button
-        className={classes.topButton}
-        size="large"
-        color="inherit"
-        onClick={handleResourcesMenuOpen}
-        startIcon={<LandscapeIcon />}
-      >
-        Resources
-      </Button>
-      <Menu
-        className={classes.dropMenu}
-        anchorEl={resourcesAnchorEl}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        keepMounted
-        transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        open={Boolean(resourcesAnchorEl)}
-        onClose={handleResourcesMenuClose}
-      >
-        <MenuItem onClick={handleDataSourcesClick}>Data sources</MenuItem>
-        <MenuItem>Search phrases</MenuItem>
-        <MenuItem>Judgments</MenuItem>
-        <MenuItem>Rule sets</MenuItem>
-      </Menu>
-    </>
-  )
+    <MenuButton
+      buttonClassName={classes.topButton}
+      buttonIcon={<LandscapeIcon />}
+      buttonChildren="Resources"
+      menuClassName={classes.dropMenu}
+    >
+      <MenuItemLink href="/datasources">Datasources</MenuItemLink>
+      <MenuItemLink href="#">Search phrases</MenuItemLink>
+      <MenuItemLink href="#">Judgements</MenuItemLink>
+      <MenuItemLink href="/rulesets">Rulesets</MenuItemLink>
+    </MenuButton>
+  );
 }

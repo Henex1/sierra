@@ -8,6 +8,7 @@ import createCache from "@emotion/cache";
 
 import theme from "../lib/theme";
 import AppLayout from "../components/AppLayout";
+import { SessionProvider, ActiveProjectProvider } from "../components/Session";
 
 export const cache = createCache({ key: "css", prepend: true });
 
@@ -22,18 +23,21 @@ export default function MyApp(props: AppProps) {
     }
   }, []);
 
-  return (
-    <CacheProvider value={cache}>
+  let page = (
+    <>
       <Head>
-        <title>My page</title>
+        <title>Project Sierra</title>
         <meta name="viewport" content="initial-scale=1, width=device-width" />
       </Head>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <AppLayout>
-          <Component {...pageProps} />
-        </AppLayout>
-      </ThemeProvider>
-    </CacheProvider>
+      <CssBaseline />
+      <AppLayout>
+        <Component {...pageProps} />
+      </AppLayout>
+    </>
   );
+  page = <ThemeProvider theme={theme} children={page} />;
+  page = <CacheProvider value={cache} children={page} />;
+  page = <ActiveProjectProvider children={page} />;
+  page = <SessionProvider children={page} />;
+  return page;
 }

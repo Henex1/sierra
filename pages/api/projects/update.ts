@@ -3,7 +3,7 @@ import * as z from "zod";
 
 import prisma, { Datasource } from "../../../lib/prisma";
 import { notAuthorized } from "../../../lib/errors";
-import { getUser } from "../../../lib/auth";
+import { getUser } from "../../../lib/authServer";
 import { userCanAccessProject } from "../../../lib/projects";
 
 const updateProjectSchema = z.object({

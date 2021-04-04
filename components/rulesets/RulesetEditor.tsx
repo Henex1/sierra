@@ -184,7 +184,11 @@ export default function RulesetEditor(rest: RulesetEditorProps) {
       mutators={{ ...arrayMutators }}
       render={({ handleSubmit, submitting, values, dirty, form }) => {
         function handleAddRule(expression: string) {
-          form.mutators.push("rules", { enabled: true, expression });
+          form.mutators.push("rules", {
+            enabled: true,
+            expression,
+            instructions: [],
+          });
           setActiveRuleset(values.rules.length);
         }
         return (

@@ -5,6 +5,7 @@
 ### Libraries used
 
 - The application is based on [Next.js](https://nextjs.org/docs/getting-started) and [Material UI](https://material-ui.com/getting-started/usage/) on the frontend.
+  - Note: use `components/common/Link`, which is a combination of `next/link` and `@material-ui/core/Link`.
 - [Prisma 2](https://www.prisma.io/docs/concepts/overview/what-is-prisma) is used to interact with a PostgreSQL database. Prisma handles all migrations and also provides an admin GUI.
 - [Zod](https://github.com/colinhacks/zod) is used for data validation. It's a TypeScript analog to Joi.
 - [React Final Form](https://final-form.org/docs/react-final-form/getting-started) is used for managing form state, especially in combination with [mui-rff](https://github.com/lookfirst/mui-rff) for the integration between Material UI and React Final Form.

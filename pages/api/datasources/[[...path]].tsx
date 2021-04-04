@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 import prisma, { User, Datasource } from "../../../lib/prisma";
 import { DatasourceSchema } from "../../../lib/schema";
-import { getUser } from "../../../lib/auth";
+import { getUser } from "../../../lib/authServer";
 import {
   createDatasource,
   deleteDatasource,

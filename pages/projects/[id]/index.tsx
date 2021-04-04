@@ -1,10 +1,10 @@
 import * as React from "react";
 import Box from "@material-ui/core/Box";
-import Button from "@material-ui/core/Button";
 import Container from "@material-ui/core/Container";
 import Typography from "@material-ui/core/Typography";
 import { GetServerSideProps } from "next";
 
+import { LinkButton } from "../../../components/common/Link";
 import Form from "../../../components/projects/Form";
 import DebugQuery from "../../../components/datasources/DebugQuery";
 import { authenticatedPage } from "../../../lib/auth";
@@ -34,9 +34,9 @@ export default function ViewProject({ project }: Props) {
   return (
     <Container>
       <Box pb={2}>
-        <Button href={`/projects/${project.id}/edit`} variant="contained">
+        <LinkButton href={`/projects/${project.id}/edit`} variant="contained">
           Edit Project
-        </Button>
+        </LinkButton>
       </Box>
       <Typography variant="h3">Project: {project.name}</Typography>
       <DebugQuery />

@@ -4,7 +4,7 @@ import Head from "next/head";
 import Drawer from "@material-ui/core/Drawer";
 import Divider from "@material-ui/core/Divider";
 import List from "@material-ui/core/List";
-import Toolbar from '@material-ui/core/Toolbar';
+import Toolbar from "@material-ui/core/Toolbar";
 import { makeStyles } from "@material-ui/core/styles";
 
 import { mainListItems, secondaryListItems } from "../components/AppNavigation";
@@ -18,7 +18,7 @@ const useStyles = makeStyles(() => ({
   },
   drawerPaper: {
     width: 240,
-  }
+  },
 }));
 
 export default function Home() {
@@ -26,10 +26,6 @@ export default function Home() {
 
   return (
     <div className={styles.container}>
-      <Head>
-        <title>Project Sierra</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
       <Drawer
         variant="permanent"
         className={classes.drawer}
@@ -38,14 +34,12 @@ export default function Home() {
         }}
       >
         <Toolbar />
-        <List>{ mainListItems }</List>
+        <List>{mainListItems}</List>
         <Divider />
-        <List>{ secondaryListItems }</List>
+        <List>{secondaryListItems}</List>
       </Drawer>
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Project Sierra
-        </h1>
+        <h1 className={styles.title}>Project Sierra</h1>
 
         <p className={styles.description}>
           Get started by setting up your first project.
@@ -54,7 +48,10 @@ export default function Home() {
         <div className={styles.grid}>
           <a href="/projects" className={styles.card}>
             <h3>Projects &rarr;</h3>
-            <p>Access the Relevance Lab for testing and improving relevance for your projects.</p>
+            <p>
+              Access the Relevance Lab for testing and improving relevance for
+              your projects.
+            </p>
           </a>
 
           <a href="/datasources" className={styles.card}>
@@ -69,9 +66,7 @@ export default function Home() {
 
           <a href="#" className={styles.card}>
             <h3>Documentation &rarr;</h3>
-            <p>
-              &nbsp;
-            </p>
+            <p>&nbsp;</p>
           </a>
         </div>
       </main>
