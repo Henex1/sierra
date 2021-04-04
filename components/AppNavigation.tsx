@@ -10,6 +10,7 @@ import StorageIcon from "@material-ui/icons/Storage";
 import PeopleIcon from "@material-ui/icons/People";
 import BarChartIcon from "@material-ui/icons/BarChart";
 import LayersIcon from "@material-ui/icons/Layers";
+import BlurLinearIcon from "@material-ui/icons/BlurLinear"
 import AssignmentIcon from "@material-ui/icons/Assignment";
 
 import Link, { LinkProps } from "./common/Link";
@@ -52,6 +53,11 @@ export const mainListItems = (
       href="/rulesets"
       icon={<LayersIcon />}
       text={{ primary: "Rulesets" }}
+    />
+    <NavigationItem
+      href="/testbed"
+      icon={<BlurLinearIcon />}
+      text={{ primary: "Testbed" }}
     />
     <ListItem button>
       <ListItemIcon>
