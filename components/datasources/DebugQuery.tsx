@@ -62,7 +62,7 @@ export default function DebugQuery() {
             </Button>
           </Box>
           <Box pb={2}>
-            <MUITextField fullWidth readonly multiline value={result} />
+            <MUITextField fullWidth disabled multiline value={result} />
           </Box>
         </form>
       )}
