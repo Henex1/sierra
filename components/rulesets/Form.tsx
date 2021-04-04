@@ -5,13 +5,13 @@ import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
 
 import { parseNonnegativeInt } from "../common/form";
-import { ExposedProject } from "../../lib/projects";
+import { ExposedRuleset } from "../../lib/rulesets";
 
-export type FormProps = BaseFormProps<ExposedProject> & {
+export type FormProps = BaseFormProps<ExposedRuleset> & {
   onDelete?: () => void;
 };
 
-export default function ProjectForm({ onDelete, ...rest }: FormProps) {
+export default function RulesetForm({ onDelete, ...rest }: FormProps) {
   const isNew = rest.initialValues?.id === undefined;
   return (
     <Form
@@ -24,18 +24,6 @@ export default function ProjectForm({ onDelete, ...rest }: FormProps) {
               name="name"
               required={true}
               variant="filled"
-            />
-          </Box>
-          <Box pb={2}>
-            <TextField
-              label="Initial Datasource ID"
-              helperText="Datasource can be changed to a different datasource of the same type later."
-              name="datasourceId"
-              required={true}
-              variant="filled"
-              fieldProps={{
-                parse: parseNonnegativeInt,
-              }}
             />
           </Box>
           <Box pb={2}>

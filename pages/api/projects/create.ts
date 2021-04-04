@@ -1,11 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import * as z from "zod";
 
-import prisma, { Datasource } from "../../../../lib/prisma";
-import { notAuthorized } from "../../../../lib/errors";
-import { getUser } from "../../../../lib/auth";
-import { userCanAccessOrg } from "../../../../lib/org";
-import { userCanAccessDatasource } from "../../../../lib/datasources";
+import prisma, { Datasource } from "../../../lib/prisma";
+import { notAuthorized } from "../../../lib/errors";
+import { getUser } from "../../../lib/auth";
+import { userCanAccessOrg } from "../../../lib/org";
+import { userCanAccessDatasource } from "../../../lib/datasources";
 
 const createProjectSchema = z.object({
   name: z.string(),
@@ -39,15 +39,7 @@ export default async function createProject(
     return notAuthorized(res);
   }
   const project = await prisma.project.create({
-    data: { ...projectData, orgId: org.id, datasourceType: datasource.type },
+    data: { ...projectData, orgId: org.id, datasourceId: datasource.id },
   });
-  const config = await prisma.config.create({
-    data: {
-      description: "empty config",
-      projectId: project.id,
-      datasourceId: datasource.id,
-      config: {},
-    },
-  });
-  return res.status(200).json({ project, config });
+  return res.status(200).json({ project });
 }

@@ -6,8 +6,8 @@ import { userCanAccessOrg } from "../org";
 const selectKeys = {
   id: true,
   orgId: true,
+  datasourceId: true,
   name: true,
-  datasourceType: true,
 };
 
 export type ExposedProject = Pick<Project, keyof typeof selectKeys>;
@@ -24,6 +24,6 @@ export function userCanAccessProject(
 }
 
 export function formatProject(project: Project): ExposedProject {
-  const { id, orgId, name, datasourceType } = project;
-  return { id, orgId, name, datasourceType };
+  const { id, orgId, datasourceId, name } = project;
+  return { id, orgId, datasourceId, name };
 }
