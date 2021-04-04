@@ -77,6 +77,7 @@ model Org {
   projects    Project[]
   datasources Datasource[]
   users       OrgUser[]
+  rulesets    Ruleset[]
 }
 
 // OrgUser represents membership in an organization.
@@ -110,54 +111,90 @@ model Datasource {
   type      DatasourceType
   info      Json
 
-  org    Org      @relation(fields: [orgId], references: [id])
-  config Config[]
+  org      Org       @relation(fields: [orgId], references: [id])
+  projects Project[]
 }
 
 enum DatasourceType {
   ELASTICSEARCH
 }
 
-// A Project is a group of queries which are being optimized.
+// A Project is a group of search phrases which are being optimized.
 model Project {
-  id             Int            @id @default(autoincrement())
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  datasourceType DatasourceType
-  orgId          Int
-  name           String
-
-  org     Org      @relation(fields: [orgId], references: [id])
-  queries Query[]
-  configs Config[]
-}
-
-// A Config is a group of settings to apply to a Project. When settings are
-// changed, a new Config is formed from the old one, so Configs form a tree.
-model Config {
   id           Int      @id @default(autoincrement())
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  name         String?
-  description  String
-  projectId    Int
-  parentId     Int?
+  orgId        Int
   datasourceId Int
-  config       Json
+  name         String
 
-  project    Project    @relation(fields: [projectId], references: [id])
-  datasource Datasource @relation(fields: [datasourceId], references: [id])
-  parent     Config?    @relation("TryChildren", fields: [parentId], references: [id])
-  children   Config[]   @relation("TryChildren")
+  org            Org             @relation(fields: [orgId], references: [id])
+  datasource     Datasource      @relation(fields: [datasourceId], references: [id])
+  searchPhrases  SearchPhrase[]
+  queryTemplates QueryTemplate[]
 }
 
-model Query {
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  projectId  Int
-  query      Json
-  judgements Json
+model SearchPhrase {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  projectId Int
+  // This takes the form of { "judgements": [ [ document ID, rating ], ... ] }
+  judgement Json
+  project   Project  @relation(fields: [projectId], references: [id])
+}
 
-  project Project @relation(fields: [projectId], references: [id])
+// A QueryTemplate is an immutable backend query that can be populated combined
+// with a SearchPhrase to create a query which can be dispatched to a
+// Datasource. Instead of modifying a QueryTemplate, a new one is created with
+// a parentId equal to the original template. In this way, templates form a
+// tree of edits.
+model QueryTemplate {
+  id          Int              @id @default(autoincrement())
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  projectId   Int
+  parentId    Int?
+  query       String
+  knobs       Json
+  // Note, the link to to a particular version, to maintain immutability.
+  rulesets    RulesetVersion[]
+  // Short tag describing this QueryTemplate. Compare to a git branch.
+  tag         String
+  // Longer description of the QueryTemplate. Compare to a git commit message.
+  description String
+
+  project  Project         @relation(fields: [projectId], references: [id])
+  parent   QueryTemplate?  @relation(fields: [parentId], references: [id])
+  children QueryTemplate[] @relation("QueryTemplateToQueryTemplate")
+}
+
+// A Ruleset stores information about a query rewriting ruleset.
+model Ruleset {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orgId     Int
+  name      String
+
+  org            Org              @relation(fields: [orgId], references: [id])
+  rulesetVersion RulesetVersion[]
+}
+
+// RulesetVersion tracks a single version of the query rewriting ruleset.
+// Instead of changing the value of a RulesetVersion, a new one is created with
+// a parentId equal to the original RulesetVersion. In this way, rulesets form
+// a tree of edits.
+model RulesetVersion {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  rulesetId Int
+  parentId  Int?
+  value     Json
+
+  ruleset        Ruleset          @relation(fields: [rulesetId], references: [id])
+  parent         RulesetVersion?  @relation(fields: [parentId], references: [id])
+  children       RulesetVersion[] @relation("RulesetVersionToRulesetVersion")
+  queryTemplates QueryTemplate[]
 }

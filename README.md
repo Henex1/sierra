@@ -63,6 +63,22 @@ To access the Prisma database admin management console, use:
 prisma studio
 ```
 
+If the database schema is out of date, you should toss your local database and recreate it:
+
+```bash
+prisma migrate reset --force
+```
+
+### Modify the database schema (before initial launch)
+
+During early development, we don't add new Prisma migrations and instead completely recreate the database in a single migration when the schema changes. To do this, after making changes to `prisma/schema.prisma`, then:
+
+```bash
+rm -rf prisma/migrations
+prisma migrate dev --create-only --skip-seed
+prisma migrate reset --force
+```
+
 ### Modify the database schema
 
 Make your change to `prisma/schema.prisma`, then:

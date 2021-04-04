@@ -32,7 +32,7 @@ export default function EditProject({ project }: Props) {
 
   async function onSubmit(values: ExposedProject) {
     const { datasourceType, orgId, ...updateParams } = values;
-    const response = await fetch(`/api/projects/mutations/update`, {
+    const response = await fetch(`/api/projects/update`, {
       method: "POST",
       body: JSON.stringify({ ...updateParams, id: project.id }),
       headers: {
@@ -50,7 +50,7 @@ export default function EditProject({ project }: Props) {
   }
 
   async function onDelete() {
-    const response = await fetch(`/api/projects/mutations/delete`, {
+    const response = await fetch(`/api/projects/delete`, {
       method: "POST",
       body: JSON.stringify({ id: project.id }),
       headers: {

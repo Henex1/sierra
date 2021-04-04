@@ -13,29 +13,29 @@ import Link from "../../components/common/Link";
 import { authenticatedPage } from "../../lib/auth";
 import { redirectToLogin } from "../../lib/errors";
 import {
-  userCanAccessProject,
-  formatProject,
-  ExposedProject,
-} from "../../lib/projects";
+  userCanAccessRuleset,
+  formatRuleset,
+  ExposedRuleset,
+} from "../../lib/rulesets";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const projects = await prisma.project.findMany({
-    where: userCanAccessProject(context.user),
+  const rulesets = await prisma.ruleset.findMany({
+    where: userCanAccessRuleset(context.user),
   });
-  return { props: { projects: projects.map(formatProject) } };
+  return { props: { rulesets: rulesets.map(formatRuleset) } };
 });
 
 type Props = {
-  projects: ExposedProject[];
+  rulesets: ExposedRuleset[];
 };
 
-export default function Projects({ projects }: Props) {
-  const columns: Column<ExposedProject>[] = React.useMemo(
+export default function Rulesets({ rulesets }: Props) {
+  const columns: Column<ExposedRuleset>[] = React.useMemo(
     () => [
       {
         Header: "Name",
         Cell: ({ row }) => (
-          <Link href={`/projects/${row.original.id}`}>{row.original.name}</Link>
+          <Link href={`/rulesets/${row.original.id}`}>{row.original.name}</Link>
         ),
         accessor: "name",
       },
@@ -43,7 +43,7 @@ export default function Projects({ projects }: Props) {
     []
   );
 
-  const tableInstance = useTable({ columns, data: projects });
+  const tableInstance = useTable({ columns, data: rulesets });
   const {
     getTableProps,
     getTableBodyProps,
@@ -54,8 +54,8 @@ export default function Projects({ projects }: Props) {
 
   return (
     <div>
-      <Button href="/projects/create" variant="contained">
-        Add project
+      <Button href="/rulesets/create" variant="contained">
+        Add ruleset
       </Button>
       <MaUTable {...getTableProps()}>
         <TableHead>

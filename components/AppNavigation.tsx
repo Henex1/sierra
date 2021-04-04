@@ -48,12 +48,11 @@ export const mainListItems = (
       icon={<BarChartIcon />}
       text={{ primary: "Projects" }}
     />
-    <ListItem button>
-      <ListItemIcon>
-        <LayersIcon />
-      </ListItemIcon>
-      <ListItemText primary="Rulesets" />
-    </ListItem>
+    <NavigationItem
+      href="/rulesets"
+      icon={<LayersIcon />}
+      text={{ primary: "Rulesets" }}
+    />
     <ListItem button>
       <ListItemIcon>
         <PeopleIcon />
