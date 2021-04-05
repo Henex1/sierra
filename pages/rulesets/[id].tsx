@@ -30,10 +30,12 @@ export const getServerSideProps = authenticatedPage(async (context) => {
   if (!version) {
     // Create a fake initial version
     version = {
-      id: null,
+      id: null as any,
       rulesetId: ruleset.id,
       parentId: null,
       value: { rules: [] },
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
   }
   return {
@@ -74,5 +76,10 @@ export default function EditRuleset({ ruleset, version }: Props) {
     return new Promise(() => {});
   }
 
-  return <RulesetEditor onSubmit={onSubmit} initialValues={version.value} />;
+  return (
+    <RulesetEditor
+      onSubmit={onSubmit}
+      initialValues={version.value as RulesetVersionValue}
+    />
+  );
 }

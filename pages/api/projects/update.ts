@@ -8,6 +8,7 @@ import { userCanAccessProject } from "../../../lib/projects";
 
 const updateProjectSchema = z.object({
   id: z.number(),
+  searchEndpointId: z.number(),
   name: z.string(),
 });
 
