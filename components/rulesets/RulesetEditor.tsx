@@ -77,7 +77,9 @@ function DiscardChangesDialog({
 
 function NoRuleset() {
   return (
-    <Container size="md">Select a rule on the left to get started.</Container>
+    <Container maxWidth="md">
+      Select a rule on the left to get started.
+    </Container>
   );
 }
 

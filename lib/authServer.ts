@@ -72,14 +72,14 @@ export const authOptions: InitOptions = {
         },
       });
 
-      // Automatically create a development datasource for the new org.
+      // Automatically create a development searchEndpoint for the new org.
       // Eventually, this needs to be some kind of Org creation wizard.
-      const datasource = await prisma.datasource.create({
+      const searchEndpoint = await prisma.searchEndpoint.create({
         data: {
           orgId: org.id,
           name: "Local Elasticsearch",
           type: "ELASTICSEARCH",
-          info: { host: "http://localhost:9200/*" },
+          info: { url: "http://localhost:9200/*" },
         },
       });
 
@@ -88,7 +88,7 @@ export const authOptions: InitOptions = {
       await prisma.project.create({
         data: {
           orgId: org.id,
-          datasourceId: datasource.id,
+          searchEndpointId: searchEndpoint.id,
           name: "My Project",
         },
       });

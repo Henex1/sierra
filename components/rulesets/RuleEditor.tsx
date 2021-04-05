@@ -26,8 +26,8 @@ function SynonymField({ name }: InstructionFieldProps) {
     <>
       <Grid item xs={2}>
         <Select name={`${name}.directed`} required>
-          <MenuItem value={false}>{"== (undirected)"}</MenuItem>
-          <MenuItem value={true}>&ndash;{"> (directed)"}</MenuItem>
+          <MenuItem value={false as any}>{"== (undirected)"}</MenuItem>
+          <MenuItem value={true as any}>&ndash;{"> (directed)"}</MenuItem>
         </Select>
       </Grid>
       <Grid item xs={1}>
@@ -67,8 +67,8 @@ function FilterField({ name }: InstructionFieldProps) {
     <>
       <Grid item xs={2}>
         <Select name={`${name}.include`} required>
-          <MenuItem value={true}>MUST</MenuItem>
-          <MenuItem value={false}>MUST NOT</MenuItem>
+          <MenuItem value={true as any}>MUST</MenuItem>
+          <MenuItem value={false as any}>MUST NOT</MenuItem>
         </Select>
       </Grid>
       <Grid item xs>
@@ -80,11 +80,9 @@ function FilterField({ name }: InstructionFieldProps) {
 
 function DeleteField({ name }: InstructionFieldProps) {
   return (
-    <>
-      <Grid item xs>
-        <TextField name={`${name}.term`} required />
-      </Grid>
-    </>
+    <Grid item xs>
+      <TextField name={`${name}.term`} required />
+    </Grid>
   );
 }
 
@@ -100,7 +98,7 @@ function InstructionField(props: InstructionFieldProps) {
     ) : value.type === "delete" ? (
       <DeleteField {...props} />
     ) : (
-      <Grid item>Unsupported instruction: {value.type}</Grid>
+      <Grid item>Unsupported instruction: {(value as any).type}</Grid>
     );
   return (
     <Box pb={2}>

@@ -54,8 +54,8 @@ export default function Home() {
             </p>
           </a>
 
-          <a href="/datasources" className={styles.card}>
-            <h3>Datasources &rarr;</h3>
+          <a href="/searchendpoints" className={styles.card}>
+            <h3>Search Endpoints &rarr;</h3>
             <p>Manage connection to your Elasticsearch and Solr clusters.</p>
           </a>
 

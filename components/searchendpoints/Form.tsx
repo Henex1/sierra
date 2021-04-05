@@ -5,13 +5,13 @@ import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
 import MenuItem from "@material-ui/core/MenuItem";
 
-import { ExposedDatasource } from "../../lib/datasources";
+import { ExposedSearchEndpoint } from "../../lib/searchendpoints";
 
-export type FormProps = BaseFormProps<ExposedDatasource> & {
+export type FormProps = BaseFormProps<ExposedSearchEndpoint> & {
   onDelete?: () => void;
 };
 
-export default function DatasourceForm({ onDelete, ...rest }: FormProps) {
+export default function SearchEndpointForm({ onDelete, ...rest }: FormProps) {
   const isNew = rest.initialValues?.id === undefined;
   return (
     <Form
@@ -41,7 +41,7 @@ export default function DatasourceForm({ onDelete, ...rest }: FormProps) {
             <Box pb={2}>
               <TextField
                 label="Elasticsearch URL"
-                name="info.endpoint"
+                name="info.url"
                 required={true}
                 variant="filled"
               />

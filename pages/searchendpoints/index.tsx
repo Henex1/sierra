@@ -9,24 +9,27 @@ import { getSession, signIn } from "next-auth/client";
 
 import Link, { LinkButton } from "../../components/common/Link";
 import { authenticatedPage } from "../../lib/auth";
-import { listDatasources, ExposedDatasource } from "../../lib/datasources";
+import {
+  listSearchEndpoints,
+  ExposedSearchEndpoint,
+} from "../../lib/searchendpoints";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const datasources = await listDatasources(context);
-  return { props: { datasources } };
+  const searchEndpoints = await listSearchEndpoints(context);
+  return { props: { searchEndpoints } };
 });
 
 type Props = {
-  datasources: ExposedDatasource[];
+  searchEndpoints: ExposedSearchEndpoint[];
 };
 
-export default function Datasources({ datasources }: Props) {
-  const columns: Column<ExposedDatasource>[] = React.useMemo(
+export default function SearchEndpoints({ searchEndpoints }: Props) {
+  const columns: Column<ExposedSearchEndpoint>[] = React.useMemo(
     () => [
       {
         Header: "Name",
         Cell: ({ row }) => (
-          <Link href={`/datasources/${row.original.id}`}>
+          <Link href={`/searchendpoints/${row.original.id}`}>
             {row.original.name}
           </Link>
         ),
@@ -40,7 +43,7 @@ export default function Datasources({ datasources }: Props) {
     []
   );
 
-  const tableInstance = useTable({ columns, data: datasources });
+  const tableInstance = useTable({ columns, data: searchEndpoints });
   const {
     getTableProps,
     getTableBodyProps,
@@ -51,8 +54,8 @@ export default function Datasources({ datasources }: Props) {
 
   return (
     <div>
-      <LinkButton href="/datasources/create" variant="contained">
-        Add datasource
+      <LinkButton href="/searchendpoints/create" variant="contained">
+        Add Search Endpoint
       </LinkButton>
       <MaUTable {...getTableProps()}>
         <TableHead>

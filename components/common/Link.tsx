@@ -123,13 +123,17 @@ const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(function Link(
       linkAs={linkAs}
       className={className}
       ref={ref}
-      href={href}
+      href={href as string}
       {...other}
     />
   );
 });
 
 export type MenuItemLinkProps = MuiMenuItemProps & NextLinkComposedProps;
+
+// This is necessary to shut up a TypeScript error regarding the component
+// prop. The code works, the type definitions are incorrect.
+const UntypedMenuItem = MenuItem as React.ComponentType<any>;
 
 export const MenuItemLink = React.forwardRef<
   HTMLAnchorElement,
@@ -158,7 +162,7 @@ export const MenuItemLink = React.forwardRef<
       passHref={true}
       locale={locale}
     >
-      <MenuItem component="a" ref={ref as any} {...other} />
+      <UntypedMenuItem component="a" ref={ref as any} {...other} />
     </NextLink>
   );
 });

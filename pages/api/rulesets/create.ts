@@ -1,11 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import * as z from "zod";
 
-import prisma, { Datasource } from "../../../lib/prisma";
+import prisma, { SearchEndpoint } from "../../../lib/prisma";
 import { notAuthorized } from "../../../lib/errors";
 import { getUser } from "../../../lib/authServer";
 import { userCanAccessOrg } from "../../../lib/org";
-import { userCanAccessDatasource } from "../../../lib/datasources";
+import { userCanAccessSearchEndpoint } from "../../../lib/searchendpoints";
 
 const createRulesetSchema = z.object({
   name: z.string(),

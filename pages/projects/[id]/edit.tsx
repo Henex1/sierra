@@ -31,7 +31,7 @@ export default function EditProject({ project }: Props) {
   const router = useRouter();
 
   async function onSubmit(values: ExposedProject) {
-    const { datasourceType, orgId, ...updateParams } = values;
+    const { orgId, ...updateParams } = values;
     const response = await fetch(`/api/projects/update`, {
       method: "POST",
       body: JSON.stringify({ ...updateParams, id: project.id }),

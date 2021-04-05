@@ -12,7 +12,7 @@ import { ExposedProject } from "../../lib/projects";
 export default function DebugQuery() {
   const [result, setResult] = React.useState("");
   async function doQuery(values: any) {
-    const response = await fetch(`/api/datasources/query`, {
+    const response = await fetch(`/api/searchendpoints/query`, {
       method: "POST",
       body: JSON.stringify(values),
       headers: {
@@ -42,8 +42,8 @@ export default function DebugQuery() {
           </Box>
           <Box pb={2}>
             <TextField
-              label="Datasource ID"
-              name="datasourceId"
+              label="Search Endpoint ID"
+              name="searchEndpointId"
               required={true}
               variant="filled"
               fieldProps={{

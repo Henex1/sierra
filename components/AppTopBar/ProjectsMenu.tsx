@@ -61,8 +61,10 @@ export default function ProjectsMenu() {
   const selectValue =
     session?.projects && !project ? session.projects[0] : project;
 
-  function handleChange(e: React.ChangeEvent) {
-    const id = e.target.value;
+  function handleChange(
+    e: React.ChangeEvent<{ name?: string | undefined; value: unknown }>
+  ) {
+    const id = e.target.value as number;
     setProject(
       id === -1 ? null : session!.projects!.find((p) => p.id == id) ?? null
     );

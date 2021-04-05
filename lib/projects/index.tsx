@@ -6,7 +6,7 @@ import { userCanAccessOrg } from "../org";
 const selectKeys = {
   id: true,
   orgId: true,
-  datasourceId: true,
+  searchEndpointId: true,
   name: true,
 };
 
@@ -24,6 +24,6 @@ export function userCanAccessProject(
 }
 
 export function formatProject(project: Project): ExposedProject {
-  const { id, orgId, datasourceId, name } = project;
-  return { id, orgId, datasourceId, name };
+  const { id, orgId, searchEndpointId, name } = project;
+  return { id, orgId, searchEndpointId, name };
 }
