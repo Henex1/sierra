@@ -1,15 +1,15 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import * as z from "zod";
 
-import prisma, { Datasource } from "../../../lib/prisma";
+import prisma, { SearchEndpoint } from "../../../lib/prisma";
 import { notAuthorized } from "../../../lib/errors";
 import { getUser } from "../../../lib/authServer";
 import { userCanAccessOrg } from "../../../lib/org";
-import { userCanAccessDatasource } from "../../../lib/datasources";
+import { userCanAccessSearchEndpoint } from "../../../lib/searchendpoints";
 
 const createProjectSchema = z.object({
   name: z.string(),
-  datasourceId: z.number(),
+  searchEndpointId: z.number(),
 });
 
 export default async function createProject(
@@ -31,15 +31,19 @@ export default async function createProject(
   if (!input.success) {
     return res.status(400).json(input.error);
   }
-  const { datasourceId, ...projectData } = input.data;
-  const datasource = (await prisma.datasource.findFirst({
-    where: userCanAccessDatasource(user, { id: datasourceId }),
-  })) as Datasource | null;
-  if (!datasource) {
+  const { searchEndpointId, ...projectData } = input.data;
+  const searchEndpoint = (await prisma.searchEndpoint.findFirst({
+    where: userCanAccessSearchEndpoint(user, { id: searchEndpointId }),
+  })) as SearchEndpoint | null;
+  if (!searchEndpoint) {
     return notAuthorized(res);
   }
   const project = await prisma.project.create({
-    data: { ...projectData, orgId: org.id, datasourceId: datasource.id },
+    data: {
+      ...projectData,
+      orgId: org.id,
+      searchEndpointId: searchEndpoint.id,
+    },
   });
   return res.status(200).json({ project });
 }

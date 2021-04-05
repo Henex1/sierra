@@ -10,7 +10,7 @@ import StorageIcon from "@material-ui/icons/Storage";
 import PeopleIcon from "@material-ui/icons/People";
 import BarChartIcon from "@material-ui/icons/BarChart";
 import LayersIcon from "@material-ui/icons/Layers";
-import BlurLinearIcon from "@material-ui/icons/BlurLinear"
+import BlurLinearIcon from "@material-ui/icons/BlurLinear";
 import AssignmentIcon from "@material-ui/icons/Assignment";
 
 import Link, { LinkProps } from "./common/Link";
@@ -40,9 +40,9 @@ export const mainListItems = (
       text={{ primary: "Dashboard" }}
     />
     <NavigationItem
-      href="/datasources"
+      href="/searchendpoints"
       icon={<StorageIcon />}
-      text={{ primary: "Datasources" }}
+      text={{ primary: "Search Endpoints" }}
     />
     <NavigationItem
       href="/projects"

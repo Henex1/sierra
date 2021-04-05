@@ -74,10 +74,10 @@ model Org {
   updatedAt DateTime @updatedAt
   name      String
 
-  projects    Project[]
-  datasources Datasource[]
-  users       OrgUser[]
-  rulesets    Ruleset[]
+  projects  Project[]
+  searchEndpoints SearchEndpoint[]
+  users     OrgUser[]
+  rulesets  Ruleset[]
 }
 
 // OrgUser represents membership in an organization.
@@ -101,35 +101,35 @@ enum UserOrgRole {
   ADMIN
 }
 
-// Datasource represents a remote datasource which can be queried.
-model Datasource {
-  id        Int            @id @default(autoincrement())
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+// SearchEndpoint represents a remote datasource which can be queried.
+model SearchEndpoint {
+  id        Int          @id @default(autoincrement())
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
   orgId     Int
   name      String
-  type      DatasourceType
+  type      SearchEndpointType
   info      Json
 
   org      Org       @relation(fields: [orgId], references: [id])
   projects Project[]
 }
 
-enum DatasourceType {
+enum SearchEndpointType {
   ELASTICSEARCH
 }
 
 // A Project is a group of search phrases which are being optimized.
 model Project {
-  id           Int      @id @default(autoincrement())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  orgId        Int
-  datasourceId Int
-  name         String
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  orgId      Int
+  searchEndpointId Int
+  name       String
 
   org            Org             @relation(fields: [orgId], references: [id])
-  datasource     Datasource      @relation(fields: [datasourceId], references: [id])
+  searchEndpoint       SearchEndpoint        @relation(fields: [searchEndpointId], references: [id])
   searchPhrases  SearchPhrase[]
   queryTemplates QueryTemplate[]
 }
@@ -146,9 +146,9 @@ model SearchPhrase {
 
 // A QueryTemplate is an immutable backend query that can be populated combined
 // with a SearchPhrase to create a query which can be dispatched to a
-// Datasource. Instead of modifying a QueryTemplate, a new one is created with
-// a parentId equal to the original template. In this way, templates form a
-// tree of edits.
+// SearchEndpoint. Instead of modifying a QueryTemplate, a new one is created
+// with a parentId equal to the original template. In this way, templates form
+// a tree of edits.
 model QueryTemplate {
   id          Int              @id @default(autoincrement())
   createdAt   DateTime         @default(now())

@@ -28,9 +28,9 @@ export default function ProjectForm({ onDelete, ...rest }: FormProps) {
           </Box>
           <Box pb={2}>
             <TextField
-              label="Initial Datasource ID"
-              helperText="Datasource can be changed to a different datasource of the same type later."
-              name="datasourceId"
+              label="Search Endpoint ID"
+              helperText="This can be changed to a different search endpoint of the same type later."
+              name="searchEndpointId"
               required={true}
               variant="filled"
               fieldProps={{

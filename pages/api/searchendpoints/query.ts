@@ -1,14 +1,17 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import * as z from "zod";
 
-import prisma, { Datasource } from "../../../lib/prisma";
+import prisma, { SearchEndpoint } from "../../../lib/prisma";
 import { notAuthorized } from "../../../lib/errors";
 import { getUser } from "../../../lib/authServer";
-import { userCanAccessDatasource, handleQuery } from "../../../lib/datasources";
+import {
+  userCanAccessSearchEndpoint,
+  handleQuery,
+} from "../../../lib/searchendpoints";
 
 const querySchema = z.object({
   query: z.string(),
-  datasourceId: z.number(),
+  searchEndpointId: z.number(),
 });
 
 export default async function query(
@@ -26,13 +29,13 @@ export default async function query(
   if (!input.success) {
     return res.status(400).json(input.error);
   }
-  const { datasourceId, query } = input.data;
-  const datasource = (await prisma.datasource.findFirst({
-    where: userCanAccessDatasource(user, { id: datasourceId }),
-  })) as Datasource | null;
-  if (!datasource) {
+  const { searchEndpointId, query } = input.data;
+  const searchEndpoint = (await prisma.searchEndpoint.findFirst({
+    where: userCanAccessSearchEndpoint(user, { id: searchEndpointId }),
+  })) as SearchEndpoint | null;
+  if (!searchEndpoint) {
     return notAuthorized(res);
   }
-  const result = await handleQuery(datasource, query);
+  const result = await handleQuery(searchEndpoint, query);
   return res.status(200).json(result);
 }

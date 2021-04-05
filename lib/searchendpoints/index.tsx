@@ -1,11 +1,11 @@
 import { HttpError } from "../errors";
-import prisma, { Prisma, User, Datasource } from "../prisma";
-import { DatasourceSchema } from "../schema";
+import prisma, { Prisma, User, SearchEndpoint } from "../prisma";
+import { SearchEndpointSchema } from "../schema";
 import { UserSession } from "../authServer";
 import { userCanAccessOrg } from "../org";
 import { handleElasticsearchQuery } from "./elasticsearch";
 
-// This is the list of keys which are included in user requests for Datasource
+// This is the list of keys which are included in user requests for SearchEndpoint
 // by default.
 const selectKeys = {
   id: true,
@@ -15,49 +15,49 @@ const selectKeys = {
   info: true,
 };
 
-export type ExposedDatasource = Pick<Datasource, keyof typeof selectKeys>;
+export type ExposedSearchEndpoint = Pick<SearchEndpoint, keyof typeof selectKeys>;
 
-export function userCanAccessDatasource(
+export function userCanAccessSearchEndpoint(
   user: User,
-  rest?: Prisma.DatasourceWhereInput
-): Prisma.DatasourceWhereInput {
-  const result: Prisma.DatasourceWhereInput = { org: userCanAccessOrg(user) };
+  rest?: Prisma.SearchEndpointWhereInput
+): Prisma.SearchEndpointWhereInput {
+  const result: Prisma.SearchEndpointWhereInput = { org: userCanAccessOrg(user) };
   if (rest) {
     result.AND = rest;
   }
   return result;
 }
 
-export async function getDatasource(
+export async function getSearchEndpoint(
   user: User,
   idStr: string
-): Promise<ExposedDatasource | null> {
+): Promise<ExposedSearchEndpoint | null> {
   const id = parseInt(idStr, 10);
-  const ds = await prisma.datasource.findFirst({
-    where: userCanAccessDatasource(user, { id }),
+  const ds = await prisma.searchEndpoint.findFirst({
+    where: userCanAccessSearchEndpoint(user, { id }),
     select: selectKeys,
   });
   return ds;
 }
 
-export async function listDatasources({
+export async function listSearchEndpoints({
   user,
-}: UserSession): Promise<ExposedDatasource[]> {
+}: UserSession): Promise<ExposedSearchEndpoint[]> {
   if (!user) {
     return [];
   }
-  const datasources = await prisma.datasource.findMany({
-    where: userCanAccessDatasource(user),
+  const searchEndpoints = await prisma.searchEndpoint.findMany({
+    where: userCanAccessSearchEndpoint(user),
     select: selectKeys,
   });
-  return datasources;
+  return searchEndpoints;
 }
 
-export async function createDatasource(
+export async function createSearchEndpoint(
   user: User,
-  input: ExposedDatasource
-): Promise<ExposedDatasource> {
-  const result = DatasourceSchema.omit({
+  input: ExposedSearchEndpoint
+): Promise<ExposedSearchEndpoint> {
+  const result = SearchEndpointSchema.omit({
     id: true,
     createdAt: true,
     updatedAt: true,
@@ -73,30 +73,30 @@ export async function createDatasource(
     return Promise.reject(new HttpError(400, { error: "invalid org" }));
   }
 
-  const ds = await prisma.datasource.create({
+  const ds = await prisma.searchEndpoint.create({
     data: result.data,
     select: selectKeys,
   });
   return ds;
 }
 
-export async function deleteDatasource(
+export async function deleteSearchEndpoint(
   user: User,
   idStr: string
 ): Promise<void> {
-  const ds = await getDatasource(user, idStr);
+  const ds = await getSearchEndpoint(user, idStr);
   if (!ds) {
     return Promise.reject(new HttpError(404, { error: "not found" }));
   }
-  await prisma.datasource.delete({ where: { id: ds.id } });
+  await prisma.searchEndpoint.delete({ where: { id: ds.id } });
 }
 
-export async function updateDatasource(
+export async function updateSearchEndpoint(
   user: User,
   idStr: string,
-  input: ExposedDatasource
-): Promise<ExposedDatasource> {
-  const result = DatasourceSchema.omit({ id: true, type: true })
+  input: ExposedSearchEndpoint
+): Promise<ExposedSearchEndpoint> {
+  const result = SearchEndpointSchema.omit({ id: true, type: true })
     .partial()
     .safeParse(input);
   if (!result.success) {
@@ -111,12 +111,12 @@ export async function updateDatasource(
     }
   }
 
-  let ds = await getDatasource(user, idStr);
+  let ds = await getSearchEndpoint(user, idStr);
   if (!ds) {
     return Promise.reject(new HttpError(404, { error: "not found" }));
   }
 
-  ds = await prisma.datasource.update({
+  ds = await prisma.searchEndpoint.update({
     where: { id: ds.id },
     data: result.data,
     select: selectKeys,
@@ -125,13 +125,13 @@ export async function updateDatasource(
 }
 
 export async function handleQuery(
-  datasource: Datasource,
+  searchEndpoint: SearchEndpoint,
   query: string
 ): Promise<unknown> {
-  if (datasource.type === "ELASTICSEARCH") {
-    return handleElasticsearchQuery(datasource, query);
+  if (searchEndpoint.type === "ELASTICSEARCH") {
+    return handleElasticsearchQuery(searchEndpoint, query);
   }
   throw new Error(
-    `unsupported datasource type ${JSON.stringify(datasource.type)}`
+    `unsupported searchEndpoint type ${JSON.stringify(searchEndpoint.type)}`
   );
 }

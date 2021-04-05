@@ -11,29 +11,32 @@ import { useRouter } from "next/router";
 import { getSession } from "next-auth/client";
 import { useTable } from "react-table";
 
-import Form from "../../components/datasources/Form";
+import Form from "../../components/searchendpoints/Form";
 import Link from "../../components/common/Link";
 import { authenticatedPage } from "../../lib/auth";
-import { getDatasource, ExposedDatasource } from "../../lib/datasources";
+import {
+  getSearchEndpoint,
+  ExposedSearchEndpoint,
+} from "../../lib/searchendpoints";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const datasource = await getDatasource(
+  const searchEndpoint = await getSearchEndpoint(
     context.user,
     context.params!.id as string
   );
-  return { props: { datasource } };
+  return { props: { searchEndpoint } };
 });
 
 type Props = {
-  datasource: ExposedDatasource;
+  searchEndpoint: ExposedSearchEndpoint;
 };
 
-export default function EditDatasource({ datasource }: Props) {
+export default function EditSearchEndpoint({ searchEndpoint }: Props) {
   const router = useRouter();
 
-  async function onSubmit(values: ExposedDatasource) {
+  async function onSubmit(values: ExposedSearchEndpoint) {
     const { id, orgId, type, ...editableFields } = values;
-    const response = await fetch(`/api/datasources/${datasource.id}`, {
+    const response = await fetch(`/api/searchendpoints/${searchEndpoint.id}`, {
       method: "PATCH",
       body: JSON.stringify(editableFields),
       headers: {
@@ -45,13 +48,13 @@ export default function EditDatasource({ datasource }: Props) {
       // XXX - do something about this
       throw new Error(JSON.stringify(body));
     }
-    router.push("/datasources");
+    router.push("/searchendpoints");
     // Keep the form stuck as pending
     return new Promise(() => {});
   }
 
   async function onDelete() {
-    const response = await fetch(`/api/datasources/${datasource.id}`, {
+    const response = await fetch(`/api/searchendpoints/${searchEndpoint.id}`, {
       method: "DELETE",
     });
     const body = await response.json();
@@ -59,7 +62,7 @@ export default function EditDatasource({ datasource }: Props) {
       // XXX - do something about this
       throw new Error(JSON.stringify(body));
     }
-    router.push("/datasources");
+    router.push("/searchendpoints");
     // Keep the form stuck as pending
     return new Promise(() => {});
   }
@@ -69,7 +72,7 @@ export default function EditDatasource({ datasource }: Props) {
       <Form
         onSubmit={onSubmit}
         onDelete={onDelete}
-        initialValues={datasource}
+        initialValues={searchEndpoint}
       />
     </Container>
   );

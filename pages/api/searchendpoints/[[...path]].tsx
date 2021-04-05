@@ -1,16 +1,16 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-import prisma, { User, Datasource } from "../../../lib/prisma";
-import { DatasourceSchema } from "../../../lib/schema";
+import prisma, { User, SearchEndpoint } from "../../../lib/prisma";
+import { SearchEndpointSchema } from "../../../lib/schema";
 import { getUser } from "../../../lib/authServer";
 import {
-  createDatasource,
-  deleteDatasource,
-  updateDatasource,
-} from "../../../lib/datasources";
+  createSearchEndpoint,
+  deleteSearchEndpoint,
+  updateSearchEndpoint,
+} from "../../../lib/searchendpoints";
 import { notAuthorized, HttpError } from "../../../lib/errors";
 
-async function handleCreateDatasource(
+async function handleCreateSearchEndpoint(
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<void> {
@@ -27,8 +27,8 @@ async function handleCreateDatasource(
   const data = req.body;
   data.orgId = org.id;
   try {
-    const ds = await createDatasource(user, data);
-    res.status(200).json({ datasource: ds });
+    const ds = await createSearchEndpoint(user, data);
+    res.status(200).json({ searchEndpoint: ds });
   } catch (err) {
     if (err instanceof HttpError) {
       res.status(err.statusCode).json(err.data);
@@ -38,7 +38,7 @@ async function handleCreateDatasource(
   }
 }
 
-async function handleDeleteDatasource(
+async function handleDeleteSearchEndpoint(
   req: NextApiRequest,
   res: NextApiResponse,
   idStr: string
@@ -48,7 +48,7 @@ async function handleDeleteDatasource(
     return notAuthorized(res);
   }
   try {
-    const ds = await deleteDatasource(user, idStr);
+    const ds = await deleteSearchEndpoint(user, idStr);
     res.status(200).json({ success: true });
   } catch (err) {
     if (err instanceof HttpError) {
@@ -59,7 +59,7 @@ async function handleDeleteDatasource(
   }
 }
 
-async function handleUpdateDatasource(
+async function handleUpdateSearchEndpoint(
   req: NextApiRequest,
   res: NextApiResponse,
   idStr: string
@@ -69,8 +69,8 @@ async function handleUpdateDatasource(
     return notAuthorized(res);
   }
   try {
-    const datasource = await updateDatasource(user, idStr, req.body);
-    res.status(200).json({ datasource });
+    const searchEndpoint = await updateSearchEndpoint(user, idStr, req.body);
+    res.status(200).json({ searchEndpoint });
   } catch (err) {
     if (err instanceof HttpError) {
       res.status(err.statusCode).json(err.data);
@@ -87,11 +87,11 @@ export default async function handler(
   const method = req.method;
   const path = req.query.path || [];
   if (method === "POST" && path.length === 0) {
-    return handleCreateDatasource(req, res);
+    return handleCreateSearchEndpoint(req, res);
   } else if (method === "DELETE" && path.length === 1) {
-    return handleDeleteDatasource(req, res, path[0]);
+    return handleDeleteSearchEndpoint(req, res, path[0]);
   } else if (method === "PATCH" && path.length === 1) {
-    return handleUpdateDatasource(req, res, path[0]);
+    return handleUpdateSearchEndpoint(req, res, path[0]);
   } else {
     return res.status(404).json({ error: "not found", method, path });
   }

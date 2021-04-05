@@ -1,4 +1,4 @@
-import prisma, { Prisma, User, Datasource } from "../prisma";
+import prisma, { Prisma, User, SearchEndpoint } from "../prisma";
 
 export function userCanAccessOrg(
   user: User,

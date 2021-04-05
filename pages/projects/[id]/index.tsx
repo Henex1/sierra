@@ -6,7 +6,7 @@ import { GetServerSideProps } from "next";
 
 import { LinkButton } from "../../../components/common/Link";
 import Form from "../../../components/projects/Form";
-import DebugQuery from "../../../components/datasources/DebugQuery";
+import DebugQuery from "../../../components/searchendpoints/DebugQuery";
 import { authenticatedPage } from "../../../lib/auth";
 import {
   userCanAccessProject,

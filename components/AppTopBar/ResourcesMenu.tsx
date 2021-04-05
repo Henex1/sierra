@@ -14,8 +14,8 @@ export default function ResourcesMenu() {
       buttonChildren="Resources"
       menuClassName={classes.dropMenu}
     >
-      <MenuItemLink href="/datasources">Datasources</MenuItemLink>
-      <MenuItemLink href="#">Search phrases</MenuItemLink>
+      <MenuItemLink href="/searchendpoints">Search Endpoints</MenuItemLink>
+      <MenuItemLink href="#">Search Phrases</MenuItemLink>
       <MenuItemLink href="#">Judgements</MenuItemLink>
       <MenuItemLink href="/rulesets">Rulesets</MenuItemLink>
     </MenuButton>

@@ -5,7 +5,7 @@ CREATE TYPE "UserSiteRole" AS ENUM ('USER', 'ADMIN');
 CREATE TYPE "UserOrgRole" AS ENUM ('USER', 'ADMIN');
 
 -- CreateEnum
-CREATE TYPE "DatasourceType" AS ENUM ('ELASTICSEARCH');
+CREATE TYPE "SearchEndpointType" AS ENUM ('ELASTICSEARCH');
 
 -- CreateTable
 CREATE TABLE "users" (
@@ -74,13 +74,13 @@ CREATE TABLE "OrgUser" (
 );
 
 -- CreateTable
-CREATE TABLE "Datasource" (
+CREATE TABLE "SearchEndpoint" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "orgId" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
-    "type" "DatasourceType" NOT NULL,
+    "type" "SearchEndpointType" NOT NULL,
     "info" JSONB NOT NULL,
 
     PRIMARY KEY ("id")
@@ -92,7 +92,7 @@ CREATE TABLE "Project" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "orgId" INTEGER NOT NULL,
-    "datasourceId" INTEGER NOT NULL,
+    "searchEndpointId" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
@@ -190,13 +190,13 @@ ALTER TABLE "OrgUser" ADD FOREIGN KEY ("orgId") REFERENCES "Org"("id") ON DELETE
 ALTER TABLE "OrgUser" ADD FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Datasource" ADD FOREIGN KEY ("orgId") REFERENCES "Org"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "SearchEndpoint" ADD FOREIGN KEY ("orgId") REFERENCES "Org"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Project" ADD FOREIGN KEY ("orgId") REFERENCES "Org"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Project" ADD FOREIGN KEY ("datasourceId") REFERENCES "Datasource"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Project" ADD FOREIGN KEY ("searchEndpointId") REFERENCES "SearchEndpoint"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "SearchPhrase" ADD FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
