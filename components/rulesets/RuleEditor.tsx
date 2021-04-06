@@ -136,9 +136,13 @@ function InstructionField(props: InstructionFieldProps) {
   );
 }
 
-export type RuleEditorProps = { name: string; onDelete: () => void };
+export type RuleEditorProps = {
+  name: string;
+  dirty: boolean;
+  onDelete: () => void
+};
 
-export default function RuleEditor({ name, onDelete }: RuleEditorProps) {
+export default function RuleEditor({ name, dirty, onDelete }: RuleEditorProps) {
   const { submitting } = useFormState();
   return (
     <React.Fragment key={name}>
@@ -197,6 +201,13 @@ export default function RuleEditor({ name, onDelete }: RuleEditorProps) {
         >
           Save
         </Button>
+        <Box component="span" ml={2}>
+          {dirty &&
+            <Typography variant="caption">
+              Unsaved changes
+            </Typography>
+          }
+        </Box>
       </Box>
     </React.Fragment>
   );

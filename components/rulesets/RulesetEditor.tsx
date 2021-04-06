@@ -216,6 +216,7 @@ export default function RulesetEditor(rest: RulesetEditorProps) {
                 <form onSubmit={handleSubmit}>
                   <RuleEditor
                     name={`rules[${activeRuleset}]`}
+                    dirty={dirty}
                     onDelete={() => {
                       form.mutators.remove("rules", activeRuleset);
                       setActiveRuleset(activeRuleset - 1);

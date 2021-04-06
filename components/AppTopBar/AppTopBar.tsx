@@ -4,13 +4,13 @@ import { signIn } from "next-auth/client";
 import { AppBar, Avatar, Box, Typography, Button } from "@material-ui/core";
 import HomeOutlinedIcon from "@material-ui/icons/HomeOutlined";
 import DomainOutlinedIcon from "@material-ui/icons/DomainOutlined";
-
-import ResourcesMenu from "./ResourcesMenu";
+import FlaskIcon from "../common/FlaskIcon";
 
 import { useSession } from "../Session";
 import Link, { LinkButton } from "../common/Link";
 import useStyles from "./AppTopBarStyles";
 import SettingsMenu from "./SettingsMenu";
+import ResourcesMenu from "./ResourcesMenu";
 import UserMenu from "./UserMenu";
 import ProjectsMenu from "./ProjectsMenu";
 
@@ -43,7 +43,7 @@ export default function AppTopBar() {
             color="inherit"
             className={classes.topButton}
             size="large"
-            startIcon={<DomainOutlinedIcon />}
+            startIcon={<FlaskIcon />}
           >
             Lab
           </LinkButton>
