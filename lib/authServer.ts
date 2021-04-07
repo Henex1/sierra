@@ -79,7 +79,7 @@ export const authOptions: InitOptions = {
           orgId: org.id,
           name: "Local Elasticsearch",
           type: "ELASTICSEARCH",
-          info: { url: "http://localhost:9200/*" },
+          info: { endpoint: "http://localhost:9200/*" },
         },
       });
 

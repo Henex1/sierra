@@ -3,13 +3,13 @@ import classnames from "classnames";
 import { debounce } from "lodash";
 import {
   Box,
-  Button,
+  Button, Checkbox,
   Grid,
-  IconButton,
-  InputBase,
+  IconButton, Input,
+  InputBase, ListItemText, MenuItem,
   Modal,
   Paper,
-  Popover,
+  Popover, Select,
   Snackbar,
   TextField,
   Typography,
@@ -20,6 +20,10 @@ import SettingsIcon from "@material-ui/icons/Settings";
 import { makeStyles } from "@material-ui/core/styles";
 import JSONTree from "react-json-tree";
 import { Alert } from "@material-ui/lab";
+import {useActiveProject, useSession} from "../../components/Session";
+import {authenticatedPage} from "../../lib/auth";
+import {ExposedRuleset, formatRuleset, userCanAccessRuleset} from "../../lib/rulesets";
+import newRulesetVersion from "../api/rulesets/newVersion";
 
 const useStyles = makeStyles((theme) => ({
   boxWrapper: {
@@ -118,21 +122,37 @@ const jsonTheme = {
   base0F: "#be643c",
 };
 
-export default function Testbed() {
+export const getServerSideProps = authenticatedPage(async (context) => {
+  const rulesets = await prisma.ruleset.findMany({
+    where: userCanAccessRuleset(context.user),
+  });
+  return { props: { rulesets: rulesets.map(formatRuleset) } };
+});
+
+type Props = {
+  rulesets: ExposedRuleset[];
+};
+
+
+export default function Testbed({ rulesets }: Props) {
+  const session = useSession();
+  const { project } = useActiveProject();
   const classes = useStyles();
   const [
     settingsPopoverAnchor,
     setSettingsPopoverAnchor,
   ] = React.useState<HTMLButtonElement | null>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [selectedRulesetId, setSelectedRulesetId] = React.useState<number[]>([]);
+  const [ltrModelName, setLtrModelName] = React.useState("");
   const [suggestions, setSuggestions] = React.useState<string[]>([]);
   const [queryInFocus, setQueryInFocus] = React.useState(false);
   const [
     autocompleteSearchEndpoint,
     setAutocompleteSearchEndpoint,
-  ] = React.useState(-1);
-  const [searchSearchEndpoint, setSearchSearchEndpoint] = React.useState(-1);
+  ] = React.useState(3);
   const [searchResults, setSearchResults] = React.useState<any[]>([]);
+  const [totalResults, setTotalResults] = React.useState("0");
   const [error, setError] = React.useState<string | null>(null);
   const [expandedResult, setExpandedResult] = React.useState<any | null>(null);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = React.useState(
@@ -145,18 +165,14 @@ export default function Testbed() {
   const settingsPopoverOpen = Boolean(settingsPopoverAnchor);
   const debouncedSetQueryFocus = debounce(setQueryInFocus, 100);
 
-  const search = async (query: string, searchEndpoint: number) => {
-    const response = await fetch(`/api/searchendpoints/query`, {
+  const search = async () => {
+    const response = await fetch(`/api/testbed/query`, {
       method: "POST",
       body: JSON.stringify({
-        query: JSON.stringify({
-          query: {
-            match: {
-              long_description: query,
-            },
-          },
-        }),
-        searchEndpointId: searchEndpoint,
+        query: searchQuery,
+        projectId: project?.id,
+        rulesetIds: selectedRulesetId,
+        ltrModelName
       }),
       headers: {
         "Content-Type": "application/json",
@@ -167,7 +183,9 @@ export default function Testbed() {
       return;
     }
     const json = await response.json();
-    setSearchResults(json.hits.hits);
+    setSearchResults(json.result.hits.hits);
+    const total = json.result?.hits?.total;
+    setTotalResults(total ? `${total.relation}${total.value}` : "0");
   };
 
   const loadAutocomplete = async (text: string, searchEndpoint: number) => {
@@ -252,10 +270,6 @@ export default function Testbed() {
     setAutocompleteSearchEndpoint(id);
   };
 
-  const handleSearchSourceChange = (id: number) => {
-    setSearchSearchEndpoint(id);
-  };
-
   const handleSearchFieldKeyDown = (event: React.KeyboardEvent) => {
     const key = event.key;
     if (!showAutocomplete) {
@@ -308,7 +322,7 @@ export default function Testbed() {
         <Grid item xs={4}>
           <div>
             <Typography color="textSecondary">Base name</Typography>
-            <Typography>{result?._source?.base_name}</Typography>
+            <Typography>{result?._source?.base_name || result?._source?.title}</Typography>
           </div>
         </Grid>
         <Grid item xs={4}>
@@ -373,7 +387,7 @@ export default function Testbed() {
             variant="contained"
             color="primary"
             className={classes.searchButton}
-            onClick={() => search(searchQuery, searchSearchEndpoint)}
+            onClick={() => search()}
           >
             <SearchIcon />
           </Button>
@@ -401,18 +415,41 @@ export default function Testbed() {
               flexDirection="column"
             >
               <Typography>Settings</Typography>
+                <Select
+                    label="Rulesets"
+                    value={selectedRulesetId}
+                    input={<Input />}
+                    renderValue={(selected: any) => {
+                        const fullRulesets = selected.map((s:any) => rulesets.find(r => r.id === s));
+                        return fullRulesets.map((ruleset:ExposedRuleset)=>ruleset.name).join(", ")
+                    }}
+                    multiple
+                    onChange={(ev) => {
+                      console.log(ev);
+                      setSelectedRulesetId(() => [...ev.target.value as number[]])
+                    }}
+                >
+                  {
+                    rulesets?.length && rulesets.map(ruleset => (
+                        <MenuItem key={ruleset.id} value={ruleset.id}>
+                          <Checkbox checked={selectedRulesetId.indexOf(ruleset.id) > -1} />
+                          <ListItemText primary={ruleset.name} />
+                        </MenuItem>
+                    ))
+                  }
+                </Select>
               <TextField
-                label="Autocomplete index"
+                label="Autocomplete Search Endpoint"
                 value={autocompleteSearchEndpoint}
                 onChange={(ev) =>
                   handleAutoCompleteSourceChange(Number(ev.target.value))
                 }
               />
               <TextField
-                label="Search index"
-                value={searchSearchEndpoint}
+                label="LTR Model"
+                value={ltrModelName}
                 onChange={(ev) =>
-                  handleSearchSourceChange(Number(ev.target.value))
+                  setLtrModelName(ev.target.value)
                 }
               />
             </Box>
@@ -436,6 +473,7 @@ export default function Testbed() {
             <JSONTree data={expandedResult} theme={jsonTheme} />
           </Paper>
         </Modal>
+        <Typography>Total results {totalResults}</Typography>
         {searchResults.map((result) => renderSearchResult(result))}
       </Box>
       <Snackbar

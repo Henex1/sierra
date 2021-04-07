@@ -1,3 +1,5 @@
+import { isNumber } from 'lodash';
+
 export function parseNonnegativeInt(value: string): Number | undefined {
   const onlyNums = value.replace(/[^\d]/g, "");
   const parsed = parseInt(onlyNums, 10);
@@ -5,4 +7,8 @@ export function parseNonnegativeInt(value: string): Number | undefined {
     return undefined;
   }
   return parsed;
+}
+
+export function parseNumber(value: String): Number | undefined{
+  return parseInt(value as string, 10);
 }
