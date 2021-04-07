@@ -1,8 +1,9 @@
 import * as React from "react";
 import Grid from "@material-ui/core/Grid";
-import { useFormState } from "react-final-form";
+import { useFormState, Field } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
 import Box from "@material-ui/core/Box";
+import SelectMUI from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
 import Divider from "@material-ui/core/Divider";
 import Typography from "@material-ui/core/Typography";
@@ -14,6 +15,20 @@ import ClearIcon from "@material-ui/icons/Clear";
 import DeleteIcon from "@material-ui/icons/Delete";
 
 import { RuleInstruction } from "../../lib/rulesets";
+import {Slider, withStyles} from "@material-ui/core";
+import {useEffect} from "react";
+
+const UpBoostSlider = withStyles({
+  root: {
+    color: '#4caf50'
+  }
+})(Slider);
+
+const DownBoostSlider = withStyles({
+  root: {
+    color: '#f44336'
+  }
+})(Slider);
 
 type InstructionFieldProps = {
   name: string;
@@ -40,20 +55,91 @@ function SynonymField({ name }: InstructionFieldProps) {
   );
 }
 
-function UpdownField({ name }: InstructionFieldProps) {
+function UpBoostField({ name }: InstructionFieldProps) {
   return (
     <>
-      <Grid item xs={2}>
-        <Select name={`${name}.weight`} required>
-          <MenuItem value={4}>UP&emsp;&ensp; ++++</MenuItem>
-          <MenuItem value={3}>UP&emsp;&ensp; +++</MenuItem>
-          <MenuItem value={2}>UP&emsp;&ensp; ++</MenuItem>
-          <MenuItem value={1}>UP&emsp;&ensp; +</MenuItem>
-          <MenuItem value={-1}>DOWN &ndash;</MenuItem>
-          <MenuItem value={-2}>DOWN &ndash;&ndash;</MenuItem>
-          <MenuItem value={-3}>DOWN &ndash;&ndash;&ndash;</MenuItem>
-          <MenuItem value={-4}>DOWN &ndash;&ndash;&ndash;&ndash;</MenuItem>
-        </Select>
+      <Grid item xs={4}>
+        <Field
+          name={`${name}.weight`}
+          render={props => {
+            useEffect(() => {
+              if (!props.input.value || props.input.value < 0) {
+                props.input.onChange({
+                  target: {
+                    type: 'select',
+                    value: 1
+                  }
+                });
+              }
+            }, []);
+            return (
+              <UpBoostSlider
+                color="secondary"
+                name={props.input.name}
+                value={props.input.value || 1}
+                onChange={(e, newValue) => {
+                  props.input.onChange({
+                    target: {
+                      type: 'select',
+                      value: newValue
+                    }
+                  });
+                }}
+                valueLabelDisplay="auto"
+                step={1}
+                min={1}
+                max={1000}
+              />
+            )
+          }}
+        />
+      </Grid>
+      <Grid item xs>
+        <TextField name={`${name}.term`} required/>
+      </Grid>
+    </>
+  );
+}
+
+function DownBoostField({ name }: InstructionFieldProps) {
+  return (
+    <>
+      <Grid item xs={4}>
+        <Field
+          name={`${name}.weight`}
+          render={props => {
+            useEffect(() => {
+              if (!props.input.value || props.input.value > 0) {
+                props.input.onChange({
+                  target: {
+                    type: 'select',
+                    value: -1
+                  }
+                });
+              }
+            }, []);
+            return (
+              <DownBoostSlider
+                name={props.input.name}
+                value={props.input.value * -1 || 1}
+                onChange={(e, newValue) => {
+                  props.input.onChange({
+                    target: {
+                      type: 'select',
+                      value: typeof newValue === "number" ? newValue * -1 : newValue
+                    }
+                  });
+                }}
+                valueLabelDisplay="auto"
+                valueLabelFormat={(value) => value * -1}
+                defaultValue={1}
+                step={1}
+                min={1}
+                max={1000}
+              />
+            )
+          }}
+        />
       </Grid>
       <Grid item xs>
         <TextField name={`${name}.term`} required />
@@ -88,21 +174,26 @@ function DeleteField({ name }: InstructionFieldProps) {
 
 function InstructionField(props: InstructionFieldProps) {
   const { name, value, onDelete } = props;
+  const typeValue = value.type === 'updown' ? value.weight > 0 ? 'upBoost' : 'downBoost' : value.type;
+  const [instructionsType, setInstructionsType] = React.useState<string | unknown>(typeValue);
+
   const editor =
-    value.type === "synonym" ? (
+    instructionsType === "synonym" ? (
       <SynonymField {...props} />
-    ) : value.type === "updown" ? (
-      <UpdownField {...props} />
-    ) : value.type === "filter" ? (
+    ) : instructionsType === "upBoost" ? (
+      <UpBoostField {...props} />
+    ) : instructionsType === "downBoost" ? (
+      <DownBoostField {...props} />
+    ) : instructionsType === "filter" ? (
       <FilterField {...props} />
-    ) : value.type === "delete" ? (
+    ) : instructionsType === "delete" ? (
       <DeleteField {...props} />
     ) : (
       <Grid item>Unsupported instruction: {(value as any).type}</Grid>
     );
   return (
     <Box pb={2}>
-      <Grid container spacing={1}>
+      <Grid container spacing={2}>
         <Grid item>
           <Checkboxes
             size="small"
@@ -112,12 +203,30 @@ function InstructionField(props: InstructionFieldProps) {
           />
         </Grid>
         <Grid item xs={2}>
-          <Select name={`${name}.type`} required>
-            <MenuItem value="synonym">SYNONYM</MenuItem>
-            <MenuItem value="updown">UP / DOWN</MenuItem>
-            <MenuItem value="filter">FILTER</MenuItem>
-            <MenuItem value="delete">DELETE</MenuItem>
-          </Select>
+          <Field
+            name={`${name}.type`}
+            parse={(value: any) => value === "upBoost" || value === "downBoost" ? "updown" : value}
+          >
+            {props => {
+              return (
+                <SelectMUI
+                  name={props.input.name}
+                  value={props.input.value === instructionsType ? props.input.value : instructionsType}
+                  onChange={(e) => {
+                    setInstructionsType(e.target.value)
+                    props.input.onChange(e);
+                  }}
+                  required
+                >
+                  <MenuItem value="synonym">SYNONYM</MenuItem>
+                  <MenuItem value="upBoost">UP BOOST</MenuItem>
+                  <MenuItem value="downBoost">DOWN BOOST</MenuItem>
+                  <MenuItem value="filter">FILTER</MenuItem>
+                  <MenuItem value="delete">DELETE</MenuItem>
+                </SelectMUI>
+              );
+            }}
+          </Field>
         </Grid>
         {editor}
         <Grid item>
