@@ -4,6 +4,7 @@ import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 
 import { authenticatedPage } from "../../lib/auth";
+import { apiRequest } from "../../lib/api";
 import {
   userCanAccessRuleset,
   formatRuleset,
@@ -55,22 +56,11 @@ export default function EditRuleset({ ruleset, version }: Props) {
   const router = useRouter();
 
   async function onSubmit(value: RulesetVersionValue) {
-    const response = await fetch(`/api/rulesets/newVersion`, {
-      method: "POST",
-      body: JSON.stringify({
-        value,
-        rulesetId: ruleset.id,
-        parentId: version.id,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+    await apiRequest(`/api/rulesets/newVersion`, {
+      value,
+      rulesetId: ruleset.id,
+      parentId: version.id,
     });
-    const body = await response.json();
-    if (!response.ok) {
-      // XXX - do something about this
-      throw new Error(JSON.stringify(body));
-    }
     router.push("/rulesets");
     // Keep the form stuck as pending
     return new Promise(() => {});

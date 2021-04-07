@@ -3,13 +3,18 @@ import classnames from "classnames";
 import { debounce } from "lodash";
 import {
   Box,
-  Button, Checkbox,
+  Button,
+  Checkbox,
   Grid,
-  IconButton, Input,
-  InputBase, ListItemText, MenuItem,
+  IconButton,
+  Input,
+  InputBase,
+  ListItemText,
+  MenuItem,
   Modal,
   Paper,
-  Popover, Select,
+  Popover,
+  Select,
   Snackbar,
   TextField,
   Typography,
@@ -20,10 +25,16 @@ import SettingsIcon from "@material-ui/icons/Settings";
 import { makeStyles } from "@material-ui/core/styles";
 import JSONTree from "react-json-tree";
 import { Alert } from "@material-ui/lab";
-import {useActiveProject, useSession} from "../../components/Session";
-import {authenticatedPage} from "../../lib/auth";
-import {ExposedRuleset, formatRuleset, userCanAccessRuleset} from "../../lib/rulesets";
+import { useActiveProject, useSession } from "../../components/Session";
+import { authenticatedPage } from "../../lib/auth";
+import {
+  ExposedRuleset,
+  formatRuleset,
+  userCanAccessRuleset,
+} from "../../lib/rulesets";
 import newRulesetVersion from "../api/rulesets/newVersion";
+
+import { apiRequest } from "../../lib/api";
 
 const useStyles = makeStyles((theme) => ({
   boxWrapper: {
@@ -133,7 +144,6 @@ type Props = {
   rulesets: ExposedRuleset[];
 };
 
-
 export default function Testbed({ rulesets }: Props) {
   const session = useSession();
   const { project } = useActiveProject();
@@ -143,7 +153,9 @@ export default function Testbed({ rulesets }: Props) {
     setSettingsPopoverAnchor,
   ] = React.useState<HTMLButtonElement | null>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [selectedRulesetId, setSelectedRulesetId] = React.useState<number[]>([]);
+  const [selectedRulesetId, setSelectedRulesetId] = React.useState<number[]>(
+    []
+  );
   const [ltrModelName, setLtrModelName] = React.useState("");
   const [suggestions, setSuggestions] = React.useState<string[]>([]);
   const [queryInFocus, setQueryInFocus] = React.useState(false);
@@ -166,32 +178,26 @@ export default function Testbed({ rulesets }: Props) {
   const debouncedSetQueryFocus = debounce(setQueryInFocus, 100);
 
   const search = async () => {
-    const response = await fetch(`/api/testbed/query`, {
-      method: "POST",
-      body: JSON.stringify({
+    try {
+      const json = await apiRequest<any>(`/api/testbed/query`, {
         query: searchQuery,
         projectId: project?.id,
         rulesetIds: selectedRulesetId,
-        ltrModelName: ltrModelName ? ltrModelName : undefined
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    if (!response.ok) {
-      setError(await response.text().catch(() => "Unknown error"));
-      return;
+        ltrModelName: ltrModelName ? ltrModelName : undefined,
+      });
+      setSearchResults(json.result?.hits?.hits || []);
+      const total = json.result?.hits?.total;
+      setTotalResults(
+        total ? `${total.relation == "gte" ? ">" : ""}${total.value}` : "0"
+      );
+    } catch (err) {
+      setError(err.message);
     }
-    const json = await response.json();
-    setSearchResults(json.result?.hits?.hits || []);
-    const total = json.result?.hits?.total;
-    setTotalResults(total ? `${total.relation == 'gte' ? '>' : ''}${total.value}` : "0");
   };
 
   const loadAutocomplete = async (text: string, searchEndpoint: number) => {
-    const response = await fetch(`/api/searchendpoints/query`, {
-      method: "POST",
-      body: JSON.stringify({
+    try {
+      const json = await apiRequest(`/api/searchendpoints/query`, {
         query: JSON.stringify({
           suggest: {
             autocomplete: {
@@ -205,23 +211,20 @@ export default function Testbed({ rulesets }: Props) {
           },
         }),
         searchEndpointId: searchEndpoint,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    if (!response.ok) {
-      setError(await response.text().catch(() => "Unknown error"));
+      });
+      if (
+        json.suggest?.autocomplete?.length &&
+        json.suggest?.autocomplete[0].options?.length
+      ) {
+        setSuggestions(
+          json.suggest?.autocomplete[0].options.map(
+            (option: any) => option.text
+          )
+        );
+      }
+    } catch (err) {
+      setError(err.message);
       return;
-    }
-    const json = await response.json();
-    if (
-      json.suggest?.autocomplete?.length &&
-      json.suggest?.autocomplete[0].options?.length
-    ) {
-      setSuggestions(
-        json.suggest?.autocomplete[0].options.map((option: any) => option.text)
-      );
     }
   };
 
@@ -322,7 +325,9 @@ export default function Testbed({ rulesets }: Props) {
         <Grid item xs={4}>
           <div>
             <Typography color="textSecondary">Base name</Typography>
-            <Typography>{result?._source?.base_name || result?._source?.title}</Typography>
+            <Typography>
+              {result?._source?.base_name || result?._source?.title}
+            </Typography>
           </div>
         </Grid>
         <Grid item xs={4}>
@@ -415,29 +420,36 @@ export default function Testbed({ rulesets }: Props) {
               flexDirection="column"
             >
               <Typography>Settings</Typography>
-                <Select
-                    label="Rulesets"
-                    value={selectedRulesetId}
-                    input={<Input />}
-                    renderValue={(selected: any) => {
-                        const fullRulesets = selected.map((s:any) => rulesets.find(r => r.id === s));
-                        return fullRulesets.map((ruleset:ExposedRuleset)=>ruleset.name).join(", ")
-                    }}
-                    multiple
-                    onChange={(ev) => {
-                      console.log(ev);
-                      setSelectedRulesetId(() => [...ev.target.value as number[]])
-                    }}
-                >
-                  {
-                    rulesets?.length && rulesets.map(ruleset => (
-                        <MenuItem key={ruleset.id} value={ruleset.id}>
-                          <Checkbox checked={selectedRulesetId.indexOf(ruleset.id) > -1} />
-                          <ListItemText primary={ruleset.name} />
-                        </MenuItem>
-                    ))
-                  }
-                </Select>
+              <Select
+                label="Rulesets"
+                value={selectedRulesetId}
+                input={<Input />}
+                renderValue={(selected: any) => {
+                  const fullRulesets = selected.map((s: any) =>
+                    rulesets.find((r) => r.id === s)
+                  );
+                  return fullRulesets
+                    .map((ruleset: ExposedRuleset) => ruleset.name)
+                    .join(", ");
+                }}
+                multiple
+                onChange={(ev) => {
+                  console.log(ev);
+                  setSelectedRulesetId(() => [
+                    ...(ev.target.value as number[]),
+                  ]);
+                }}
+              >
+                {rulesets?.length &&
+                  rulesets.map((ruleset) => (
+                    <MenuItem key={ruleset.id} value={ruleset.id}>
+                      <Checkbox
+                        checked={selectedRulesetId.indexOf(ruleset.id) > -1}
+                      />
+                      <ListItemText primary={ruleset.name} />
+                    </MenuItem>
+                  ))}
+              </Select>
               <TextField
                 label="Autocomplete Search Endpoint"
                 value={autocompleteSearchEndpoint}
@@ -448,9 +460,7 @@ export default function Testbed({ rulesets }: Props) {
               <TextField
                 label="LTR Model"
                 value={ltrModelName}
-                onChange={(ev) =>
-                  setLtrModelName(ev.target.value)
-                }
+                onChange={(ev) => setLtrModelName(ev.target.value)}
               />
             </Box>
           </Popover>

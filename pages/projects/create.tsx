@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 
 import { ExposedProject } from "../../lib/projects";
 import { authenticatedPage } from "../../lib/auth";
+import { apiRequest } from "../../lib/api";
 import { useSession } from "../../components/Session";
 import Form from "../../components/projects/Form";
 
@@ -15,18 +16,7 @@ export default function CreateProject() {
 
   const onSubmit = React.useCallback(
     async (values: ExposedProject) => {
-      const response = await fetch(`/api/projects/create`, {
-        method: "POST",
-        body: JSON.stringify(values),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const body = await response.json();
-      if (!response.ok) {
-        // XXX - do something about this
-        throw new Error(JSON.stringify(body));
-      }
+      await apiRequest(`/api/projects/create`, values);
       router.push("/projects");
       // Reload the global projects list dropdown
       refreshSession();

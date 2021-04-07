@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 
 import Form from "../../../components/projects/Form";
 import { authenticatedPage } from "../../../lib/auth";
+import { apiRequest } from "../../../lib/api";
 import {
   userCanAccessProject,
   formatProject,
@@ -32,36 +33,17 @@ export default function EditProject({ project }: Props) {
 
   async function onSubmit(values: ExposedProject) {
     const { orgId, ...updateParams } = values;
-    const response = await fetch(`/api/projects/update`, {
-      method: "POST",
-      body: JSON.stringify({ ...updateParams, id: project.id }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+    await apiRequest(`/api/projects/update`, {
+      ...updateParams,
+      id: project.id,
     });
-    const body = await response.json();
-    if (!response.ok) {
-      // XXX - do something about this
-      throw new Error(JSON.stringify(body));
-    }
     router.push("/projects");
     // Keep the form stuck as pending
     return new Promise(() => {});
   }
 
   async function onDelete() {
-    const response = await fetch(`/api/projects/delete`, {
-      method: "POST",
-      body: JSON.stringify({ id: project.id }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const body = await response.json();
-    if (!response.ok) {
-      // XXX - do something about this
-      throw new Error(JSON.stringify(body));
-    }
+    await apiRequest(`/api/projects/delete`, { id: project.id });
     router.push("/projects");
     // Keep the form stuck as pending
     return new Promise(() => {});

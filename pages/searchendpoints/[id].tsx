@@ -14,6 +14,7 @@ import { useTable } from "react-table";
 import Form from "../../components/searchendpoints/Form";
 import Link from "../../components/common/Link";
 import { authenticatedPage } from "../../lib/auth";
+import { apiRequest } from "../../lib/api";
 import {
   getSearchEndpoint,
   ExposedSearchEndpoint,
@@ -36,32 +37,22 @@ export default function EditSearchEndpoint({ searchEndpoint }: Props) {
 
   async function onSubmit(values: ExposedSearchEndpoint) {
     const { id, orgId, type, ...editableFields } = values;
-    const response = await fetch(`/api/searchendpoints/${searchEndpoint.id}`, {
-      method: "PATCH",
-      body: JSON.stringify(editableFields),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const body = await response.json();
-    if (!response.ok) {
-      // XXX - do something about this
-      throw new Error(JSON.stringify(body));
-    }
+    await apiRequest(
+      `/api/searchendpoints/${searchEndpoint.id}`,
+      editableFields,
+      { method: "PATCH" }
+    );
     router.push("/searchendpoints");
     // Keep the form stuck as pending
     return new Promise(() => {});
   }
 
   async function onDelete() {
-    const response = await fetch(`/api/searchendpoints/${searchEndpoint.id}`, {
-      method: "DELETE",
-    });
-    const body = await response.json();
-    if (!response.ok) {
-      // XXX - do something about this
-      throw new Error(JSON.stringify(body));
-    }
+    await apiRequest(
+      `/api/searchendpoints/${searchEndpoint.id}`,
+      {},
+      { method: "DELETE" }
+    );
     router.push("/searchendpoints");
     // Keep the form stuck as pending
     return new Promise(() => {});

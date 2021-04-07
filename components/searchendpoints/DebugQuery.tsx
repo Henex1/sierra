@@ -5,27 +5,16 @@ import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
 import MUITextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
-import Spacer from "@material-ui/core/Spa";
 
 import JsonEditor from "../JsonEditor";
 import { parseNonnegativeInt } from "../common/form";
+import { apiRequest } from "../../lib/api";
 
 export default function DebugQuery() {
   const [result, setResult] = React.useState("");
   async function doQuery(values: any) {
-    const response = await fetch(`/api/searchendpoints/query`, {
-      method: "POST",
-      body: JSON.stringify(values),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const body = await response.text();
-    if (!response.ok) {
-      // XXX - do something about this
-      throw new Error(body);
-    }
-    setResult(body);
+    const body = await apiRequest(`/api/searchendpoints/query`, values);
+    setResult(JSON.stringify(body, null, 2));
   }
   return (
     <Form

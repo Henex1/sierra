@@ -8,25 +8,20 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 
 import { authenticatedPage } from "../../lib/auth";
+import { apiRequest } from "../../lib/api";
 
 export const getServerSideProps = authenticatedPage();
 
 export default function Dev() {
   async function doMutate(name: string) {
-    const response = await fetch(`/api/dev/${name}`, {
-      method: "POST",
-      body: JSON.stringify({}),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const body = await response.json();
-    if (!response.ok) {
+    try {
+      await apiRequest(`/api/dev/${name}`, {});
+      // Full page reload because it's easy and this is dev.
+      window.location.reload();
+    } catch (err) {
       alert("Action failed, check console.");
-      throw new Error(JSON.stringify(body));
+      throw err;
     }
-    // Full page reload because it's easy and this is dev.
-    window.location.reload();
   }
   return (
     <div>
