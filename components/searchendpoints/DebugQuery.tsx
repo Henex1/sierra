@@ -1,13 +1,14 @@
 import * as React from "react";
-import { FormApi, SubmissionErrors } from "final-form";
-import { Form, FormProps as BaseFormProps } from "react-final-form";
-import { TextField, Select } from "mui-rff";
+import { Form, Field } from "react-final-form";
+import { TextField } from "mui-rff";
 import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
 import MUITextField from "@material-ui/core/TextField";
+import Typography from "@material-ui/core/Typography";
+import Spacer from "@material-ui/core/Spa";
 
+import JsonEditor from "../JsonEditor";
 import { parseNonnegativeInt } from "../common/form";
-import { ExposedProject } from "../../lib/projects";
 
 export default function DebugQuery() {
   const [result, setResult] = React.useState("");
@@ -31,14 +32,15 @@ export default function DebugQuery() {
       onSubmit={doQuery}
       render={({ handleSubmit, form, submitting, values }) => (
         <form onSubmit={handleSubmit}>
-          <Box pb={2}>
-            <TextField
-              label="Query"
-              name="query"
-              required={true}
-              variant="filled"
-              multiline
-            />
+          <Box pt={2} pb={2}>
+            <Box pb={1}>
+              <Typography variant="body1">Query</Typography>
+            </Box>
+            <Field name="query">
+              {({ input }) => (
+                <JsonEditor value={input.value} onChange={input.onChange} />
+              )}
+            </Field>
           </Box>
           <Box pb={2}>
             <TextField
