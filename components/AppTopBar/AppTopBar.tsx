@@ -27,7 +27,7 @@ export default function AppTopBar() {
       <Box className={classes.appBarWrapper}>
         <Box className={classes.leftWrapper}>
           <Link href="/" color="inherit" underline="none">
-            <Typography variant="h5">Project Sierra</Typography>
+            <Typography variant="h5">Sierra</Typography>
           </Link>
           <LinkButton
             href="/"

@@ -7,7 +7,6 @@ import {
   InputBase,
 } from "@material-ui/core";
 import { createStyles, withStyles, Theme } from "@material-ui/core/styles";
-import LibraryBooksIcon from "@material-ui/icons/LibraryBooks";
 
 import { useSession, useActiveProject } from "../Session";
 import { ExposedProject } from "../../lib/projects";
@@ -72,7 +71,6 @@ export default function ProjectsMenu() {
 
   return (
     <>
-      <LibraryBooksIcon />
       <FormControl variant="outlined" className={classes.projectsFormControl}>
         <InputLabel className={classes.selectLabel} id="currentProjectLabel">
           Current Project
