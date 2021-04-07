@@ -12,6 +12,7 @@ import BarChartIcon from "@material-ui/icons/BarChart";
 import LayersIcon from "@material-ui/icons/Layers";
 import BlurLinearIcon from "@material-ui/icons/BlurLinear";
 import AssignmentIcon from "@material-ui/icons/Assignment";
+import AccountTreeIcon from "@material-ui/icons/AccountTree";
 
 import Link, { LinkProps } from "./common/Link";
 
@@ -53,6 +54,11 @@ export const mainListItems = (
       href="/rulesets"
       icon={<LayersIcon />}
       text={{ primary: "Rulesets" }}
+    />
+    <NavigationItem
+      href="/querytemplates"
+      icon={<AccountTreeIcon />}
+      text={{ primary: "Query Templates" }}
     />
     <NavigationItem
       href="/testbed"

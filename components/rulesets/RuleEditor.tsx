@@ -17,6 +17,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import { RuleInstruction } from "../../lib/rulesets";
 import {Slider, withStyles} from "@material-ui/core";
 import {useEffect} from "react";
+import {parseNumber} from "../common/form";
 
 const UpBoostSlider = withStyles({
   root: {
@@ -46,7 +47,9 @@ function SynonymField({ name }: InstructionFieldProps) {
         </Select>
       </Grid>
       <Grid item xs={1}>
-        <TextField name={`${name}.weight`} placeholder="Weight" />
+        <TextField name={`${name}.weight`} placeholder="Weight" fieldProps={{
+            parse: parseNumber
+        }} />
       </Grid>
       <Grid item xs>
         <TextField name={`${name}.term`} required />

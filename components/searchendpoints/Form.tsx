@@ -41,7 +41,7 @@ export default function SearchEndpointForm({ onDelete, ...rest }: FormProps) {
             <Box pb={2}>
               <TextField
                 label="Elasticsearch URL"
-                name="info.url"
+                name="info.endpoint"
                 required={true}
                 variant="filled"
               />
