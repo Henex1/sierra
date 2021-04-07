@@ -40,7 +40,8 @@ export default function SearchEndpointForm({ onDelete, ...rest }: FormProps) {
           {values.type === "ELASTICSEARCH" && (
             <Box pb={2}>
               <TextField
-                label="Elasticsearch URL"
+                label="Elasticsearch Endpoint"
+                helperText="This should be the _search endpoint for your Elasticsearch instance."
                 name="info.endpoint"
                 required={true}
                 variant="filled"

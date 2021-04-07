@@ -71,27 +71,6 @@ export const authOptions: InitOptions = {
           },
         },
       });
-
-      // Automatically create a development searchEndpoint for the new org.
-      // Eventually, this needs to be some kind of Org creation wizard.
-      const searchEndpoint = await prisma.searchEndpoint.create({
-        data: {
-          orgId: org.id,
-          name: "Local Elasticsearch",
-          type: "ELASTICSEARCH",
-          info: { endpoint: "http://localhost:9200/*" },
-        },
-      });
-
-      // Automatically create a project for the new org. Eventually, do this
-      // when we create the Org, rather than for each user.
-      await prisma.project.create({
-        data: {
-          orgId: org.id,
-          searchEndpointId: searchEndpoint.id,
-          name: "My Project",
-        },
-      });
     },
   },
 };

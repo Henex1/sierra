@@ -38,18 +38,16 @@ Set up a Google app for SSO. From [the console](https://console.cloud.google.com
 
 ```bash
 docker-compose -f docker-compose.local.yml up -d
-curl -X PUT localhost:9200/tmpdb # Set up the test index
+./bin/seed_elasticsearch.sh # Load the icecat dataset into Elasticsearch
 cp .env.sample .env # Edit the .env file appropriately.
-prisma migrate reset
-yarn dev
+prisma migrate reset # Create the Postgres schema
+yarn dev # Start the server
 ```
 
-Once the server is running, you need to set up the data:
+Once the server is running, you need to set up the internal data structures:
 
 1. Log into the site using a google account that matches `ALLOW_REGISTRATION_FROM` in `.env`.
-2. Create a SearchEndpoint. You can use `localhost:9200/tmpdb/_search` as the endpoint for the locally created index.
-3. Create a Project.
-4. Use the Project page to issue queries and see the results.
+2. Open http://localhost:3000/dev and use the Seed function to populate the sample data.
 
 ### Set up development environment (normal)
 

@@ -6,11 +6,9 @@ import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import { useTable, Column } from "react-table";
-import { getSession } from "next-auth/client";
 
 import Link, { LinkButton } from "../../components/common/Link";
 import { authenticatedPage } from "../../lib/auth";
-import { redirectToLogin } from "../../lib/errors";
 import {
   userCanAccessProject,
   formatProject,
