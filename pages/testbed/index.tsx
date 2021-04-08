@@ -172,7 +172,7 @@ export default function Testbed({ rulesets }: Props) {
         query: searchQuery,
         projectId: project?.id,
         rulesetIds: selectedRulesetId,
-        ltrModelName
+        ltrModelName: ltrModelName ? ltrModelName : undefined
       }),
       headers: {
         "Content-Type": "application/json",
@@ -183,9 +183,9 @@ export default function Testbed({ rulesets }: Props) {
       return;
     }
     const json = await response.json();
-    setSearchResults(json.result.hits.hits);
+    setSearchResults(json.result?.hits?.hits || []);
     const total = json.result?.hits?.total;
-    setTotalResults(total ? `${total.relation}${total.value}` : "0");
+    setTotalResults(total ? `${total.relation == 'gte' ? '>' : ''}${total.value}` : "0");
   };
 
   const loadAutocomplete = async (text: string, searchEndpoint: number) => {

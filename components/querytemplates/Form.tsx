@@ -1,11 +1,13 @@
 import { FormApi, SubmissionErrors } from "final-form";
-import { Form, FormProps as BaseFormProps } from "react-final-form";
+import {Field, Form, FormProps as BaseFormProps} from "react-final-form";
 import { TextField, Select } from "mui-rff";
 import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
 
 import {ExposedQueryTemplate} from "../../lib/querytemplates";
 import {parseNonnegativeInt} from "../common/form";
+import JsonEditor from "../JsonEditor";
+import * as React from "react";
 
 export type FormProps = BaseFormProps<ExposedQueryTemplate> & {
     onDelete?: () => void;
@@ -54,12 +56,11 @@ export default function QueryTemplateForm({ onDelete, ...rest }: FormProps) {
                         />
                     </Box>
                     <Box pb={2}>
-                        <TextField
-                            label="Query"
-                            name="query"
-                            required={true}
-                            variant="filled"
-                        />
+                        <Field label="query" name="query" required={true}>
+                            {({ input }) => (
+                                <JsonEditor value={input.value} onChange={input.onChange} />
+                            )}
+                        </Field>
                     </Box>
                     <Box pb={2}>
                         <Button

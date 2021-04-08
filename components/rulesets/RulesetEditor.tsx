@@ -1,6 +1,6 @@
 import * as React from "react";
 import arrayMutators from "final-form-arrays";
-import { Form, FormProps } from "react-final-form";
+import {Form, FormProps} from "react-final-form";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
@@ -9,22 +9,20 @@ import Divider from "@material-ui/core/Divider";
 import Box from "@material-ui/core/Box";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
-import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ListItemText from "@material-ui/core/ListItemText";
-import IconButton from "@material-ui/core/IconButton";
-import Alert from "@material-ui/lab/Alert";
 import AddIcon from "@material-ui/icons/Add";
-import DeleteIcon from "@material-ui/icons/Delete";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
-import Paper, { PaperProps } from "@material-ui/core/Paper";
+import Paper, {PaperProps} from "@material-ui/core/Paper";
 import Draggable from "react-draggable";
 
 import RuleEditor from "./RuleEditor";
-import { RulesetVersionValue, Rule } from "../../lib/rulesets";
+import {Rule, RulesetVersionValue} from "../../lib/rulesets";
+import SettingsIcon from "@material-ui/icons/Settings";
+import MockRulesetConditionEditor from "./MockRulesetConditionEditor";
 
 function PaperComponent(props: PaperProps) {
   return (
@@ -153,6 +151,12 @@ function RulesList({
       <Box pt={2} pb={1}>
         <Divider />
       </Box>
+      <Box>
+          <Button onClick={() => onChangeSelection(-2)}><SettingsIcon/> Ruleset Conditions</Button>
+      </Box>
+      <Box pt={2} pb={1}>
+        <Divider />
+      </Box>
       <List>
         {visibleRules}
         {visibleRules.length === 0 && (
@@ -212,20 +216,22 @@ export default function RulesetEditor(rest: RulesetEditorProps) {
               />
             </Grid>
             <Grid item md={8}>
-              {activeRuleset === -1 ? (
-                <NoRuleset />
-              ) : (
-                <form onSubmit={handleSubmit}>
-                  <RuleEditor
-                    name={`rules[${activeRuleset}]`}
-                    dirty={dirty}
-                    onDelete={() => {
-                      form.mutators.remove("rules", activeRuleset);
-                      setActiveRuleset(activeRuleset - 1);
-                    }}
-                  />
-                </form>
-              )}
+                {
+                    activeRuleset === -1 && (<NoRuleset/>)
+                }
+                { activeRuleset === -2 && (<MockRulesetConditionEditor />) }
+                { activeRuleset >= 0 && (
+                    <form onSubmit={handleSubmit}>
+                        <RuleEditor
+                            name={`rules[${activeRuleset}]`}
+                            dirty={dirty}
+                            onDelete={() => {
+                                form.mutators.remove("rules", activeRuleset);
+                                setActiveRuleset(activeRuleset - 1);
+                            }}
+                        />
+                    </form>
+                )}
             </Grid>
             <DiscardChangesDialog
               open={pendingAction !== null}
