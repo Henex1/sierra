@@ -5,6 +5,7 @@ export async function apiRequest<Req extends object, Res extends object = any>(
 ): Promise<Res> {
   const { headers, method = "POST", ...rest } = opts;
   const response = await fetch(path, {
+    ...rest,
     method,
     body:
       method === "DELETE" || method === "GET" || method === "HEAD"

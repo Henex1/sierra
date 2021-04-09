@@ -1,5 +1,6 @@
-import { getPage } from "next-page-tester";
 import { screen } from "@testing-library/react";
+
+import { getPage } from "../lib/test";
 import Home from "./index";
 
 describe("Home", () => {
@@ -9,7 +10,7 @@ describe("Home", () => {
     });
     render();
     expect(
-      screen.getByRole("heading", { name: "Project Sierra", level: 5 })
+      screen.getByRole("heading", { name: "Project Sierra", level: 1 })
     ).toBeInTheDocument();
   });
 });

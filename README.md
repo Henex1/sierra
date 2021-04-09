@@ -39,8 +39,8 @@ Set up a Google app for SSO. From [the console](https://console.cloud.google.com
 ```bash
 docker-compose -f docker-compose.local.yml up -d
 ./bin/seed_elasticsearch.sh # Load the icecat dataset into Elasticsearch
-cp .env.sample .env # Edit the .env file appropriately.
-prisma migrate reset # Create the Postgres schema
+cp .env.sample .env.local # Edit the .env file appropriately.
+yarn prisma migrate reset # Create the Postgres schema
 yarn dev # Start the server
 ```
 
@@ -66,6 +66,13 @@ If the database schema is out of date, you should toss your local database and r
 
 ```bash
 prisma migrate reset --force
+```
+
+### Run the tests
+
+```bash
+yarn db:reset:test # Reset the test database
+yarn test # Run the tests
 ```
 
 ### Modify the database schema (before initial launch)

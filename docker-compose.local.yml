@@ -21,3 +21,10 @@ services:
     ports:
       - 9200:9200
 
+#  adminer:
+#    image: adminer
+#    restart: always
+#    links:
+#      - db
+#    ports:
+#      - 8080:8080

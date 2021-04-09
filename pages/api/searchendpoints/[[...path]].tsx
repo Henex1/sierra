@@ -4,81 +4,49 @@ import prisma, { User, SearchEndpoint } from "../../../lib/prisma";
 import { SearchEndpointSchema } from "../../../lib/schema";
 import { getUser } from "../../../lib/authServer";
 import {
+  createSearchEndpointSchema,
   createSearchEndpoint,
   deleteSearchEndpoint,
+  updateSearchEndpointSchema,
   updateSearchEndpoint,
 } from "../../../lib/searchendpoints";
-import { notAuthorized, HttpError } from "../../../lib/errors";
+import { notAuthorized } from "../../../lib/errors";
+import {
+  HttpError,
+  apiHandler,
+  requireMethod,
+  requireUser,
+  requireOnlyOrg,
+  requireBody,
+} from "../../../lib/apiServer";
 
-async function handleCreateSearchEndpoint(
-  req: NextApiRequest,
-  res: NextApiResponse
-): Promise<void> {
-  const { user, session } = await getUser(req);
-  if (!user) {
-    return notAuthorized(res);
-  }
-  const org = await prisma.org.findFirst({
-    where: { users: { some: { userId: user.id } } },
-  });
-  if (!org) {
-    return res.status(500).json({ error: "user has no attached org" });
-  }
-  const data = req.body;
-  data.orgId = org.id;
-  try {
-    const ds = await createSearchEndpoint(user, data);
-    res.status(200).json({ searchEndpoint: ds });
-  } catch (err) {
-    if (err instanceof HttpError) {
-      res.status(err.statusCode).json(err.data);
-    } else {
-      res.status(500).json({ error: "internal server error" });
-    }
-  }
-}
+const handleCreateSearchEndpoint = apiHandler(async (req, res) => {
+  requireMethod(req, "POST");
+  const user = requireUser(req);
+  const org = await requireOnlyOrg(req);
+  req.body.orgId = org.id;
+  const body = requireBody(req, createSearchEndpointSchema);
+  const se = await createSearchEndpoint(user, body);
+  res.status(200).json({ searchEndpoint: se });
+});
 
-async function handleDeleteSearchEndpoint(
-  req: NextApiRequest,
-  res: NextApiResponse,
-  idStr: string
-): Promise<void> {
-  const { user } = await getUser(req);
-  if (!user) {
-    return notAuthorized(res);
-  }
-  try {
-    const ds = await deleteSearchEndpoint(user, idStr);
-    res.status(200).json({ success: true });
-  } catch (err) {
-    if (err instanceof HttpError) {
-      res.status(err.statusCode).json(err.data);
-    } else {
-      res.status(500).json({ error: "internal server error" });
-    }
-  }
-}
+const handleDeleteSearchEndpoint = apiHandler(async (req, res) => {
+  requireMethod(req, "DELETE");
+  const user = requireUser(req);
+  const org = await requireOnlyOrg(req);
+  const id = parseInt(req.query.path[0], 10);
+  await deleteSearchEndpoint(user, id);
+  res.status(200).json({ success: true });
+});
 
-async function handleUpdateSearchEndpoint(
-  req: NextApiRequest,
-  res: NextApiResponse,
-  idStr: string
-): Promise<void> {
-  const { user } = await getUser(req);
-  if (!user) {
-    return notAuthorized(res);
-  }
-  try {
-    const searchEndpoint = await updateSearchEndpoint(user, idStr, req.body);
-    res.status(200).json({ searchEndpoint });
-  } catch (err) {
-    if (err instanceof HttpError) {
-      res.status(err.statusCode).json(err.data);
-    } else {
-      res.status(500).json({ error: "internal server error" });
-    }
-  }
-}
+const handleUpdateSearchEndpoint = apiHandler(async (req, res) => {
+  requireMethod(req, "PATCH");
+  const user = requireUser(req);
+  req.body.id = parseInt(req.query.path[0], 10);
+  const body = requireBody(req, updateSearchEndpointSchema);
+  const se = await updateSearchEndpoint(user, body);
+  res.status(200).json({ searchEndpoint: se });
+});
 
 export default async function handler(
   req: NextApiRequest,
@@ -86,12 +54,12 @@ export default async function handler(
 ) {
   const method = req.method;
   const path = req.query.path || [];
-  if (method === "POST" && path.length === 0) {
+  if (path.length === 0) {
     return handleCreateSearchEndpoint(req, res);
   } else if (method === "DELETE" && path.length === 1) {
-    return handleDeleteSearchEndpoint(req, res, path[0]);
+    return handleDeleteSearchEndpoint(req, res);
   } else if (method === "PATCH" && path.length === 1) {
-    return handleUpdateSearchEndpoint(req, res, path[0]);
+    return handleUpdateSearchEndpoint(req, res);
   } else {
     return res.status(404).json({ error: "not found", method, path });
   }

@@ -1,3 +1,5 @@
+import * as z from "zod";
+
 import { HttpError } from "../errors";
 import prisma, { Prisma, User, SearchEndpoint } from "../prisma";
 import { SearchEndpointSchema } from "../schema";
@@ -15,13 +17,18 @@ const selectKeys = {
   info: true,
 };
 
-export type ExposedSearchEndpoint = Pick<SearchEndpoint, keyof typeof selectKeys>;
+export type ExposedSearchEndpoint = Pick<
+  SearchEndpoint,
+  keyof typeof selectKeys
+>;
 
 export function userCanAccessSearchEndpoint(
   user: User,
   rest?: Prisma.SearchEndpointWhereInput
 ): Prisma.SearchEndpointWhereInput {
-  const result: Prisma.SearchEndpointWhereInput = { org: userCanAccessOrg(user) };
+  const result: Prisma.SearchEndpointWhereInput = {
+    org: userCanAccessOrg(user),
+  };
   if (rest) {
     result.AND = rest;
   }
@@ -30,9 +37,9 @@ export function userCanAccessSearchEndpoint(
 
 export async function getSearchEndpoint(
   user: User,
-  idStr: string
+  idStr: string | number
 ): Promise<ExposedSearchEndpoint | null> {
-  const id = parseInt(idStr, 10);
+  const id = typeof idStr === "number" ? idStr : parseInt(idStr, 10);
   const ds = await prisma.searchEndpoint.findFirst({
     where: userCanAccessSearchEndpoint(user, { id }),
     select: selectKeys,
@@ -53,28 +60,27 @@ export async function listSearchEndpoints({
   return searchEndpoints;
 }
 
+export const createSearchEndpointSchema = SearchEndpointSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type CreateSearchEndpoint = z.infer<typeof createSearchEndpointSchema>;
+
 export async function createSearchEndpoint(
   user: User,
-  input: ExposedSearchEndpoint
+  input: CreateSearchEndpoint
 ): Promise<ExposedSearchEndpoint> {
-  const result = SearchEndpointSchema.omit({
-    id: true,
-    createdAt: true,
-    updatedAt: true,
-  }).safeParse(input);
-  if (!result.success) {
-    return Promise.reject(new HttpError(400, result.error));
-  }
-
   const isValidOrg = await prisma.orgUser.findUnique({
-    where: { userId_orgId: { userId: user.id, orgId: result.data.orgId } },
+    where: { userId_orgId: { userId: user.id, orgId: input.orgId } },
   });
   if (!isValidOrg) {
     return Promise.reject(new HttpError(400, { error: "invalid org" }));
   }
 
   const ds = await prisma.searchEndpoint.create({
-    data: result.data,
+    data: input,
     select: selectKeys,
   });
   return ds;
@@ -82,43 +88,44 @@ export async function createSearchEndpoint(
 
 export async function deleteSearchEndpoint(
   user: User,
-  idStr: string
+  id: number
 ): Promise<void> {
-  const ds = await getSearchEndpoint(user, idStr);
+  const ds = await getSearchEndpoint(user, id);
   if (!ds) {
     return Promise.reject(new HttpError(404, { error: "not found" }));
   }
   await prisma.searchEndpoint.delete({ where: { id: ds.id } });
 }
 
+export const updateSearchEndpointSchema = SearchEndpointSchema.omit({
+  type: true,
+})
+  .partial()
+  .merge(z.object({ id: z.number() }));
+
+export type UpdateSearchEndpoint = z.infer<typeof updateSearchEndpointSchema>;
+
 export async function updateSearchEndpoint(
   user: User,
-  idStr: string,
-  input: ExposedSearchEndpoint
+  input: UpdateSearchEndpoint
 ): Promise<ExposedSearchEndpoint> {
-  const result = SearchEndpointSchema.omit({ id: true, type: true })
-    .partial()
-    .safeParse(input);
-  if (!result.success) {
-    return Promise.reject(new HttpError(400, result.error));
-  }
-  if ("orgId" in result.data) {
+  if ("orgId" in input) {
     const isValidOrg = await prisma.orgUser.findUnique({
-      where: { userId_orgId: { userId: user.id, orgId: result.data.orgId! } },
+      where: { userId_orgId: { userId: user.id, orgId: input.orgId! } },
     });
     if (!isValidOrg) {
       return Promise.reject(new HttpError(400, { error: "invalid org" }));
     }
   }
 
-  let ds = await getSearchEndpoint(user, idStr);
+  let ds = await getSearchEndpoint(user, input.id);
   if (!ds) {
     return Promise.reject(new HttpError(404, { error: "not found" }));
   }
 
   ds = await prisma.searchEndpoint.update({
     where: { id: ds.id },
-    data: result.data,
+    data: input,
     select: selectKeys,
   });
   return ds;
