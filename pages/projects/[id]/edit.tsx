@@ -11,6 +11,7 @@ import {
   formatProject,
   ExposedProject,
 } from "../../../lib/projects";
+import prisma from "../../../lib/prisma";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const project = await prisma.project.findFirst({

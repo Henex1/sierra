@@ -14,6 +14,7 @@ import {
   RulesetVersionValue,
 } from "../../lib/rulesets";
 import RulesetEditor from "../../components/rulesets/RulesetEditor";
+import prisma from "../../lib/prisma";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const ruleset = await prisma.ruleset.findFirst({

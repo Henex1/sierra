@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-import { HttpError } from "../errors";
+import { HttpError } from "../apiServer";
 import prisma, { Prisma, User, SearchEndpoint } from "../prisma";
 import { SearchEndpointSchema } from "../schema";
 import { UserSession } from "../authServer";
