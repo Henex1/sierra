@@ -1,6 +1,6 @@
 import * as React from "react";
 import Grid from "@material-ui/core/Grid";
-import { useFormState, Field } from "react-final-form";
+import { Field } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
 import Box from "@material-ui/core/Box";
 import SelectMUI from "@material-ui/core/Select";
@@ -248,12 +248,10 @@ function InstructionField(props: InstructionFieldProps) {
 
 export type RuleEditorProps = {
   name: string;
-  dirty: boolean;
   onDelete: () => void
 };
 
-export default function RuleEditor({ name, dirty, onDelete }: RuleEditorProps) {
-  const { submitting } = useFormState();
+export default function RuleEditor({ name, onDelete }: RuleEditorProps) {
   return (
     <React.Fragment key={name}>
       <Box pb={2}>
@@ -302,23 +300,6 @@ export default function RuleEditor({ name, dirty, onDelete }: RuleEditorProps) {
           </>
         )}
       </FieldArray>
-      <Box pb={2}>
-        <Button
-          type="submit"
-          disabled={submitting}
-          variant="contained"
-          color="primary"
-        >
-          Save
-        </Button>
-        <Box component="span" ml={2}>
-          {dirty &&
-            <Typography variant="caption">
-              Unsaved changes
-            </Typography>
-          }
-        </Box>
-      </Box>
     </React.Fragment>
   );
 }
