@@ -3,7 +3,7 @@ image: docker:stable
 stages:
   - test
 
-static-analysis:
+test:
   stage: test
   image: node
   cache:
@@ -11,5 +11,6 @@ static-analysis:
     paths:
       - node_modules
   script:
+    - yarn
     - yarn build
 
