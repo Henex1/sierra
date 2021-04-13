@@ -14,6 +14,7 @@ import {
   formatProject,
   ExposedProject,
 } from "../../lib/projects";
+import prisma from "../../lib/prisma";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const projects = await prisma.project.findMany({

@@ -13,6 +13,7 @@ import {
     userCanAccessQueryTemplate, ExposedQueryTemplate, formatQueryTemplate,
 } from "../../lib/querytemplates";
 import {useActiveProject} from "../../components/Session";
+import prisma from "../../lib/prisma";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
     const templates = await prisma.queryTemplate.findMany({

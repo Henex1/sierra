@@ -16,6 +16,7 @@ import {
   formatRuleset,
   ExposedRuleset,
 } from "../../lib/rulesets";
+import prisma from "../../lib/prisma";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const rulesets = await prisma.ruleset.findMany({

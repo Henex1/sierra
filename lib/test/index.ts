@@ -20,6 +20,7 @@ export async function getApiRoute<Req extends object, Res extends object = any>(
     },
   });
   const res = createResponse();
+  // @ts-ignore
   await handler(req, res);
   const data = res._getJSONData();
   return data;

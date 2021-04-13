@@ -5,6 +5,7 @@ import { authenticatedPage } from "../../lib/auth";
 import {ExposedQueryTemplate, formatQueryTemplate, userCanAccessQueryTemplate} from "../../lib/querytemplates";
 import Container from "@material-ui/core/Container";
 import Form from "../../components/querytemplates/Form";
+import prisma from "../../lib/prisma";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
     const template = await prisma.queryTemplate.findFirst({

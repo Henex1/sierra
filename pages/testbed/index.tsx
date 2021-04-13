@@ -35,6 +35,7 @@ import {
 import newRulesetVersion from "../api/rulesets/newVersion";
 
 import { apiRequest } from "../../lib/api";
+import prisma from "../../lib/prisma";
 
 const useStyles = makeStyles((theme) => ({
   boxWrapper: {
