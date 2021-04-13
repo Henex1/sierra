@@ -12,6 +12,7 @@ import {
 } from "../../../lib/searchendpoints";
 import { userCanAccessQueryTemplate } from "../../../lib/querytemplates";
 import { RulesetVersionValue } from "../../../lib/rulesets/rules";
+import { requireEnv } from "../../../lib/env";
 
 const ontologyRequestSchema = z.object({
   query: z.string(),
@@ -20,7 +21,7 @@ const ontologyRequestSchema = z.object({
   ltrModelName: z.union([z.string(), z.undefined()]),
 });
 
-const QUERY_EXPANDER_URL = process.env.QUERY_EXPANDER_URL || "http://localhost:8080"
+const QUERY_EXPANDER_URL = requireEnv("QUERY_EXPANDER_URL");
 
 async function expandQuery(
   query: string,
