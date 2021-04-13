@@ -5,21 +5,26 @@ services:
 
   db:
     image: postgres
-    restart: always
     environment:
       POSTGRES_PASSWORD: example
     ports:
       - 5432:5432
 
   elasticsearch:
-    image: elasticsearch:7.11.2
-    restart: always
+    build:
+      context: ./es-docker
+      dockerfile: Elasticsearch-Dockerfile
     environment:
       - discovery.type=single-node
       - http.cors.enabled=true
       - http.cors.allow-origin=*
     ports:
       - 9200:9200
+
+  query_expander:
+    image: registry.gitlab.com/eyfo/sierra-query-expander:2021-04-13-1054-86bc326d4
+    ports:
+      - 8080:8080
 
 #  adminer:
 #    image: adminer

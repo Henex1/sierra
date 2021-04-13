@@ -20,7 +20,9 @@ const ontologyRequestSchema = z.object({
   ltrModelName: z.union([z.string(), z.undefined()]),
 });
 
-async function expandQueryUsingOntologyApi(
+const QUERY_EXPANDER_URL = process.env.QUERY_EXPANDER_URL || "http://localhost:8080"
+
+async function expandQuery(
   query: string,
   template: string,
   knobs: any,
@@ -39,7 +41,7 @@ async function expandQueryUsingOntologyApi(
       config,
     });
     const response = await fetch(
-      `http://localhost:8080/query/expand?q=${encodeURI(query)}`,
+      `${QUERY_EXPANDER_URL}/query/expand?q=${encodeURI(query)}`,
       {
         method: "POST",
         body,
@@ -54,7 +56,7 @@ async function expandQueryUsingOntologyApi(
   }
 }
 
-export default async function executeOntologyQuery(
+export default async function executeQuery(
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<void> {
@@ -110,7 +112,7 @@ export default async function executeOntologyQuery(
     return res.status(500).json({ error: "Can't find search endpoint" });
   }
 
-  const query = await expandQueryUsingOntologyApi(
+  const query = await expandQuery(
     input.data.query,
     queryTemplate.query,
     queryTemplate.knobs,
