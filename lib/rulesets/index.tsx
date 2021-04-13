@@ -1,8 +1,11 @@
 import _ from "lodash";
 import * as z from "zod";
 
-import { Prisma, User, Ruleset, RulesetVersion } from "../prisma";
+import prisma, { Prisma, Org, User, Ruleset, RulesetVersion } from "../prisma";
 import { userCanAccessOrg } from "../org";
+import { rulesetVersionValueSchema } from "./rules";
+
+export { rulesetVersionValueSchema };
 
 // This is the list of keys which are included in user requests for Ruleset
 // by default.
@@ -46,61 +49,45 @@ export function formatRulesetVersion(
   return _.pick(val, _.keys(versionSelectKeys)) as ExposedRulesetVersion;
 }
 
-export const synonymInstructionSchema = z.object({
-  type: z.literal("synonym"),
-  weight: z.number().optional(),
-  directed: z.boolean(),
-  term: z.string(),
-  enabled: z.boolean(),
+export async function getRuleset(
+  user: User,
+  id: number
+): Promise<Ruleset | null> {
+  const ruleset = await prisma.ruleset.findFirst({
+    where: userCanAccessRuleset(user, { id }),
+  });
+  return ruleset;
+}
+
+export const createRulesetSchema = z.object({
+  name: z.string(),
 });
 
-export type SynonymInstruction = z.infer<typeof synonymInstructionSchema>;
+export type CreateRuleset = z.infer<typeof createRulesetSchema>;
 
-export const upDownInstructionSchema = z.object({
-  type: z.literal("updown"),
-  weight: z.number(),
-  term: z.string(),
-  enabled: z.boolean(),
+export async function createRuleset(
+  org: Org,
+  input: CreateRuleset
+): Promise<Ruleset> {
+  const ruleset = await prisma.ruleset.create({
+    data: { ...input, orgId: org.id },
+  });
+  return ruleset;
+}
+
+export const createRulesetVersionSchema = z.object({
+  parentId: z.number().nullable(),
+  value: rulesetVersionValueSchema,
 });
 
-export type UpDownInstruction = z.infer<typeof upDownInstructionSchema>;
+export type CreateRulesetVersion = z.infer<typeof createRulesetVersionSchema>;
 
-export const filterInstructionSchema = z.object({
-  type: z.literal("filter"),
-  include: z.boolean(),
-  term: z.string(),
-  enabled: z.boolean(),
-});
-
-export type FilterInstruction = z.infer<typeof filterInstructionSchema>;
-
-export const deleteInstructionSchema = z.object({
-  type: z.literal("delete"),
-  term: z.string(),
-  enabled: z.boolean(),
-});
-
-export type DeleteInstruction = z.infer<typeof deleteInstructionSchema>;
-
-export const ruleInstructionSchema = z.union([
-  synonymInstructionSchema,
-  upDownInstructionSchema,
-  filterInstructionSchema,
-  deleteInstructionSchema,
-]);
-
-export type RuleInstruction = z.infer<typeof ruleInstructionSchema>;
-
-export const ruleSchema = z.object({
-  expression: z.string(),
-  instructions: z.array(ruleInstructionSchema),
-  enabled: z.boolean(),
-});
-
-export type Rule = z.infer<typeof ruleSchema>;
-
-export const rulesetVersionValueSchema = z.object({
-  rules: z.array(ruleSchema),
-});
-
-export type RulesetVersionValue = z.infer<typeof rulesetVersionValueSchema>;
+export async function createRulesetVersion(
+  ruleset: Ruleset,
+  input: CreateRulesetVersion
+): Promise<RulesetVersion> {
+  const version = await prisma.rulesetVersion.create({
+    data: { ...input, rulesetId: ruleset.id },
+  });
+  return version;
+}

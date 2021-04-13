@@ -2,7 +2,7 @@ import prisma from "../../../lib/prisma";
 import handler from "./[[...path]]";
 import { getApiRoute } from "../../../lib/test";
 
-describe("SearchEndpoints", () => {
+describe("api/searchendpoints", () => {
   it("integration test", async () => {
     // Test create
     const initialInfo = {
