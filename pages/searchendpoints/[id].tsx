@@ -16,6 +16,7 @@ import Link from "../../components/common/Link";
 import { authenticatedPage } from "../../lib/auth";
 import { apiRequest } from "../../lib/api";
 import {
+  formatSearchEndpoint,
   getSearchEndpoint,
   ExposedSearchEndpoint,
 } from "../../lib/searchendpoints";
@@ -25,7 +26,7 @@ export const getServerSideProps = authenticatedPage(async (context) => {
     context.user,
     context.params!.id as string
   );
-  return { props: { searchEndpoint } };
+  return { props: { searchEndpoint: formatSearchEndpoint(searchEndpoint) } };
 });
 
 type Props = {

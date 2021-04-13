@@ -1,3 +1,4 @@
+import _ from "lodash";
 import * as z from "zod";
 
 import { HttpError } from "../apiServer";
@@ -35,14 +36,19 @@ export function userCanAccessSearchEndpoint(
   return result;
 }
 
+export function formatSearchEndpoint(
+  val: SearchEndpoint
+): ExposedSearchEndpoint {
+  return _.pick(val, _.keys(selectKeys)) as ExposedSearchEndpoint;
+}
+
 export async function getSearchEndpoint(
   user: User,
   idStr: string | number
-): Promise<ExposedSearchEndpoint | null> {
+): Promise<SearchEndpoint | null> {
   const id = typeof idStr === "number" ? idStr : parseInt(idStr, 10);
   const ds = await prisma.searchEndpoint.findFirst({
     where: userCanAccessSearchEndpoint(user, { id }),
-    select: selectKeys,
   });
   return ds;
 }
