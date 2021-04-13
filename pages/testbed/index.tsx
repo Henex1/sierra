@@ -32,7 +32,6 @@ import {
   formatRuleset,
   userCanAccessRuleset,
 } from "../../lib/rulesets";
-import newRulesetVersion from "../api/rulesets/newVersion";
 
 import { apiRequest } from "../../lib/api";
 import prisma from "../../lib/prisma";

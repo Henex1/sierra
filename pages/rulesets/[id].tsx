@@ -11,8 +11,8 @@ import {
   formatRulesetVersion,
   ExposedRuleset,
   ExposedRulesetVersion,
-  RulesetVersionValue,
 } from "../../lib/rulesets";
+import { RulesetVersionValue } from "../../lib/rulesets/rules";
 import RulesetEditor from "../../components/rulesets/RulesetEditor";
 import prisma from "../../lib/prisma";
 

@@ -14,21 +14,21 @@ import AddIcon from "@material-ui/icons/Add";
 import ClearIcon from "@material-ui/icons/Clear";
 import DeleteIcon from "@material-ui/icons/Delete";
 
-import { RuleInstruction } from "../../lib/rulesets";
-import {Slider, withStyles} from "@material-ui/core";
-import {useEffect} from "react";
-import {parseNumber} from "../common/form";
+import { RuleInstruction } from "../../lib/rulesets/rules";
+import { Slider, withStyles } from "@material-ui/core";
+import { useEffect } from "react";
+import { parseNumber } from "../common/form";
 
 const UpBoostSlider = withStyles({
   root: {
-    color: '#4caf50'
-  }
+    color: "#4caf50",
+  },
 })(Slider);
 
 const DownBoostSlider = withStyles({
   root: {
-    color: '#f44336'
-  }
+    color: "#f44336",
+  },
 })(Slider);
 
 type InstructionFieldProps = {
@@ -47,9 +47,13 @@ function SynonymField({ name }: InstructionFieldProps) {
         </Select>
       </Grid>
       <Grid item xs={1}>
-        <TextField name={`${name}.weight`} placeholder="Weight" fieldProps={{
-            parse: parseNumber
-        }} />
+        <TextField
+          name={`${name}.weight`}
+          placeholder="Weight"
+          fieldProps={{
+            parse: parseNumber,
+          }}
+        />
       </Grid>
       <Grid item xs>
         <TextField name={`${name}.term`} required />
@@ -64,14 +68,14 @@ function UpBoostField({ name }: InstructionFieldProps) {
       <Grid item xs={4}>
         <Field
           name={`${name}.weight`}
-          render={props => {
+          render={(props) => {
             useEffect(() => {
               if (!props.input.value || props.input.value < 0) {
                 props.input.onChange({
                   target: {
-                    type: 'select',
-                    value: 1
-                  }
+                    type: "select",
+                    value: 1,
+                  },
                 });
               }
             }, []);
@@ -83,9 +87,9 @@ function UpBoostField({ name }: InstructionFieldProps) {
                 onChange={(e, newValue) => {
                   props.input.onChange({
                     target: {
-                      type: 'select',
-                      value: newValue
-                    }
+                      type: "select",
+                      value: newValue,
+                    },
                   });
                 }}
                 valueLabelDisplay="auto"
@@ -93,12 +97,12 @@ function UpBoostField({ name }: InstructionFieldProps) {
                 min={1}
                 max={1000}
               />
-            )
+            );
           }}
         />
       </Grid>
       <Grid item xs>
-        <TextField name={`${name}.term`} required/>
+        <TextField name={`${name}.term`} required />
       </Grid>
     </>
   );
@@ -110,14 +114,14 @@ function DownBoostField({ name }: InstructionFieldProps) {
       <Grid item xs={4}>
         <Field
           name={`${name}.weight`}
-          render={props => {
+          render={(props) => {
             useEffect(() => {
               if (!props.input.value || props.input.value > 0) {
                 props.input.onChange({
                   target: {
-                    type: 'select',
-                    value: -1
-                  }
+                    type: "select",
+                    value: -1,
+                  },
                 });
               }
             }, []);
@@ -128,9 +132,10 @@ function DownBoostField({ name }: InstructionFieldProps) {
                 onChange={(e, newValue) => {
                   props.input.onChange({
                     target: {
-                      type: 'select',
-                      value: typeof newValue === "number" ? newValue * -1 : newValue
-                    }
+                      type: "select",
+                      value:
+                        typeof newValue === "number" ? newValue * -1 : newValue,
+                    },
                   });
                 }}
                 valueLabelDisplay="auto"
@@ -140,7 +145,7 @@ function DownBoostField({ name }: InstructionFieldProps) {
                 min={1}
                 max={1000}
               />
-            )
+            );
           }}
         />
       </Grid>
@@ -177,8 +182,15 @@ function DeleteField({ name }: InstructionFieldProps) {
 
 function InstructionField(props: InstructionFieldProps) {
   const { name, value, onDelete } = props;
-  const typeValue = value.type === 'updown' ? value.weight > 0 ? 'upBoost' : 'downBoost' : value.type;
-  const [instructionsType, setInstructionsType] = React.useState<string | unknown>(typeValue);
+  const typeValue =
+    value.type === "updown"
+      ? value.weight > 0
+        ? "upBoost"
+        : "downBoost"
+      : value.type;
+  const [instructionsType, setInstructionsType] = React.useState<
+    string | unknown
+  >(typeValue);
 
   const editor =
     instructionsType === "synonym" ? (
@@ -208,15 +220,21 @@ function InstructionField(props: InstructionFieldProps) {
         <Grid item xs={2}>
           <Field
             name={`${name}.type`}
-            parse={(value: any) => value === "upBoost" || value === "downBoost" ? "updown" : value}
+            parse={(value: any) =>
+              value === "upBoost" || value === "downBoost" ? "updown" : value
+            }
           >
-            {props => {
+            {(props) => {
               return (
                 <SelectMUI
                   name={props.input.name}
-                  value={props.input.value === instructionsType ? props.input.value : instructionsType}
+                  value={
+                    props.input.value === instructionsType
+                      ? props.input.value
+                      : instructionsType
+                  }
                   onChange={(e) => {
-                    setInstructionsType(e.target.value)
+                    setInstructionsType(e.target.value);
                     props.input.onChange(e);
                   }}
                   required
@@ -248,7 +266,7 @@ function InstructionField(props: InstructionFieldProps) {
 
 export type RuleEditorProps = {
   name: string;
-  onDelete: () => void
+  onDelete: () => void;
 };
 
 export default function RuleEditor({ name, onDelete }: RuleEditorProps) {

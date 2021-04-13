@@ -114,7 +114,7 @@ export type UpdateSearchEndpoint = z.infer<typeof updateSearchEndpointSchema>;
 export async function updateSearchEndpoint(
   user: User,
   input: UpdateSearchEndpoint
-): Promise<ExposedSearchEndpoint> {
+): Promise<SearchEndpoint> {
   if ("orgId" in input) {
     const isValidOrg = await prisma.orgUser.findUnique({
       where: { userId_orgId: { userId: user.id, orgId: input.orgId! } },
@@ -124,17 +124,16 @@ export async function updateSearchEndpoint(
     }
   }
 
-  let ds = await getSearchEndpoint(user, input.id);
+  const ds = await getSearchEndpoint(user, input.id);
   if (!ds) {
     return Promise.reject(new HttpError(404, { error: "not found" }));
   }
 
-  ds = await prisma.searchEndpoint.update({
+  const endpoint = await prisma.searchEndpoint.update({
     where: { id: ds.id },
     data: input,
-    select: selectKeys,
   });
-  return ds;
+  return endpoint;
 }
 
 export async function handleQuery(

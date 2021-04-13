@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-import { RulesetVersionValue } from "../../../lib/rulesets";
+import { RulesetVersionValue } from "../../../lib/rulesets/rules";
 import prisma from "../../../lib/prisma";
 import { notAuthorized, notFound } from "../../../lib/errors";
 import { getUser, ValidUserSession } from "../../../lib/authServer";

@@ -26,6 +26,9 @@ export const getServerSideProps = authenticatedPage(async (context) => {
     context.user,
     context.params!.id as string
   );
+  if (!searchEndpoint) {
+    return { notFound: true };
+  }
   return { props: { searchEndpoint: formatSearchEndpoint(searchEndpoint) } };
 });
 

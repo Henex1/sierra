@@ -1,14 +1,14 @@
 import * as React from "react";
 import arrayMutators from "final-form-arrays";
-import {Form, FormProps} from "react-final-form";
+import { Form, FormProps } from "react-final-form";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import {
   DragDropContext,
   Droppable,
   Draggable as DraggableBox,
-  DropResult
+  DropResult,
 } from "react-beautiful-dnd";
-import { resetServerContext } from "react-beautiful-dnd"
+import { resetServerContext } from "react-beautiful-dnd";
 import Draggable from "react-draggable";
 
 import Container from "@material-ui/core/Container";
@@ -26,12 +26,11 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
-import Paper, {PaperProps} from "@material-ui/core/Paper";
-import DragIndicatorIcon from '@material-ui/icons/DragIndicator';
-
+import Paper, { PaperProps } from "@material-ui/core/Paper";
+import DragIndicatorIcon from "@material-ui/icons/DragIndicator";
 
 import RuleEditor from "./RuleEditor";
-import { RulesetVersionValue, Rule } from "../../lib/rulesets";
+import { RulesetVersionValue, Rule } from "../../lib/rulesets/rules";
 import RulesetEditorSaveButton from "./RulesetEditorSaveButton";
 import SettingsIcon from "@material-ui/icons/Settings";
 import MockRulesetConditionEditor from "./MockRulesetConditionEditor";
@@ -106,14 +105,16 @@ function RulesList({
   onChangeSelection,
   onAddRule,
 }: RulesListProps) {
-  resetServerContext()
+  resetServerContext();
   const [filter, setFilter] = React.useState("");
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     onAddRule(filter);
   }
-  const makeOnDragEndFunction = (fields: FieldArrayRenderProps<Rule, any>["fields"]) => (result: DropResult) => {
+  const makeOnDragEndFunction = (
+    fields: FieldArrayRenderProps<Rule, any>["fields"]
+  ) => (result: DropResult) => {
     if (!result.destination) {
       return;
     }
@@ -121,18 +122,21 @@ function RulesList({
     onChangeSelection(-1, true);
   };
 
-  const renderFilteredRules = (fields: FieldArrayRenderProps<Rule, any>["fields"]) => {
-    const rulesToDisplay = fields.value.filter((field: Rule) => field.expression.indexOf(filter) !== -1);
+  const renderFilteredRules = (
+    fields: FieldArrayRenderProps<Rule, any>["fields"]
+  ) => {
+    const rulesToDisplay = fields.value.filter(
+      (field: Rule) => field.expression.indexOf(filter) !== -1
+    );
     return rulesToDisplay.length === 0 ? (
       <ListItem alignItems="center">
         <ListItemText
-          primary={
-            rules.length === 0 ? "Empty ruleset" : "No matching rules"
-          }
-          primaryTypographyProps={{style: {fontStyle: "italic"}}}
+          primary={rules.length === 0 ? "Empty ruleset" : "No matching rules"}
+          primaryTypographyProps={{ style: { fontStyle: "italic" } }}
         />
       </ListItem>
-    ) : rulesToDisplay.map((rule: Rule, index: number) => (
+    ) : (
+      rulesToDisplay.map((rule: Rule, index: number) => (
         <DraggableBox
           key={`rule[${index}]`}
           draggableId={`rule[${index}]`}
@@ -146,7 +150,7 @@ function RulesList({
               style={{
                 userSelect: "none",
                 margin: "0 0 8px 0",
-                ...provided.draggableProps.style
+                ...provided.draggableProps.style,
               }}
               button
               onClick={() => onChangeSelection(index, false)}
@@ -157,9 +161,7 @@ function RulesList({
                 primary={rule.expression || "<new rule>"}
                 primaryTypographyProps={{
                   style: {
-                    textDecoration: rule.enabled
-                      ? "inherit"
-                      : "line-through",
+                    textDecoration: rule.enabled ? "inherit" : "line-through",
                     fontStyle: rule.expression ? "normal" : "italic",
                   },
                 }}
@@ -167,9 +169,9 @@ function RulesList({
             </ListItem>
           )}
         </DraggableBox>
-      )
-    )
-  }
+      ))
+    );
+  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -194,7 +196,9 @@ function RulesList({
         <Divider />
       </Box>
       <Box>
-          <Button onClick={() => onChangeSelection(-2, false)}><SettingsIcon/> Ruleset Conditions</Button>
+        <Button onClick={() => onChangeSelection(-2, false)}>
+          <SettingsIcon /> Ruleset Conditions
+        </Button>
       </Box>
       <Box pt={2} pb={1}>
         <Divider />
@@ -210,7 +214,7 @@ function RulesList({
                     ref={provided.innerRef}
                     style={{
                       padding: "8px",
-                      width: "auto"
+                      width: "auto",
                     }}
                   >
                     {renderFilteredRules(fields)}
@@ -257,7 +261,10 @@ export default function RulesetEditor(rest: RulesetEditorProps) {
                 selectedRule={activeRuleset}
                 onChangeSelection={
                   dirty
-                    ? (x, isDragging) => isDragging ? setActiveRuleset : setPendingAction(() => () => setActiveRuleset(x))
+                    ? (x, isDragging) =>
+                        isDragging
+                          ? setActiveRuleset
+                          : setPendingAction(() => () => setActiveRuleset(x))
                     : setActiveRuleset
                 }
                 onAddRule={
@@ -271,21 +278,19 @@ export default function RulesetEditor(rest: RulesetEditorProps) {
               </form>
             </Grid>
             <Grid item md={8}>
-                {
-                    activeRuleset === -1 && (<NoRuleset/>)
-                }
-                { activeRuleset === -2 && (<MockRulesetConditionEditor />) }
-                { activeRuleset >= 0 && (
-                    <form onSubmit={handleSubmit}>
-                        <RuleEditor
-                            name={`rules[${activeRuleset}]`}
-                            onDelete={() => {
-                                form.mutators.remove("rules", activeRuleset);
-                                setActiveRuleset(activeRuleset - 1);
-                            }}
-                        />
-                    </form>
-                )}
+              {activeRuleset === -1 && <NoRuleset />}
+              {activeRuleset === -2 && <MockRulesetConditionEditor />}
+              {activeRuleset >= 0 && (
+                <form onSubmit={handleSubmit}>
+                  <RuleEditor
+                    name={`rules[${activeRuleset}]`}
+                    onDelete={() => {
+                      form.mutators.remove("rules", activeRuleset);
+                      setActiveRuleset(activeRuleset - 1);
+                    }}
+                  />
+                </form>
+              )}
             </Grid>
             <DiscardChangesDialog
               open={pendingAction !== null}

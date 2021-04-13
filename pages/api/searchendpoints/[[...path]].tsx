@@ -4,6 +4,7 @@ import prisma, { User, SearchEndpoint } from "../../../lib/prisma";
 import { SearchEndpointSchema } from "../../../lib/schema";
 import { getUser } from "../../../lib/authServer";
 import {
+  formatSearchEndpoint,
   createSearchEndpointSchema,
   createSearchEndpoint,
   deleteSearchEndpoint,
@@ -45,7 +46,7 @@ const handleUpdateSearchEndpoint = apiHandler(async (req, res) => {
   req.body.id = parseInt(req.query.path[0], 10);
   const body = requireBody(req, updateSearchEndpointSchema);
   const se = await updateSearchEndpoint(user, body);
-  res.status(200).json({ searchEndpoint: se });
+  res.status(200).json({ searchEndpoint: formatSearchEndpoint(se) });
 });
 
 export default async function handler(
