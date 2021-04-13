@@ -31,6 +31,7 @@ export function apiHandler(handler: SierraApiHandler): NextApiHandler {
       await handler(req, res);
     } catch (err) {
       if (process.env.NODE_ENV === "test") {
+        if (err instanceof HttpError) console.error(err.data);
         throw err;
       } else if (err instanceof HttpError) {
         res.status(err.statusCode).json(err.data);

@@ -12,10 +12,12 @@ import {
 } from "../../../lib/rulesets";
 import {
   formatProject,
+  getProject,
   createProjectSchema,
   createProject,
   updateProjectSchema,
   updateProject,
+  deleteProject,
 } from "../../../lib/projects";
 import { getSearchEndpoint } from "../../../lib/searchendpoints";
 import {
@@ -51,15 +53,34 @@ export const handleUpdateProject = apiHandler(async (req, res) => {
   const input = requireBody(
     req,
     updateProjectSchema.extend({
-      searchEndpointId: z.number(),
+      id: z.number(),
+      searchEndpointId: z.number().optional(),
     })
   );
-  const searchEndpoint = await getSearchEndpoint(user, input.searchEndpointId);
-  if (!searchEndpoint) {
+  const project = await getProject(user, input.id);
+  if (!project) {
+    throw new HttpError(404, { error: "project not found" });
+  }
+  const searchEndpoint = input.searchEndpointId
+    ? await getSearchEndpoint(user, input.searchEndpointId)
+    : null;
+  if (input.searchEndpointId && !searchEndpoint) {
     throw new HttpError(404, { error: "search endpoint not found" });
   }
-  const project = await updateProject(user, searchEndpoint, input);
-  return res.status(200).json({ project: formatProject(project) });
+  const updated = await updateProject(user, project, searchEndpoint, input);
+  return res.status(200).json({ project: formatProject(updated) });
+});
+
+export const handleDeleteProject = apiHandler(async (req, res) => {
+  requireMethod(req, "POST");
+  const user = requireUser(req);
+  const input = requireBody(req, z.object({ id: z.number() }));
+  const project = await getProject(user, input.id);
+  if (!project) {
+    throw new HttpError(404, { error: "project not found" });
+  }
+  await deleteProject(project);
+  return res.status(200).json({ success: true });
 });
 
 export default async function handler(

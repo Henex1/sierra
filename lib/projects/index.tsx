@@ -61,23 +61,29 @@ export async function createProject(
   return project;
 }
 
-export const updateProjectSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-});
+export const updateProjectSchema = z
+  .object({
+    name: z.string(),
+  })
+  .partial();
 
 export type UpdateProject = z.infer<typeof updateProjectSchema>;
 
 export async function updateProject(
   user: User,
-  searchEndpoint: SearchEndpoint,
+  project: Project,
+  searchEndpoint: SearchEndpoint | null,
   input: UpdateProject
 ): Promise<Project> {
-  const originalProject = await getProject(user, input.id);
-  if (!originalProject) throw new Error("invalid project");
-  const project = await prisma.project.update({
-    where: { id: input.id },
-    data: { ...input, searchEndpointId: searchEndpoint.id },
+  const updated = await prisma.project.update({
+    where: { id: project.id },
+    data: { ...input, searchEndpointId: searchEndpoint?.id || undefined },
   });
-  return project;
+  return updated;
+}
+
+export async function deleteProject(project: Project): Promise<void> {
+  await prisma.project.delete({
+    where: { id: project.id },
+  });
 }
