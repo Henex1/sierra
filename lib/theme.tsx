@@ -17,6 +17,14 @@ const theme = createMuiTheme({
       default: "#fff",
     },
   },
+  overrides: {
+    MuiTooltip: {
+      tooltip: {
+        fontSize: "14px",
+        padding: "6px 12px",
+      },
+    },
+  },
 });
 
 export default theme;

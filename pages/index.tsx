@@ -1,75 +1,175 @@
 import React from "react";
-import Head from "next/head";
 
-import Drawer from "@material-ui/core/Drawer";
-import Divider from "@material-ui/core/Divider";
-import List from "@material-ui/core/List";
-import Toolbar from "@material-ui/core/Toolbar";
+import Avatar from "@material-ui/core/Avatar";
+import Grid from "@material-ui/core/Grid";
+import Box from "@material-ui/core/Box";
+import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 
-import { mainListItems, secondaryListItems } from "../components/AppNavigation";
+import ProjectList, {
+  RecentProject,
+} from "../components/dashboard/ProjectList";
+import TeamList from "../components/dashboard/TeamList";
+import { useSession } from "../components/Session";
+import { authenticatedPage } from "../lib/auth";
+import { userCanAccessProject } from "../lib/projects";
+import prisma from "../lib/prisma";
 
-import styles from "../styles/Home.module.css";
+export const getServerSideProps = authenticatedPage<{
+  projects: RecentProject[];
+}>(async (context) => {
+  const orgUsers = await prisma.orgUser.findMany({
+    where: {
+      userId: {
+        equals: context.user.id,
+      },
+    },
+  });
 
-const useStyles = makeStyles(() => ({
-  drawer: {
-    width: 240,
-    flexShrink: 0,
+  const projects = await prisma.project.findMany({
+    where: userCanAccessProject(context.user),
+    include: {
+      org: {
+        select: {
+          name: true,
+          updatedAt: true,
+        },
+      },
+      searchEndpoint: {
+        select: {
+          updatedAt: true,
+        },
+      },
+      searchPhrases: {
+        select: {
+          updatedAt: true,
+        },
+        orderBy: {
+          updatedAt: "desc",
+        },
+        take: 1,
+      },
+      queryTemplates: {
+        select: {
+          updatedAt: true,
+        },
+        orderBy: {
+          updatedAt: "desc",
+        },
+        take: 1,
+      },
+    },
+    take: 10,
+  });
+
+  return {
+    props: {
+      projects: projects.map((project) => {
+        const {
+          id,
+          orgId,
+          searchEndpointId,
+          name,
+          updatedAt,
+          org,
+          searchEndpoint,
+          searchPhrases,
+          queryTemplates,
+        } = project;
+        const role = orgUsers.find((orgUser) => orgUser.orgId === orgId)
+          ?.role as RecentProject["org"]["role"];
+
+        const projectLastUpdate = Math.max(
+          updatedAt.valueOf(),
+          org.updatedAt.valueOf(),
+          searchEndpoint.updatedAt.valueOf(),
+          searchPhrases[0]?.updatedAt.valueOf() || 0,
+          queryTemplates[0]?.updatedAt.valueOf() || 0
+        );
+
+        return {
+          id,
+          orgId,
+          searchEndpointId,
+          name,
+          updatedAt: projectLastUpdate,
+          org: {
+            name: org.name,
+            role,
+          },
+        };
+      }),
+    },
+  };
+});
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    margin: `${theme.spacing(5)}px 0`,
   },
-  drawerPaper: {
-    width: 240,
+  avatar: {
+    width: 70,
+    height: 70,
+    marginRight: theme.spacing(2),
   },
 }));
 
-export default function Home() {
+type Props = {
+  projects: RecentProject[];
+};
+
+export default function Home({ projects }: Props) {
+  const { session } = useSession();
   const classes = useStyles();
 
+  const teams = [
+    {
+      id: 1,
+      name: "Team A",
+      role: "Admin",
+      members: 4,
+    },
+    {
+      id: 2,
+      name: "Team B",
+      role: "Admin",
+      members: 1,
+    },
+    {
+      id: 3,
+      name: "Team C",
+      role: "Admin",
+      members: 13,
+    },
+  ];
+
   return (
-    <div className={styles.container}>
-      <Drawer
-        variant="permanent"
-        className={classes.drawer}
-        classes={{
-          paper: classes.drawerPaper,
-        }}
-      >
-        <Toolbar />
-        <List>{mainListItems}</List>
-        <Divider />
-        <List>{secondaryListItems}</List>
-      </Drawer>
-      <main className={styles.main}>
-        <h1 className={styles.title}>Project Sierra</h1>
+    <div className={classes.root} data-testid="home-root">
+      <Grid container alignItems="center">
+        <Grid item>
+          <Avatar
+            className={classes.avatar}
+            alt={session.user?.name || ""}
+            src={session.user?.image || ""}
+          />
+        </Grid>
+        <Grid item>
+          <Typography variant="h5">{session.user?.name}</Typography>
+          <Typography variant="body2" color="textSecondary">
+            {session.user?.email}
+          </Typography>
+        </Grid>
+      </Grid>
 
-        <p className={styles.description}>
-          Get started by setting up your first project.
-        </p>
+      <Box mt={5}>
+        <Typography variant="h4">Teams</Typography>
+      </Box>
+      <TeamList teams={teams} />
 
-        <div className={styles.grid}>
-          <a href="/projects" className={styles.card}>
-            <h3>Projects &rarr;</h3>
-            <p>
-              Access the Relevance Lab for testing and improving relevance for
-              your projects.
-            </p>
-          </a>
-
-          <a href="/searchendpoints" className={styles.card}>
-            <h3>Search Endpoints &rarr;</h3>
-            <p>Manage connection to your Elasticsearch and Solr clusters.</p>
-          </a>
-
-          <a href="#" className={styles.card}>
-            <h3>Teams &rarr;</h3>
-            <p>Get your team members access.</p>
-          </a>
-
-          <a href="#" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>&nbsp;</p>
-          </a>
-        </div>
-      </main>
+      <Box mt={5} mb={1}>
+        <Typography variant="h4">Recent Projects</Typography>
+      </Box>
+      <ProjectList projects={projects} />
     </div>
   );
 }
