@@ -3,7 +3,6 @@ import { signIn } from "next-auth/client";
 
 import { AppBar, Avatar, Box, Typography, Button } from "@material-ui/core";
 import HomeOutlinedIcon from "@material-ui/icons/HomeOutlined";
-import DomainOutlinedIcon from "@material-ui/icons/DomainOutlined";
 import FlaskIcon from "../common/FlaskIcon";
 
 import { useSession } from "../Session";
