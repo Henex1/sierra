@@ -23,7 +23,7 @@ export default function AppTopBar() {
   }, []);
 
   return (
-    <AppBar position="absolute" className={classes.appBar}>
+    <AppBar position="fixed" className={classes.appBar}>
       <Box className={classes.appBarWrapper}>
         <Box className={classes.leftWrapper}>
           <Link href="/" color="inherit" underline="none">
