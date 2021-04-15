@@ -1,6 +1,8 @@
 import * as React from "react";
 import Head from "next/head";
 import { AppProps } from "next/app";
+import { useSession, signIn } from 'next-auth/client'
+
 import { ThemeProvider } from "@material-ui/core/styles";
 import { CacheProvider } from "@emotion/react";
 import { Provider as NextSessionProvider } from "next-auth/client";
@@ -13,7 +15,10 @@ import { SessionProvider, ActiveProjectProvider } from "../components/Session";
 
 export const cache = createCache({ key: "css", prepend: true });
 
-export default function MyApp({ Component, pageProps }: AppProps) {
+export default function MyApp(props: AppProps) {
+  const { Component, pageProps } = props;
+  const [session] = useSession();
+
   React.useEffect(() => {
     // Remove the server-side injected CSS.
     const jssStyles = document.querySelector("#jss-server-side");
@@ -21,6 +26,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       jssStyles.parentElement!.removeChild(jssStyles);
     }
   }, []);
+
+  if (session === null) {
+    signIn();
+  }
 
   let page = (
     <>
