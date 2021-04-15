@@ -17,6 +17,7 @@ CREATE TABLE "users" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "siteRole" "UserSiteRole" NOT NULL DEFAULT E'USER',
+    "activeOrgId" INTEGER,
 
     PRIMARY KEY ("id")
 );
@@ -182,6 +183,9 @@ CREATE UNIQUE INDEX "_QueryTemplateToRulesetVersion_AB_unique" ON "_QueryTemplat
 
 -- CreateIndex
 CREATE INDEX "_QueryTemplateToRulesetVersion_B_index" ON "_QueryTemplateToRulesetVersion"("B");
+
+-- AddForeignKey
+ALTER TABLE "users" ADD FOREIGN KEY ("activeOrgId") REFERENCES "Org"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "OrgUser" ADD FOREIGN KEY ("orgId") REFERENCES "Org"("id") ON DELETE CASCADE ON UPDATE CASCADE;

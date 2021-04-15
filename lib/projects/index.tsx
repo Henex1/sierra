@@ -40,6 +40,13 @@ export async function getProject(
   return project;
 }
 
+export async function listProjects(org: Org): Promise<Project[]> {
+  const projects = await prisma.project.findMany({
+    where: { orgId: org.id },
+  });
+  return projects;
+}
+
 export const createProjectSchema = z.object({
   name: z.string(),
 });

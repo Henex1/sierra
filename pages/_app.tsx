@@ -3,6 +3,7 @@ import Head from "next/head";
 import { AppProps } from "next/app";
 import { ThemeProvider } from "@material-ui/core/styles";
 import { CacheProvider } from "@emotion/react";
+import { Provider as NextSessionProvider } from "next-auth/client";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import createCache from "@emotion/cache";
 
@@ -12,9 +13,7 @@ import { SessionProvider, ActiveProjectProvider } from "../components/Session";
 
 export const cache = createCache({ key: "css", prepend: true });
 
-export default function MyApp(props: AppProps) {
-  const { Component, pageProps } = props;
-
+export default function MyApp({ Component, pageProps }: AppProps) {
   React.useEffect(() => {
     // Remove the server-side injected CSS.
     const jssStyles = document.querySelector("#jss-server-side");
@@ -39,5 +38,6 @@ export default function MyApp(props: AppProps) {
   page = <CacheProvider value={cache} children={page} />;
   page = <ActiveProjectProvider children={page} />;
   page = <SessionProvider children={page} />;
+  page = <NextSessionProvider children={page} session={pageProps.session} />;
   return page;
 }

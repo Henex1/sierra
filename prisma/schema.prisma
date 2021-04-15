@@ -20,7 +20,13 @@ model User {
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
   siteRole      UserSiteRole @default(USER)
-  orgs          OrgUser[]
+  // This stores the user's "active" Org, which controls which resources they
+  // see when they are on various pages. This is a user preference, and does
+  // not imply that the user actually has access to the listed Org.
+  activeOrgId   Int?
+
+  orgs      OrgUser[]
+  activeOrg Org?      @relation(fields: [activeOrgId], references: [id])
 
   @@map("users")
 }
@@ -74,10 +80,12 @@ model Org {
   updatedAt DateTime @updatedAt
   name      String
 
-  projects  Project[]
-  searchEndpoints SearchEndpoint[]
-  users     OrgUser[]
-  rulesets  Ruleset[]
+  projects               Project[]
+  searchEndpoints        SearchEndpoint[]
+  users                  OrgUser[]
+  rulesets               Ruleset[]
+  // Prisma requires that all relations are bidirectional like this
+  usersWithThisActiveOrg User[]
 }
 
 // OrgUser represents membership in an organization.
@@ -103,9 +111,9 @@ enum UserOrgRole {
 
 // SearchEndpoint represents a remote datasource which can be queried.
 model SearchEndpoint {
-  id        Int          @id @default(autoincrement())
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id        Int                @id @default(autoincrement())
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
   orgId     Int
   name      String
   type      SearchEndpointType
@@ -121,15 +129,15 @@ enum SearchEndpointType {
 
 // A Project is a group of search phrases which are being optimized.
 model Project {
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  orgId      Int
+  id               Int      @id @default(autoincrement())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  orgId            Int
   searchEndpointId Int
-  name       String
+  name             String
 
   org            Org             @relation(fields: [orgId], references: [id])
-  searchEndpoint       SearchEndpoint        @relation(fields: [searchEndpointId], references: [id])
+  searchEndpoint SearchEndpoint  @relation(fields: [searchEndpointId], references: [id])
   searchPhrases  SearchPhrase[]
   queryTemplates QueryTemplate[]
 }

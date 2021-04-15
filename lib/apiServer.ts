@@ -30,13 +30,11 @@ export function apiHandler(handler: SierraApiHandler): NextApiHandler {
     try {
       await handler(req, res);
     } catch (err) {
-      if (process.env.NODE_ENV === "test") {
+      if (process.env.NODE_ENV !== "production") {
         if (err instanceof HttpError) console.error(err.data);
         throw err;
       } else if (err instanceof HttpError) {
         res.status(err.statusCode).json(err.data);
-      } else if (process.env.NODE_ENV === "development") {
-        res.status(500).json({ error: err.message, stack: err.stack });
       } else {
         res.status(500).json({ error: "internal server error" });
       }
