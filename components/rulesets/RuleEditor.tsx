@@ -2,20 +2,30 @@ import * as React from "react";
 import Grid from "@material-ui/core/Grid";
 import { Field } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
+import { Checkboxes, TextField, Select } from "mui-rff";
 import Box from "@material-ui/core/Box";
 import SelectMUI from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
 import Divider from "@material-ui/core/Divider";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
-import { Checkboxes, TextField, Select } from "mui-rff";
+import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Tooltip from "@material-ui/core/Tooltip";
+import Switch from "@material-ui/core/Switch";
 import AddIcon from "@material-ui/icons/Add";
-import ClearIcon from "@material-ui/icons/Clear";
 import DeleteIcon from "@material-ui/icons/Delete";
+import MoreVertIcon from "@material-ui/icons/MoreVert";
+import ArrowRightAltIcon from "@material-ui/icons/ArrowRightAlt";
+import SyncAltIcon from "@material-ui/icons/SyncAlt";
+import CheckCircleOutlinedIcon from "@material-ui/icons/CheckCircleOutlined";
+import PauseCircleOutlinedIcon from "@material-ui/icons/PauseCircleOutlineOutlined";
 
 import { RuleInstruction } from "../../lib/rulesets/rules";
-import { Slider, withStyles } from "@material-ui/core";
+import { Slider, withStyles, makeStyles } from "@material-ui/core";
 import { useEffect } from "react";
 import { parseNumber } from "../common/form";
 
@@ -35,15 +45,45 @@ type InstructionFieldProps = {
   name: string;
   value: RuleInstruction;
   onDelete: () => void;
+  disabled?: boolean;
 };
 
-function SynonymField({ name }: InstructionFieldProps) {
+const useSynonymFieldStyles = makeStyles((theme) => ({
+  select: {
+    display: "flex",
+    alignItems: "center",
+  },
+  icon: {
+    minWidth: 34,
+  },
+}));
+
+function SynonymField({ name, disabled }: InstructionFieldProps) {
+  const classes = useSynonymFieldStyles();
+
   return (
     <>
-      <Grid item xs={2}>
-        <Select name={`${name}.directed`} required>
-          <MenuItem value={false as any}>{"== (undirected)"}</MenuItem>
-          <MenuItem value={true as any}>&ndash;{"> (directed)"}</MenuItem>
+      <Grid item xs={3}>
+        <Select
+          name={`${name}.directed`}
+          classes={{
+            root: classes.select,
+          }}
+          disabled={disabled}
+          required
+        >
+          <MenuItem value={false as any}>
+            <ListItemIcon className={classes.icon}>
+              <SyncAltIcon />
+            </ListItemIcon>
+            <ListItemText>(undirected)</ListItemText>
+          </MenuItem>
+          <MenuItem value={true as any}>
+            <ListItemIcon className={classes.icon}>
+              <ArrowRightAltIcon />
+            </ListItemIcon>
+            <ListItemText>(directed)</ListItemText>
+          </MenuItem>
         </Select>
       </Grid>
       <Grid item xs={1}>
@@ -53,16 +93,17 @@ function SynonymField({ name }: InstructionFieldProps) {
           fieldProps={{
             parse: parseNumber,
           }}
+          disabled={disabled}
         />
       </Grid>
       <Grid item xs>
-        <TextField name={`${name}.term`} required />
+        <TextField name={`${name}.term`} disabled={disabled} required />
       </Grid>
     </>
   );
 }
 
-function UpBoostField({ name }: InstructionFieldProps) {
+function UpBoostField({ name, disabled }: InstructionFieldProps) {
   return (
     <>
       <Grid item xs={4}>
@@ -96,19 +137,20 @@ function UpBoostField({ name }: InstructionFieldProps) {
                 step={1}
                 min={1}
                 max={1000}
+                disabled={disabled}
               />
             );
           }}
         />
       </Grid>
       <Grid item xs>
-        <TextField name={`${name}.term`} required />
+        <TextField name={`${name}.term`} disabled={disabled} required />
       </Grid>
     </>
   );
 }
 
-function DownBoostField({ name }: InstructionFieldProps) {
+function DownBoostField({ name, disabled }: InstructionFieldProps) {
   return (
     <>
       <Grid item xs={4}>
@@ -144,43 +186,53 @@ function DownBoostField({ name }: InstructionFieldProps) {
                 step={1}
                 min={1}
                 max={1000}
+                disabled={disabled}
               />
             );
           }}
         />
       </Grid>
       <Grid item xs>
-        <TextField name={`${name}.term`} required />
+        <TextField name={`${name}.term`} disabled={disabled} required />
       </Grid>
     </>
   );
 }
 
-function FilterField({ name }: InstructionFieldProps) {
+function FilterField({ name, disabled }: InstructionFieldProps) {
   return (
     <>
-      <Grid item xs={2}>
-        <Select name={`${name}.include`} required>
+      <Grid item xs={4}>
+        <Select name={`${name}.include`} disabled={disabled} required>
           <MenuItem value={true as any}>MUST</MenuItem>
           <MenuItem value={false as any}>MUST NOT</MenuItem>
         </Select>
       </Grid>
       <Grid item xs>
-        <TextField name={`${name}.term`} required />
+        <TextField name={`${name}.term`} disabled={disabled} required />
       </Grid>
     </>
   );
 }
 
-function DeleteField({ name }: InstructionFieldProps) {
+function DeleteField({ name, disabled }: InstructionFieldProps) {
   return (
     <Grid item xs>
-      <TextField name={`${name}.term`} required />
+      <TextField name={`${name}.term`} disabled={disabled} required />
     </Grid>
   );
 }
 
+const useInstructionFieldStyles = makeStyles((theme) => ({
+  deleteIcon: {
+    minWidth: 46,
+    paddingLeft: 6,
+  },
+}));
+
 function InstructionField(props: InstructionFieldProps) {
+  const classes = useInstructionFieldStyles();
+
   const { name, value, onDelete } = props;
   const typeValue =
     value.type === "updown"
@@ -191,33 +243,35 @@ function InstructionField(props: InstructionFieldProps) {
   const [instructionsType, setInstructionsType] = React.useState<
     string | unknown
   >(typeValue);
+  const isDisabled = !value.enabled;
 
   const editor =
     instructionsType === "synonym" ? (
-      <SynonymField {...props} />
+      <SynonymField {...props} disabled={isDisabled} />
     ) : instructionsType === "upBoost" ? (
-      <UpBoostField {...props} />
+      <UpBoostField {...props} disabled={isDisabled} />
     ) : instructionsType === "downBoost" ? (
-      <DownBoostField {...props} />
+      <DownBoostField {...props} disabled={isDisabled} />
     ) : instructionsType === "filter" ? (
-      <FilterField {...props} />
+      <FilterField {...props} disabled={isDisabled} />
     ) : instructionsType === "delete" ? (
-      <DeleteField {...props} />
+      <DeleteField {...props} disabled={isDisabled} />
     ) : (
       <Grid item>Unsupported instruction: {(value as any).type}</Grid>
     );
+
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const handleOpenMenu = (e: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(e.currentTarget);
+  };
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
+
   return (
     <Box pb={2}>
-      <Grid container spacing={2}>
-        <Grid item>
-          <Checkboxes
-            size="small"
-            name={`${name}.enabled`}
-            formControlLabelProps={{ labelPlacement: "start" }}
-            data={{ label: undefined, value: true }}
-          />
-        </Grid>
-        <Grid item xs={2}>
+      <Grid container spacing={2} alignItems="flex-end">
+        <Grid item xs={3}>
           <Field
             name={`${name}.type`}
             parse={(value: any) =>
@@ -238,6 +292,8 @@ function InstructionField(props: InstructionFieldProps) {
                     props.input.onChange(e);
                   }}
                   required
+                  fullWidth
+                  disabled={isDisabled}
                 >
                   <MenuItem value="synonym">SYNONYM</MenuItem>
                   <MenuItem value="upBoost">UP BOOST</MenuItem>
@@ -251,18 +307,49 @@ function InstructionField(props: InstructionFieldProps) {
         </Grid>
         {editor}
         <Grid item>
-          <IconButton
-            size="small"
-            aria-label="delete instruction"
-            onClick={onDelete}
-          >
-            <ClearIcon />
+          <IconButton aria-label="more" onClick={handleOpenMenu}>
+            <MoreVertIcon />
           </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleCloseMenu}
+          >
+            <MenuItem>
+              <Field name={`${name}.enabled`} type="checkbox">
+                {({ input }) => (
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={input.checked}
+                        onChange={input.onChange}
+                        name={input.name}
+                        color="primary"
+                      />
+                    }
+                    label={input.checked ? "Enabled" : "Disabled"}
+                  />
+                )}
+              </Field>
+            </MenuItem>
+            <MenuItem button onClick={onDelete}>
+              <ListItemIcon className={classes.deleteIcon}>
+                <DeleteIcon />
+              </ListItemIcon>
+              <ListItemText>Delete</ListItemText>
+            </MenuItem>
+          </Menu>
         </Grid>
       </Grid>
     </Box>
   );
 }
+
+const useRuleEditorStyles = makeStyles((theme) => ({
+  input: {
+    paddingRight: theme.spacing(2),
+  },
+}));
 
 export type RuleEditorProps = {
   name: string;
@@ -270,28 +357,50 @@ export type RuleEditorProps = {
 };
 
 export default function RuleEditor({ name, onDelete }: RuleEditorProps) {
+  const classes = useRuleEditorStyles();
+
   return (
     <React.Fragment key={name}>
       <Box pb={2}>
-        <Grid container spacing={1}>
-          <Grid item>
-            <Checkboxes
-              name={`${name}.enabled`}
-              formControlLabelProps={{ labelPlacement: "start" }}
-              data={{ label: undefined, value: true }}
+        <Grid container alignItems="center">
+          <Grid item xs>
+            <TextField
+              name={`${name}.expression`}
+              label="Expression"
+              variant="filled"
+              classes={{
+                root: classes.input,
+              }}
             />
           </Grid>
-          <Grid item xs>
-            <TextField name={`${name}.expression`} label="Expression" />
+          <Grid item>
+            <Field name={`${name}.enabled`}>
+              {({ input }) => (
+                <Tooltip title={input.value ? "Rule enabled" : "Rule disabled"}>
+                  <IconButton
+                    aria-label="toggle rule"
+                    onClick={() => input.onChange(!input.value)}
+                  >
+                    {input.value ? (
+                      <CheckCircleOutlinedIcon color="secondary" />
+                    ) : (
+                      <PauseCircleOutlinedIcon />
+                    )}
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Field>
           </Grid>
           <Grid item>
-            <IconButton aria-label="delete rule" onClick={onDelete}>
-              <DeleteIcon />
-            </IconButton>
+            <Tooltip title={"Delete rule"}>
+              <IconButton aria-label="delete rule" onClick={onDelete}>
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
           </Grid>
         </Grid>
       </Box>
-      <Box pb={2}>
+      <Box pt={2} pb={2}>
         <Divider />
       </Box>
       <Typography>Instructions</Typography>
@@ -306,7 +415,7 @@ export default function RuleEditor({ name, onDelete }: RuleEditorProps) {
                 onDelete={() => fields.remove(index)}
               />
             ))}
-            <Box pb={2}>
+            <Box mt={2} mb={2}>
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
