@@ -26,13 +26,18 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
+import Breadcrumbs from "@material-ui/core/Breadcrumbs";
 import Paper, { PaperProps } from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
+import { makeStyles } from "@material-ui/core/styles";
 import DragIndicatorIcon from "@material-ui/icons/DragIndicator";
+import SettingsIcon from "@material-ui/icons/Settings";
 
+import Link from "../common/Link";
 import RuleEditor from "./RuleEditor";
+import { ExposedRuleset } from "../../lib/rulesets";
 import { RulesetVersionValue, Rule } from "../../lib/rulesets/rules";
 import RulesetEditorSaveButton from "./RulesetEditorSaveButton";
-import SettingsIcon from "@material-ui/icons/Settings";
 import MockRulesetConditionEditor from "./MockRulesetConditionEditor";
 
 function PaperComponent(props: PaperProps) {
@@ -92,6 +97,16 @@ function NoRuleset() {
   );
 }
 
+const useRulesListStyles = makeStyles((theme) => ({
+  settingsIcon: {
+    marginRight: theme.spacing(1),
+  },
+  dragIcon: {
+    marginRight: theme.spacing(1),
+    cursor: "pointer",
+  },
+}));
+
 type RulesListProps = {
   rules: Rule[];
   selectedRule: number;
@@ -106,6 +121,7 @@ function RulesList({
   onAddRule,
 }: RulesListProps) {
   resetServerContext();
+  const classes = useRulesListStyles();
   const [filter, setFilter] = React.useState("");
 
   function handleSubmit(e: React.FormEvent) {
@@ -156,7 +172,7 @@ function RulesList({
               onClick={() => onChangeSelection(index, false)}
               selected={selectedRule === index}
             >
-              <DragIndicatorIcon />
+              <DragIndicatorIcon className={classes.dragIcon} />
               <ListItemText
                 primary={rule.expression || "<new rule>"}
                 primaryTypographyProps={{
@@ -179,25 +195,31 @@ function RulesList({
         <Grid item xs>
           <TextField
             label="Filter"
-            variant="filled"
+            variant="outlined"
             fullWidth
             value={filter}
             type="search"
             onChange={(e) => setFilter(e.target.value)}
+            size="small"
           />
         </Grid>
         <Grid item>
-          <Button type="submit" variant="contained" startIcon={<AddIcon />}>
+          <Button
+            type="submit"
+            variant="outlined"
+            startIcon={<AddIcon />}
+            size="medium"
+          >
             New
           </Button>
         </Grid>
       </Grid>
-      <Box pt={2} pb={1}>
+      <Box pt={4} pb={2}>
         <Divider />
       </Box>
       <Box>
         <Button onClick={() => onChangeSelection(-2, false)}>
-          <SettingsIcon /> Ruleset Conditions
+          <SettingsIcon className={classes.settingsIcon} /> Ruleset Conditions
         </Button>
       </Box>
       <Box pt={2} pb={1}>
@@ -213,7 +235,7 @@ function RulesList({
                     {...provided.droppableProps}
                     ref={provided.innerRef}
                     style={{
-                      padding: "8px",
+                      padding: "8px 0",
                       width: "auto",
                     }}
                   >
@@ -230,9 +252,11 @@ function RulesList({
   );
 }
 
-export type RulesetEditorProps = FormProps<RulesetVersionValue> & {};
+export type RulesetEditorProps = FormProps<RulesetVersionValue> & {
+  name: ExposedRuleset["name"];
+};
 
-export default function RulesetEditor(rest: RulesetEditorProps) {
+export default function RulesetEditor({ name, ...rest }: RulesetEditorProps) {
   const [activeRuleset, setActiveRuleset] = React.useState(-1);
   // Note: storing a function in useState requires setState(() => myFunction),
   // which is why you see setState(() => () => foo), below.
@@ -254,54 +278,62 @@ export default function RulesetEditor(rest: RulesetEditorProps) {
           setActiveRuleset(values.rules.length);
         }
         return (
-          <Grid container spacing={2}>
-            <Grid item md={3}>
-              <RulesList
-                rules={values.rules}
-                selectedRule={activeRuleset}
-                onChangeSelection={
-                  dirty
-                    ? (x, isDragging) =>
-                        isDragging
-                          ? setActiveRuleset
-                          : setPendingAction(() => () => setActiveRuleset(x))
-                    : setActiveRuleset
-                }
-                onAddRule={
-                  dirty
-                    ? (x) => setPendingAction(() => () => handleAddRule(x))
-                    : handleAddRule
-                }
-              />
-              <form onSubmit={handleSubmit}>
-                <RulesetEditorSaveButton dirty={dirty} />
-              </form>
-            </Grid>
-            <Grid item md={8}>
-              {activeRuleset === -1 && <NoRuleset />}
-              {activeRuleset === -2 && <MockRulesetConditionEditor />}
-              {activeRuleset >= 0 && (
+          <>
+            <Box display="flex" mb={4}>
+              <Breadcrumbs aria-label="breadcrumb">
+                <Link href="/rulesets">Rulesets</Link>
+                <Typography>{name}</Typography>
+              </Breadcrumbs>
+            </Box>
+            <Grid container spacing={4}>
+              <Grid item md={3}>
+                <RulesList
+                  rules={values.rules}
+                  selectedRule={activeRuleset}
+                  onChangeSelection={
+                    dirty
+                      ? (x, isDragging) =>
+                          isDragging
+                            ? setActiveRuleset
+                            : setPendingAction(() => () => setActiveRuleset(x))
+                      : setActiveRuleset
+                  }
+                  onAddRule={
+                    dirty
+                      ? (x) => setPendingAction(() => () => handleAddRule(x))
+                      : handleAddRule
+                  }
+                />
                 <form onSubmit={handleSubmit}>
-                  <RuleEditor
-                    name={`rules[${activeRuleset}]`}
-                    onDelete={() => {
-                      form.mutators.remove("rules", activeRuleset);
-                      setActiveRuleset(activeRuleset - 1);
-                    }}
-                  />
+                  <RulesetEditorSaveButton dirty={dirty} />
                 </form>
-              )}
+              </Grid>
+              <Grid item md={8}>
+                {activeRuleset === -1 && <NoRuleset />}
+                {activeRuleset === -2 && <MockRulesetConditionEditor />}
+                {activeRuleset >= 0 && (
+                  <form onSubmit={handleSubmit}>
+                    <RuleEditor
+                      name={`rules[${activeRuleset}]`}
+                      onDelete={() => {
+                        form.mutators.remove("rules", activeRuleset);
+                        setActiveRuleset(activeRuleset - 1);
+                      }}
+                    />
+                  </form>
+                )}
+              </Grid>
+              <DiscardChangesDialog
+                open={pendingAction !== null}
+                onCancel={() => setPendingAction(null)}
+                onConfirm={() => {
+                  setPendingAction(null);
+                  form.reset();
+                  pendingAction!();
+                }}
+              />
             </Grid>
-            <DiscardChangesDialog
-              open={pendingAction !== null}
-              onCancel={() => setPendingAction(null)}
-              onConfirm={() => {
-                setPendingAction(null);
-                form.reset();
-                pendingAction!();
-              }}
-            />
-          </Grid>
+          </>
         );
       }}
     />

@@ -57,18 +57,18 @@ export default function EditRuleset({ ruleset, version }: Props) {
   const router = useRouter();
 
   async function onSubmit(value: RulesetVersionValue) {
-    await apiRequest(`/api/rulesets/newVersion`, {
+    await apiRequest(`/api/rulesets/createVersion`, {
       value,
       rulesetId: ruleset.id,
       parentId: version.id,
     });
-    router.push("/rulesets");
-    // Keep the form stuck as pending
-    return new Promise(() => {});
+    router.push(router.asPath);
+    return;
   }
 
   return (
     <RulesetEditor
+      name={ruleset.name}
       onSubmit={onSubmit}
       initialValues={version.value as RulesetVersionValue}
     />
