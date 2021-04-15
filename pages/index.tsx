@@ -18,6 +18,7 @@ import prisma from "../lib/prisma";
 export const getServerSideProps = authenticatedPage<{
   projects: RecentProject[];
 }>(async (context) => {
+  const activeOrgId = context.user.activeOrgId;
   const orgUsers = await prisma.orgUser.findMany({
     where: {
       userId: {
@@ -27,7 +28,7 @@ export const getServerSideProps = authenticatedPage<{
   });
 
   const projects = await prisma.project.findMany({
-    where: userCanAccessProject(context.user),
+    where: userCanAccessProject(context.user, { orgId: activeOrgId }),
     include: {
       org: {
         select: {

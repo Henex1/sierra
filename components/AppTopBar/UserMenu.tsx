@@ -14,7 +14,8 @@ export default function UserMenu() {
       buttonIcon={<KeyboardArrowDownIcon />}
       menuClassName={classes.dropMenu}
     >
-      <MenuItemLink href="#">Profile</MenuItemLink>
+      <MenuItemLink href="/me/active-org">Switch Org</MenuItemLink>
+      <MenuItemLink href="/me">Profile</MenuItemLink>
       <MenuItem onClick={() => signOut()}>Logout</MenuItem>
     </MenuButton>
   );

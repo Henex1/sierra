@@ -7,15 +7,13 @@ import { Session, getSession } from "next-auth/client";
 
 import prisma, { User, UserOrgRole } from "./prisma";
 import { requireEnv } from "./env";
-import {
-  formatProject,
-  userCanAccessProject,
-  ExposedProject,
-} from "./projects";
+import { formatProject, listProjects, ExposedProject } from "./projects";
+import { formatOrg, userCanAccessOrg, ExposedOrg } from "./org";
 
 export type ValidUserSession = {
   session: Session;
   user: User;
+  orgs: ExposedOrg[];
   projects: ExposedProject[];
 };
 
@@ -40,13 +38,17 @@ export const authOptions: InitOptions = {
       (session as any).user.id = (user as any).id;
 
       // We stuff some extra values in the session as well
-      const projects = (
-        await prisma.project.findMany({
-          where: userCanAccessProject(user),
-        })
-      ).map(formatProject);
+      const orgs = await prisma.org.findMany({
+        where: userCanAccessOrg(user),
+      });
+      const activeOrg = orgs.find((o) => o.id === user.activeOrgId) || orgs[0];
+      (session as any).user.activeOrgId = activeOrg?.id;
 
-      return { ...session, projects };
+      const projects = (activeOrg ? await listProjects(activeOrg) : []).map(
+        formatProject
+      );
+
+      return { ...session, orgs: orgs.map(formatOrg), projects };
     },
     async signIn(user: any, account: any, profile: any) {
       const email = profile.verified_email ? profile.email : "";
