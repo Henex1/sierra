@@ -7,7 +7,6 @@ import {
   Chip,
   makeStyles,
 } from "@material-ui/core";
-import moment from "moment";
 
 import { Org, UserOrgRole } from "../../lib/prisma";
 import { ExposedProject } from "../../lib/projects";
@@ -59,9 +58,9 @@ export default function ProjectList({ projects }: Props) {
                       className={classes.chip}
                     />
                   </TableCell>
-                  <TableCell>
-                    {`Updated ${moment(project.updatedAt).fromNow()}`}
-                  </TableCell>
+                  <TableCell>{`Updated ${getTimeAgo(
+                    project.updatedAt
+                  )}`}</TableCell>
                 </TableRow>
               ))
           ) : (
@@ -73,4 +72,36 @@ export default function ProjectList({ projects }: Props) {
       </Table>
     </TableContainer>
   );
+}
+
+function getTimeAgo(date: number): string {
+  const MINUTE = 60;
+  const HOUR = MINUTE * 60;
+  const DAY = HOUR * 24;
+  const WEEK = DAY * 7;
+  const MONTH = DAY * 30;
+  const YEAR = DAY * 365;
+
+  const secondsAgo = Math.round((+new Date() - date) / 1000);
+  let divisor;
+  let unit;
+
+  if (secondsAgo < MINUTE) {
+    return secondsAgo + " seconds ago";
+  } else if (secondsAgo < HOUR) {
+    [divisor, unit] = [MINUTE, "minute"];
+  } else if (secondsAgo < DAY) {
+    [divisor, unit] = [HOUR, "hour"];
+  } else if (secondsAgo < WEEK) {
+    [divisor, unit] = [DAY, "day"];
+  } else if (secondsAgo < MONTH) {
+    [divisor, unit] = [WEEK, "week"];
+  } else if (secondsAgo < YEAR) {
+    [divisor, unit] = [MONTH, "month"];
+  } else if (secondsAgo > YEAR) {
+    [divisor, unit] = [YEAR, "year"];
+  }
+
+  const count = Math.floor(secondsAgo / (divisor as number));
+  return `${count} ${unit}${count > 1 ? "s" : ""} ago`;
 }
