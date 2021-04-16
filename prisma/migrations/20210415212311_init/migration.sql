@@ -5,7 +5,7 @@ CREATE TYPE "UserSiteRole" AS ENUM ('USER', 'ADMIN');
 CREATE TYPE "UserOrgRole" AS ENUM ('USER', 'ADMIN');
 
 -- CreateEnum
-CREATE TYPE "SearchEndpointType" AS ENUM ('ELASTICSEARCH');
+CREATE TYPE "SearchEndpointType" AS ENUM ('ELASTICSEARCH', 'OPEN_SEARCH', 'SOLR', 'VESPA', 'REDIS_SEARCH');
 
 -- CreateTable
 CREATE TABLE "users" (
@@ -81,6 +81,8 @@ CREATE TABLE "SearchEndpoint" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "orgId" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "whitelist" TEXT[],
     "type" "SearchEndpointType" NOT NULL,
     "info" JSONB NOT NULL,
 
