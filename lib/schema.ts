@@ -1,14 +1,47 @@
 import * as z from "zod";
 
-// Replace with:
-// z.union([z.literal("ELASTICSEARCH"), z.literal("SOMETHING_ELSE")]);
-export const SearchEndpointType = z.literal("ELASTICSEARCH");
+export const SearchEndpointType = z.union([
+  z.literal("ELASTICSEARCH"),
+  z.literal("OPEN_SEARCH"),
+  z.literal("SOLR"),
+  z.literal("VESPA"),
+  z.literal("REDIS_SEARCH")
+]);
 
 export const ElasticsearchInfoSchema = z.object({
   endpoint: z.string(),
+  index: z.string(),
+  username: z.string().optional(),
+  password: z.string().optional()
 });
 
-/* Replace .merge(z.object()) with .merge(z.union(z.object(), ...)) */
+export const OpenSearchInfoSchema = z.object({
+  endpoint: z.string(),
+  index: z.string(),
+  username: z.string().optional(),
+  password: z.string().optional()
+});
+
+export const SolrInfoSchema = z.object({
+  endpoint: z.string(),
+});
+
+export const VespaInfoSchema = z.object({
+  endpoint: z.string(),
+});
+
+export const RedisSearchInfoSchema = z.object({
+  endpoint: z.string(),
+});
+
+export const SearchEndpointInfo = z.union([
+  ElasticsearchInfoSchema,
+  OpenSearchInfoSchema,
+  SolrInfoSchema,
+  VespaInfoSchema,
+  RedisSearchInfoSchema
+]);
+
 export const SearchEndpointSchema = z
   .object({
     id: z.number(),
@@ -16,11 +49,13 @@ export const SearchEndpointSchema = z
     updatedAt: z.date(),
     orgId: z.number(),
     name: z.string(),
+    description: z.string(),
+    whitelist: z.array(z.string())
   })
   .merge(
     z.object({
-      type: z.literal("ELASTICSEARCH"),
-      info: ElasticsearchInfoSchema,
+      type: SearchEndpointType,
+      info: SearchEndpointInfo,
     })
   );
 

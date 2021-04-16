@@ -14,6 +14,8 @@ const selectKeys = {
   id: true,
   orgId: true,
   name: true,
+  description: true,
+  whitelist: true,
   type: true,
   info: true,
 };
