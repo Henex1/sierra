@@ -1,6 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { RulesetVersionValue } from "../../../lib/rulesets/rules";
+import {
+  CreateSearchPhrase,
+  createSearchPhrase,
+} from "../../../lib/searchphrases";
 import prisma from "../../../lib/prisma";
 import { notAuthorized, notFound } from "../../../lib/errors";
 import { getUser, ValidUserSession } from "../../../lib/authServer";
@@ -35,6 +39,14 @@ const mockRuleset: RulesetVersionValue = {
   ],
 };
 
+const mockSearchPhrases: CreateSearchPhrase[] = [
+  { phrase: "notebook" },
+  { phrase: "fruits" },
+  { phrase: "tote bags" },
+  { phrase: "briefcase" },
+  { phrase: "suitcase" },
+];
+
 async function handleSeed(
   { user }: ValidUserSession,
   req: NextApiRequest,
@@ -49,6 +61,8 @@ async function handleSeed(
     data: {
       orgId: org.id,
       name: "Local Elasticsearch",
+      description: "Elasticsearch instance on localhost.",
+      whitelist: [],
       type: "ELASTICSEARCH",
       info: { endpoint: "http://localhost:9200/icecat/_search" },
     },
@@ -73,6 +87,10 @@ async function handleSeed(
       },
     },
   });
+
+  await Promise.all(
+    mockSearchPhrases.map((phrase) => createSearchPhrase(project, phrase))
+  );
 
   return res.status(200).json({ success: true });
 }

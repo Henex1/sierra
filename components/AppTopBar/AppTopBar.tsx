@@ -5,7 +5,7 @@ import { AppBar, Avatar, Box, Typography, Button } from "@material-ui/core";
 import HomeOutlinedIcon from "@material-ui/icons/HomeOutlined";
 import FlaskIcon from "../common/FlaskIcon";
 
-import { useSession } from "../Session";
+import { useSession, useActiveProject } from "../Session";
 import Link, { LinkButton } from "../common/Link";
 import useStyles from "./AppTopBarStyles";
 import SettingsMenu from "./SettingsMenu";
@@ -16,6 +16,9 @@ import ProjectsMenu from "./ProjectsMenu";
 export default function AppTopBar() {
   const classes = useStyles();
   const { session } = useSession();
+  const { project } = useActiveProject();
+
+  const activeProjectId = project?.id ?? 0;
 
   const handleUserLoginClick = useCallback(() => {
     return signIn();
@@ -38,7 +41,7 @@ export default function AppTopBar() {
             Home
           </LinkButton>
           <LinkButton
-            href="/lab"
+            href={`${activeProjectId}/lab`}
             color="inherit"
             className={classes.topButton}
             size="large"

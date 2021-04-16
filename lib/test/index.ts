@@ -2,6 +2,7 @@ import { createRequest, createResponse, RequestOptions } from "node-mocks-http";
 import { getPage } from "next-page-tester";
 import { NextApiHandler } from "next";
 
+export * from "./constants";
 export { getPage };
 
 export async function getApiRoute<Req extends object, Res extends object = any>(

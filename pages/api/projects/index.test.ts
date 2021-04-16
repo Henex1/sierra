@@ -4,11 +4,18 @@ import {
   handleUpdateProject,
   handleDeleteProject,
 } from "./index";
-import { getApiRoute } from "../../../lib/test";
+import {
+  getApiRoute,
+  TEST_ORG_ID,
+  TEST_SEARCHENDPOINT_ID,
+} from "../../../lib/test";
 
 describe("api/projects", () => {
   it("/create", async () => {
-    const initialInfo = { name: "My Test Project", searchEndpointId: 1 };
+    const initialInfo = {
+      name: "My Test Project",
+      searchEndpointId: TEST_SEARCHENDPOINT_ID,
+    };
     const { project } = await getApiRoute(handleCreateProject, initialInfo, {
       method: "POST",
     });
@@ -24,7 +31,11 @@ describe("api/projects", () => {
 
   it("/update name", async () => {
     const initialProject = await prisma.project.create({
-      data: { orgId: 1, searchEndpointId: 1, name: "Initial Name" },
+      data: {
+        orgId: TEST_ORG_ID,
+        searchEndpointId: TEST_SEARCHENDPOINT_ID,
+        name: "Initial Name",
+      },
     });
     const newInfo = { id: initialProject.id, name: "Updated Name" };
 
@@ -37,9 +48,16 @@ describe("api/projects", () => {
 
   it("/update searchEndpointId", async () => {
     const initialProject = await prisma.project.create({
-      data: { orgId: 1, searchEndpointId: 1, name: "Initial Name" },
+      data: {
+        orgId: TEST_ORG_ID,
+        searchEndpointId: TEST_SEARCHENDPOINT_ID,
+        name: "Initial Name",
+      },
     });
-    const newInfo = { id: initialProject.id, searchEndpointId: 2 };
+    const newInfo = {
+      id: initialProject.id,
+      searchEndpointId: TEST_SEARCHENDPOINT_ID + 1,
+    };
 
     const { project } = await getApiRoute(handleUpdateProject, newInfo, {
       method: "POST",
@@ -50,7 +68,11 @@ describe("api/projects", () => {
 
   it("/delete", async () => {
     const initialProject = await prisma.project.create({
-      data: { orgId: 1, searchEndpointId: 1, name: "Initial Name" },
+      data: {
+        orgId: TEST_ORG_ID,
+        searchEndpointId: TEST_SEARCHENDPOINT_ID,
+        name: "Initial Name",
+      },
     });
 
     const result = await getApiRoute(

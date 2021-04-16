@@ -1,6 +1,6 @@
 import prisma from "../../../lib/prisma";
 import { handleCreateRuleset, handleCreateRulesetVersion } from "./index";
-import { getApiRoute } from "../../../lib/test";
+import { getApiRoute, TEST_ORG_ID } from "../../../lib/test";
 
 describe("api/rulesets", () => {
   it("/create", async () => {
@@ -24,7 +24,7 @@ describe("api/rulesets", () => {
   it("/createVersion", async () => {
     // Create ruleset
     const ruleset = await prisma.ruleset.create({
-      data: { orgId: 1, name: "createRulesetVersion test" },
+      data: { orgId: TEST_ORG_ID, name: "createRulesetVersion test" },
     });
 
     // Test endpoint

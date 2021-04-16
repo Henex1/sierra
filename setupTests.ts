@@ -4,6 +4,7 @@ import { IncomingMessage } from "http";
 
 import prisma from "./lib/prisma";
 import { UserSession } from "./lib/authServer";
+import { TEST_USER_ID } from "./lib/test";
 
 import "@testing-library/jest-dom/extend-expect";
 
@@ -14,6 +15,16 @@ loadEnvConfig(path.dirname(__filename), true, {
   error(...args: any[]): void {
     console.error(...args);
   },
+});
+
+beforeEach(async (done) => {
+  await prisma.$executeRaw("BEGIN;");
+  done();
+});
+
+afterEach(async (done) => {
+  await prisma.$executeRaw("ROLLBACK;");
+  done();
 });
 
 afterAll(async (done) => {
@@ -29,7 +40,7 @@ jest.mock("./components/Session", () => {
   };
 });
 
-let mockUserId: number | undefined = 1;
+let mockUserId: number | undefined = TEST_USER_ID;
 const mockGetUser = jest.fn(async () => {
   if (mockUserId === undefined) {
     return {};
@@ -42,7 +53,7 @@ const mockGetUser = jest.fn(async () => {
 });
 
 afterEach(() => {
-  mockUserId = 1;
+  mockUserId = TEST_USER_ID;
 });
 
 jest.mock("./lib/authServer", () => {

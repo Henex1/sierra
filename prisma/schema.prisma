@@ -153,6 +153,7 @@ model SearchPhrase {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   projectId Int
+  phrase    String
   // This takes the form of { "judgements": [ [ document ID, rating ], ... ] }
   judgement Json
   project   Project  @relation(fields: [projectId], references: [id])
