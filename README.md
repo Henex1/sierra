@@ -81,8 +81,8 @@ During early development, we don't add new Prisma migrations and instead complet
 
 ```bash
 rm -rf prisma/migrations
-prisma migrate dev --create-only --skip-seed
-prisma migrate reset --force
+yarn prisma migrate dev --create-only --skip-seed
+yarn prisma migrate reset --force
 ```
 
 ### Modify the database schema

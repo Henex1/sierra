@@ -107,6 +107,7 @@ CREATE TABLE "SearchPhrase" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "projectId" INTEGER NOT NULL,
+    "phrase" TEXT NOT NULL,
     "judgement" JSONB NOT NULL,
 
     PRIMARY KEY ("id")

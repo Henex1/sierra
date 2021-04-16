@@ -1,4 +1,4 @@
-import prisma, { User } from "../prisma";
+import prisma, { User, Org } from "../prisma";
 
 export async function setUserActiveOrg(
   user: User,

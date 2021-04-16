@@ -86,9 +86,19 @@ export async function getUser(req: IncomingMessage): Promise<UserSession> {
   if (!userId) {
     return { session };
   }
-  const user =
-    (await prisma.user.findUnique({
-      where: { id: userId },
-    })) ?? undefined;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user) {
+    // XXX - this is a critical error meaning our session is corrupt!
+    return { session };
+  }
+  if (!user.activeOrgId) {
+    // We have to have a default Org or else we can't show any resources.
+    user.activeOrgId = session.orgs[0]?.id;
+    if (!user.activeOrgId) {
+      throw new Error("User has no Orgs!");
+    }
+  }
   return { session, user };
 }

@@ -3,14 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "ts-node": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' --files",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "test": "jest",
     "postinstall": "patch-package",
-    "prisma": "NODE_ENV=${NODE_ENV:-development} dotenv -c $NODE_ENV -- prisma",
-    "db:reset:test": "NODE_ENV=test yarn prisma migrate reset --force && yarn ts-node ./prisma/testSeed.ts"
+    "env": "NODE_ENV=${NODE_ENV:-development} dotenv -c $NODE_ENV --",
+    "ts-node": "yarn env ts-node --compiler-options '{\"module\":\"CommonJS\"}' --files",
+    "prisma": "yarn env prisma",
+    "db:reset:test": "NODE_ENV=test yarn env prisma migrate reset --force && NODE_ENV=test yarn ts-node ./prisma/testSeed.ts"
   },
   "dependencies": {
     "@emotion/cache": "^11.1.3",

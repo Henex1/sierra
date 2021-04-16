@@ -19,12 +19,13 @@ import { useRouter } from "next/router";
 import Filters from "../../components/lab/Filters";
 import DetailModal from "../../components/lab/DetailModal";
 import ActionButtons from "../../components/lab/ActionButtons";
+import { getProject } from "../../lib/projects";
 import {
-  SearchPhrase,
   getSearchPhrases,
-  ShowOptions,
-  SortOptions,
-} from "../../lib/lab";
+  formatSearchPhrase,
+  ExposedSearchPhrase,
+} from "../../lib/searchphrases";
+import { MockSearchPhrase, ShowOptions, SortOptions } from "../../lib/lab";
 import { authenticatedPage } from "../../lib/auth";
 
 const useStyles = makeStyles((theme) => ({
@@ -59,25 +60,49 @@ const colorScale = scaleLinear<string, string>()
   .range([colors.red[500], colors.yellow[500], colors.green[500]]);
 
 export const getServerSideProps = authenticatedPage(async (context) => {
+  const projectId = parseInt(context.query.projectId as string, 10);
+  const project = await getProject(context.user, projectId);
+  if (!project) {
+    return { notFound: true };
+  }
   const opts = {
     sort: context.query.sort as string,
     show: context.query.show as string,
   };
-  // TODO: replace with persisted data from prisma
-  const searchPhrases = getSearchPhrases(opts);
-  return { props: { searchPhrases } };
+  const searchPhrases = await getSearchPhrases(project);
+  const mockObjects = searchPhrases.map((phrase) => {
+    const randomValue = phrase.phrase
+      .split("")
+      .map((c) => c.charCodeAt(0))
+      .reduce((a, b) => a + b);
+    const s = ((randomValue * 79) % 1000) / 10;
+    const r = Math.floor((randomValue * 97) % 250);
+    return {
+      id: phrase.id,
+      phrase: phrase.phrase,
+      score: {
+        sierra: s,
+        "ndc@5": s,
+        "ap@5": s,
+        "p@5": s,
+      },
+      results: r,
+    };
+  });
+  return { props: { searchPhrases: mockObjects } };
 });
 
 type Props = {
-  searchPhrases: SearchPhrase[];
+  searchPhrases: MockSearchPhrase[];
 };
 
 export default function Lab({ searchPhrases }: Props) {
   const classes = useStyles();
   const router = useRouter();
-  const [searchPhrase, setSearchPhrase] = React.useState<SearchPhrase | null>(
-    null
-  );
+  const [
+    searchPhrase,
+    setSearchPhrase,
+  ] = React.useState<MockSearchPhrase | null>(null);
   const [filters, setFilters] = React.useState<{
     show: ShowOptions;
     sort: SortOptions;
@@ -92,6 +117,7 @@ export default function Lab({ searchPhrases }: Props) {
     router.push({
       pathname: router.pathname,
       query: {
+        ...router.query,
         show: filters.show,
         sort: filters.sort,
       },
@@ -147,7 +173,7 @@ export default function Lab({ searchPhrases }: Props) {
                   </Tooltip>
                 </ListItemAvatar>
                 <ListItemText
-                  primary={item.name}
+                  primary={item.phrase}
                   secondary={item.results + " results"}
                 ></ListItemText>
                 <ListItemSecondaryAction>

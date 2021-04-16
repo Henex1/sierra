@@ -9,7 +9,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 
-import { SearchPhrase } from "../../lib/lab";
+import { MockSearchPhrase } from "../../lib/lab";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 type Props = {
-  searchPhrase: SearchPhrase;
+  searchPhrase: MockSearchPhrase;
   onClose: () => void;
 };
 
