@@ -12,9 +12,8 @@ import {
   getSearchEndpoint,
   ExposedSearchEndpoint,
 } from "../../lib/searchendpoints";
-import Box from "@material-ui/core/Box";
-import Breadcrumbs from "@material-ui/core/Breadcrumbs";
 import Link from "../../components/common/Link";
+import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const searchEndpoint = await getSearchEndpoint(
@@ -66,12 +65,11 @@ export default function EditSearchEndpoint({ searchEndpoint }: Props) {
 
   return (
     <div className={classes.wrapper}>
-      <Box display="flex" mb={4}>
-        <Breadcrumbs aria-label="breadcrumb">
-          <Link href="/searchendpoints">Search Endpoints</Link>
-          <Typography>{searchEndpoint.name}</Typography>
-        </Breadcrumbs>
-      </Box>
+      <BreadcrumbsButtons>
+        <Link href="/">Home</Link>
+        <Link href="/searchendpoints">Search Endpoints</Link>
+        <Typography>{searchEndpoint.name}</Typography>
+      </BreadcrumbsButtons>
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <Typography variant="h4">

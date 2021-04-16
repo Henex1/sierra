@@ -1,6 +1,8 @@
 import * as React from "react";
 import classnames from "classnames";
 import { debounce } from "lodash";
+import JSONTree from "react-json-tree";
+
 import {
   Box,
   Button,
@@ -23,8 +25,8 @@ import SearchIcon from "@material-ui/icons/Search";
 import FullScreenIcon from "@material-ui/icons/Fullscreen";
 import SettingsIcon from "@material-ui/icons/Settings";
 import { makeStyles } from "@material-ui/core/styles";
-import JSONTree from "react-json-tree";
 import { Alert } from "@material-ui/lab";
+
 import { useActiveProject, useSession } from "../../components/Session";
 import { authenticatedPage } from "../../lib/auth";
 import {
@@ -35,6 +37,8 @@ import {
 
 import { apiRequest } from "../../lib/api";
 import prisma from "../../lib/prisma";
+import Link from "../../components/common/Link";
+import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 const useStyles = makeStyles((theme) => ({
   boxWrapper: {
@@ -364,6 +368,10 @@ export default function Testbed({ rulesets }: Props) {
 
   return (
     <Box display="flex" flexDirection="column" style={{ position: "relative" }}>
+      <BreadcrumbsButtons>
+        <Link href="/">Home</Link>
+        <Typography>Testbed</Typography>
+      </BreadcrumbsButtons>
       <Box display="flex" className={classes.boxWrapper} alignItems="center">
         <Box flexGrow={1} className={classes.inputBox}>
           <div className={classes.inputWrapper}>

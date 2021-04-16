@@ -1,16 +1,20 @@
 import * as React from "react";
 import { useRouter } from "next/router";
 
+import { Typography } from "@material-ui/core";
+import Container from "@material-ui/core/Container";
+
 import { authenticatedPage } from "../../lib/auth";
 import {
   ExposedQueryTemplate,
   formatQueryTemplate,
   userCanAccessQueryTemplate,
 } from "../../lib/querytemplates";
-import Container from "@material-ui/core/Container";
 import Form from "../../components/querytemplates/Form";
 import prisma from "../../lib/prisma";
 import { apiRequest } from "../../lib/api";
+import Link from "../../components/common/Link";
+import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const template = await prisma.queryTemplate.findFirst({
@@ -50,8 +54,15 @@ export default function EditQueryTemplate({ template }: Props) {
   }
 
   return (
-    <Container maxWidth="sm">
-      <Form onSubmit={onSubmit} initialValues={template} />
-    </Container>
+    <div>
+      <BreadcrumbsButtons>
+        <Link href="/">Home</Link>
+        <Link href="/querytemplates">Query Templates</Link>
+        <Typography>{template.description}</Typography>
+      </BreadcrumbsButtons>
+      <Container maxWidth="sm">
+        <Form onSubmit={onSubmit} initialValues={template} />
+      </Container>
+    </div>
   );
 }

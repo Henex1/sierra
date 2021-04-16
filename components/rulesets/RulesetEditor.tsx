@@ -26,7 +26,6 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
-import Breadcrumbs from "@material-ui/core/Breadcrumbs";
 import Paper, { PaperProps } from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
@@ -39,6 +38,7 @@ import { ExposedRuleset } from "../../lib/rulesets";
 import { RulesetVersionValue, Rule } from "../../lib/rulesets/rules";
 import RulesetEditorSaveButton from "./RulesetEditorSaveButton";
 import MockRulesetConditionEditor from "./MockRulesetConditionEditor";
+import BreadcrumbsButtons from "../common/BreadcrumbsButtons";
 
 function PaperComponent(props: PaperProps) {
   return (
@@ -279,12 +279,11 @@ export default function RulesetEditor({ name, ...rest }: RulesetEditorProps) {
         }
         return (
           <>
-            <Box display="flex" mb={4}>
-              <Breadcrumbs aria-label="breadcrumb">
-                <Link href="/rulesets">Rulesets</Link>
-                <Typography>{name}</Typography>
-              </Breadcrumbs>
-            </Box>
+            <BreadcrumbsButtons>
+              <Link href="/">Home</Link>
+              <Link href="/rulesets">Rulesets</Link>
+              <Typography>{name}</Typography>
+            </BreadcrumbsButtons>
             <Grid container spacing={4}>
               <Grid item md={3}>
                 <RulesList

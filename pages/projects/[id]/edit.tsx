@@ -1,7 +1,9 @@
 import * as React from "react";
-import Container from "@material-ui/core/Container";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
+
+import Typography from "@material-ui/core/Typography";
+import Container from "@material-ui/core/Container";
 
 import Form from "../../../components/projects/Form";
 import { authenticatedPage } from "../../../lib/auth";
@@ -12,6 +14,8 @@ import {
   ExposedProject,
 } from "../../../lib/projects";
 import prisma from "../../../lib/prisma";
+import Link from "../../../components/common/Link";
+import BreadcrumbsButtons from "../../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const project = await prisma.project.findFirst({
@@ -51,8 +55,16 @@ export default function EditProject({ project }: Props) {
   }
 
   return (
-    <Container maxWidth="sm">
-      <Form onSubmit={onSubmit} onDelete={onDelete} initialValues={project} />
-    </Container>
+    <div>
+      <BreadcrumbsButtons>
+        <Link href="/">Home</Link>
+        <Link href="/projects">Projects</Link>
+        <Link href={`/projects/${project.id}`}>{project.name}</Link>
+        <Typography>Edit</Typography>
+      </BreadcrumbsButtons>
+      <Container maxWidth="sm">
+        <Form onSubmit={onSubmit} onDelete={onDelete} initialValues={project} />
+      </Container>
+    </div>
   );
 }

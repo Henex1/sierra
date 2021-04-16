@@ -15,8 +15,8 @@ export default function ResourcesMenu() {
       menuClassName={classes.dropMenu}
     >
       <MenuItemLink href="/searchendpoints">Search Endpoints</MenuItemLink>
-      <MenuItemLink href="#">Search Phrases</MenuItemLink>
-      <MenuItemLink href="#">Judgements</MenuItemLink>
+      <MenuItemLink href="/searchphrases">Search Phrases</MenuItemLink>
+      <MenuItemLink href="/judgements">Judgements</MenuItemLink>
       <MenuItemLink href="/rulesets">Rulesets</MenuItemLink>
     </MenuButton>
   );

@@ -1,11 +1,11 @@
 import * as React from "react";
+import { GetServerSideProps } from "next";
+
 import Box from "@material-ui/core/Box";
 import Container from "@material-ui/core/Container";
 import Typography from "@material-ui/core/Typography";
-import { GetServerSideProps } from "next";
 
-import { LinkButton } from "../../../components/common/Link";
-import Form from "../../../components/projects/Form";
+import Link, { LinkButton } from "../../../components/common/Link";
 import DebugQuery from "../../../components/searchendpoints/DebugQuery";
 import { authenticatedPage } from "../../../lib/auth";
 import {
@@ -14,6 +14,7 @@ import {
   ExposedProject,
 } from "../../../lib/projects";
 import prisma from "../../../lib/prisma";
+import BreadcrumbsButtons from "../../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const project = await prisma.project.findFirst({
@@ -33,14 +34,21 @@ type Props = {
 
 export default function ViewProject({ project }: Props) {
   return (
-    <Container>
-      <Box pb={2}>
-        <LinkButton href={`/projects/${project.id}/edit`} variant="contained">
-          Edit Project
-        </LinkButton>
-      </Box>
-      <Typography variant="h3">Project: {project.name}</Typography>
-      <DebugQuery />
-    </Container>
+    <div>
+      <BreadcrumbsButtons>
+        <Link href="/">Home</Link>
+        <Link href="/projects">Projects</Link>
+        <Typography>{project.name}</Typography>
+      </BreadcrumbsButtons>
+      <Container>
+        <Box pb={2}>
+          <LinkButton href={`/projects/${project.id}/edit`} variant="contained">
+            Edit Project
+          </LinkButton>
+        </Box>
+        <Typography variant="h3">Project: {project.name}</Typography>
+        <DebugQuery/>
+      </Container>
+    </div>
   );
 }
