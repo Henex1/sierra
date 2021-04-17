@@ -1,16 +1,19 @@
 import * as React from "react";
 import { useRouter } from "next/router";
 
+import Container from "@material-ui/core/Container";
+
+import { apiRequest } from "../../lib/api";
 import { authenticatedPage } from "../../lib/auth";
+import { ExposedProject, formatProject, userCanAccessProject } from "../../lib/projects";
 import {
   ExposedQueryTemplate,
   formatQueryTemplate,
   userCanAccessQueryTemplate,
 } from "../../lib/querytemplates";
-import Container from "@material-ui/core/Container";
-import Form from "../../components/querytemplates/Form";
 import prisma from "../../lib/prisma";
-import { apiRequest } from "../../lib/api";
+
+import Form from "../../components/querytemplates/Form";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const template = await prisma.queryTemplate.findFirst({
@@ -18,21 +21,26 @@ export const getServerSideProps = authenticatedPage(async (context) => {
       id: parseInt(context.params!.id! as string, 10),
     }),
   });
+  const projects = await prisma.project.findMany({
+    where: userCanAccessProject(context.user),
+  });
   if (!template) {
     return { notFound: true };
   }
   return {
     props: {
       template: formatQueryTemplate(template),
+      projects: projects.map(formatProject)
     },
   };
 });
 
 type Props = {
   template: ExposedQueryTemplate;
+  projects: ExposedProject[];
 };
 
-export default function EditQueryTemplate({ template }: Props) {
+export default function EditQueryTemplate({ template, projects }: Props) {
   const router = useRouter();
 
   async function onSubmit(value: ExposedQueryTemplate) {
@@ -51,7 +59,7 @@ export default function EditQueryTemplate({ template }: Props) {
 
   return (
     <Container maxWidth="sm">
-      <Form onSubmit={onSubmit} initialValues={template} />
+      <Form onSubmit={onSubmit} projects={projects} initialValues={template} />
     </Container>
   );
 }

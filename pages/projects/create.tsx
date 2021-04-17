@@ -3,14 +3,22 @@ import Container from "@material-ui/core/Container";
 import { useRouter } from "next/router";
 
 import { ExposedProject } from "../../lib/projects";
+import {ExposedSearchEndpoint, listSearchEndpoints} from "../../lib/searchendpoints";
 import { authenticatedPage } from "../../lib/auth";
 import { apiRequest } from "../../lib/api";
 import { useSession } from "../../components/Session";
 import Form from "../../components/projects/Form";
 
-export const getServerSideProps = authenticatedPage();
+export const getServerSideProps = authenticatedPage(async (context) => {
+  const searchEndpoints = await listSearchEndpoints(context);
+  return { props: { searchEndpoints } };
+});
 
-export default function CreateProject() {
+type Props = {
+  searchEndpoints: ExposedSearchEndpoint[];
+};
+
+export default function CreateProject({ searchEndpoints }: Props) {
   const router = useRouter();
   const { refresh: refreshSession } = useSession();
 
@@ -28,7 +36,7 @@ export default function CreateProject() {
 
   return (
     <Container maxWidth="sm">
-      <Form onSubmit={onSubmit} />
+      <Form onSubmit={onSubmit} endpoints={searchEndpoints}/>
     </Container>
   );
 }

@@ -1,14 +1,27 @@
-import Container from "@material-ui/core/Container";
 import { useRouter } from "next/router";
 
+import Container from "@material-ui/core/Container";
+
+import { ExposedProject, formatProject, userCanAccessProject } from "../../lib/projects";
 import { ExposedQueryTemplate } from "../../lib/querytemplates";
 import { authenticatedPage } from "../../lib/auth";
 import { apiRequest } from "../../lib/api";
+import prisma from "../../lib/prisma";
+
 import Form from "../../components/querytemplates/Form";
 
-export const getServerSideProps = authenticatedPage();
+export const getServerSideProps = authenticatedPage(async (context) => {
+  const projects = await prisma.project.findMany({
+    where: userCanAccessProject(context.user),
+  });
+  return { props: { projects: projects.map(formatProject) } };
+});
 
-export default function CreateRuleset() {
+type Props = {
+  projects: ExposedProject[];
+};
+
+export default function CreateRuleset({ projects }: Props) {
   const router = useRouter();
   async function onSubmit(values: ExposedQueryTemplate) {
     await apiRequest(`/api/querytemplates/create`, values);
@@ -19,7 +32,7 @@ export default function CreateRuleset() {
 
   return (
     <Container maxWidth="sm">
-      <Form onSubmit={onSubmit} />
+      <Form onSubmit={onSubmit} projects={projects} />
     </Container>
   );
 }
