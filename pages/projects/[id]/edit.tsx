@@ -1,5 +1,4 @@
 import * as React from "react";
-import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 
 import Typography from "@material-ui/core/Typography";
@@ -8,12 +7,14 @@ import Container from "@material-ui/core/Container";
 import Form from "../../../components/projects/Form";
 import { authenticatedPage } from "../../../lib/auth";
 import { apiRequest } from "../../../lib/api";
+import { ExposedSearchEndpoint, listSearchEndpoints } from "../../../lib/searchendpoints";
 import {
   userCanAccessProject,
   formatProject,
   ExposedProject,
 } from "../../../lib/projects";
 import prisma from "../../../lib/prisma";
+
 import Link from "../../../components/common/Link";
 import BreadcrumbsButtons from "../../../components/common/BreadcrumbsButtons";
 
@@ -23,17 +24,25 @@ export const getServerSideProps = authenticatedPage(async (context) => {
       id: parseInt(context.params!.id! as string, 10),
     }),
   });
+  const searchEndpoints = await listSearchEndpoints(context);
+
   if (!project) {
     return { notFound: true };
   }
-  return { props: { project: formatProject(project) } };
+  return {
+    props: {
+      project: formatProject(project),
+      searchEndpoints
+    }
+  };
 });
 
 type Props = {
   project: ExposedProject;
+  searchEndpoints: ExposedSearchEndpoint[];
 };
 
-export default function EditProject({ project }: Props) {
+export default function EditProject({ project, searchEndpoints }: Props) {
   const router = useRouter();
 
   async function onSubmit(values: ExposedProject) {
@@ -63,7 +72,7 @@ export default function EditProject({ project }: Props) {
         <Typography>Edit</Typography>
       </BreadcrumbsButtons>
       <Container maxWidth="sm">
-        <Form onSubmit={onSubmit} onDelete={onDelete} initialValues={project} />
+        <Form endpoints={searchEndpoints} onSubmit={onSubmit} onDelete={onDelete} initialValues={project} />
       </Container>
     </div>
   );

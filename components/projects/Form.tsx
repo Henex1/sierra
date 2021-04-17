@@ -1,17 +1,20 @@
-import { FormApi, SubmissionErrors } from "final-form";
+import * as React from "react";
 import { Form, FormProps as BaseFormProps } from "react-final-form";
 import { TextField, Select } from "mui-rff";
+
 import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
+import MenuItem from "@material-ui/core/MenuItem";
 
-import { parseNonnegativeInt } from "../common/form";
 import { ExposedProject } from "../../lib/projects";
+import { ExposedSearchEndpoint } from "../../lib/searchendpoints";
 
 export type FormProps = BaseFormProps<ExposedProject> & {
   onDelete?: () => void;
+  endpoints: ExposedSearchEndpoint[];
 };
 
-export default function ProjectForm({ onDelete, ...rest }: FormProps) {
+export default function ProjectForm({ onDelete, endpoints, ...rest }: FormProps) {
   const isNew = rest.initialValues?.id === undefined;
   return (
     <Form
@@ -27,16 +30,22 @@ export default function ProjectForm({ onDelete, ...rest }: FormProps) {
             />
           </Box>
           <Box pb={2}>
-            <TextField
+            <Select
               label="Search Endpoint ID"
               helperText="This can be changed to a different search endpoint of the same type later."
               name="searchEndpointId"
-              required={true}
               variant="filled"
-              fieldProps={{
-                parse: parseNonnegativeInt,
-              }}
-            />
+              required={true}
+            >
+              {endpoints && endpoints.map((endpoint: ExposedSearchEndpoint) => (
+                <MenuItem
+                  key={endpoint.id}
+                  value={endpoint.id}
+                >
+                  {endpoint.name}
+                </MenuItem>
+              ))}
+            </Select>
           </Box>
           <Box pb={2}>
             <Button
@@ -49,7 +58,6 @@ export default function ProjectForm({ onDelete, ...rest }: FormProps) {
             </Button>
             {!isNew && (
               <>
-                {" "}
                 <Button variant="contained" onClick={onDelete}>
                   Delete
                 </Button>
