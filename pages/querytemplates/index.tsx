@@ -1,11 +1,14 @@
 import * as React from "react";
 import { GetServerSideProps } from "next";
+import { useTable, Column } from "react-table";
+
 import MaUTable from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
-import { useTable, Column } from "react-table";
+import { Typography } from "@material-ui/core";
+
 
 import Link, { LinkButton } from "../../components/common/Link";
 import { authenticatedPage } from "../../lib/auth";
@@ -16,6 +19,7 @@ import {
 } from "../../lib/querytemplates";
 import { useActiveProject } from "../../components/Session";
 import prisma from "../../lib/prisma";
+import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const templates =
@@ -76,6 +80,10 @@ export default function QueryTemplates({ templates }: Props) {
 
   return (
     <div>
+      <BreadcrumbsButtons>
+        <Link href="/">Home</Link>
+        <Typography>Query Templates</Typography>
+      </BreadcrumbsButtons>
       <LinkButton href="/querytemplates/create" variant="contained">
         Add Query Template
       </LinkButton>

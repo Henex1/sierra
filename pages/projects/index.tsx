@@ -1,11 +1,14 @@
 import * as React from "react";
 import { GetServerSideProps } from "next";
+import { useTable, Column } from "react-table";
+
 import MaUTable from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
-import { useTable, Column } from "react-table";
+import Typography from "@material-ui/core/Typography";
+
 
 import Link, { LinkButton } from "../../components/common/Link";
 import { authenticatedPage } from "../../lib/auth";
@@ -15,6 +18,7 @@ import {
   ExposedProject,
 } from "../../lib/projects";
 import prisma from "../../lib/prisma";
+import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const projects = await prisma.project.findMany({
@@ -52,6 +56,10 @@ export default function Projects({ projects }: Props) {
 
   return (
     <div>
+      <BreadcrumbsButtons>
+        <Link href="/">Home</Link>
+        <Typography>Projects</Typography>
+      </BreadcrumbsButtons>
       <LinkButton href="/projects/create" variant="contained">
         Add project
       </LinkButton>
