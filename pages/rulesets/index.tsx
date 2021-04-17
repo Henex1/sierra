@@ -1,12 +1,14 @@
 import * as React from "react";
 import { GetServerSideProps } from "next";
+import { getSession } from "next-auth/client";
+import { useTable, Column } from "react-table";
+
+import { Typography } from "@material-ui/core";
 import MaUTable from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
-import { useTable, Column } from "react-table";
-import { getSession } from "next-auth/client";
 
 import Link, { LinkButton } from "../../components/common/Link";
 import { authenticatedPage } from "../../lib/auth";
@@ -17,6 +19,7 @@ import {
   ExposedRuleset,
 } from "../../lib/rulesets";
 import prisma from "../../lib/prisma";
+import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const rulesets = await prisma.ruleset.findMany({
@@ -54,6 +57,10 @@ export default function Rulesets({ rulesets }: Props) {
 
   return (
     <div>
+      <BreadcrumbsButtons>
+        <Link href="/">Home</Link>
+        <Typography>Rulesets</Typography>
+      </BreadcrumbsButtons>
       <LinkButton href="/rulesets/create" variant="contained">
         Add ruleset
       </LinkButton>

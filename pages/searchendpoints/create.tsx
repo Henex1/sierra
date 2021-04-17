@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useRouter } from "next/router";
 
 import { Grid, Typography } from "@material-ui/core";
@@ -7,10 +8,8 @@ import { ExposedSearchEndpoint } from "../../lib/searchendpoints";
 import { authenticatedPage } from "../../lib/auth";
 import { apiRequest } from "../../lib/api";
 import Form from "../../components/searchendpoints/Form";
-import Box from "@material-ui/core/Box";
-import Breadcrumbs from "@material-ui/core/Breadcrumbs";
-import * as React from "react";
 import Link from "../../components/common/Link";
+import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage();
 
@@ -38,12 +37,11 @@ export default function CreateSearchEndpoint() {
 
   return (
     <div className={classes.wrapper}>
-      <Box display="flex" mb={4}>
-        <Breadcrumbs aria-label="breadcrumb">
-          <Link href="/searchendpoints">Search Endpoints</Link>
-          <Typography>New Search Endpoints</Typography>
-        </Breadcrumbs>
-      </Box>
+      <BreadcrumbsButtons>
+        <Link href="/">Home</Link>
+        <Link href="/searchendpoints">Search Endpoints</Link>
+        <Typography>New Search Endpoint</Typography>
+      </BreadcrumbsButtons>
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <Typography variant="h4">

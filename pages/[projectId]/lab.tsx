@@ -27,6 +27,8 @@ import {
 } from "../../lib/searchphrases";
 import { MockSearchPhrase, ShowOptions, SortOptions } from "../../lib/lab";
 import { authenticatedPage } from "../../lib/auth";
+import Link from "../../components/common/Link";
+import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 const useStyles = makeStyles((theme) => ({
   list: {
@@ -152,6 +154,10 @@ export default function Lab({ searchPhrases }: Props) {
 
   return (
     <div>
+      <BreadcrumbsButtons>
+        <Link href="/">Home</Link>
+        <Typography>Lab</Typography>
+      </BreadcrumbsButtons>
       <Filters filters={filters} onFilterChange={handleFilterChange} />
       {searchPhrases.length ? (
         <List className={classes.list}>

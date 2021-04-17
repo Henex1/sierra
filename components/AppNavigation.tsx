@@ -65,12 +65,11 @@ export const mainListItems = (
       icon={<BlurLinearIcon />}
       text={{ primary: "Testbed" }}
     />
-    <ListItem button>
-      <ListItemIcon>
-        <PeopleIcon />
-      </ListItemIcon>
-      <ListItemText primary="Teams" />
-    </ListItem>
+    <NavigationItem
+      href="/teams"
+      icon={<PeopleIcon />}
+      text={{ primary: "Teams" }}
+    />
   </div>
 );
 
