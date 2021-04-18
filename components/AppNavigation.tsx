@@ -13,6 +13,7 @@ import LayersIcon from "@material-ui/icons/Layers";
 import BlurLinearIcon from "@material-ui/icons/BlurLinear";
 import AssignmentIcon from "@material-ui/icons/Assignment";
 import AccountTreeIcon from "@material-ui/icons/AccountTree";
+import GavelIcon from '@material-ui/icons/Gavel';
 
 import Link, { LinkProps } from "./common/Link";
 
@@ -59,6 +60,11 @@ export const mainListItems = (
       href="/querytemplates"
       icon={<AccountTreeIcon />}
       text={{ primary: "Query Templates" }}
+    />
+    <NavigationItem
+      href="/judgements"
+      icon={<GavelIcon />}
+      text={{ primary: "Judgements" }}
     />
     <NavigationItem
       href="/testbed"
