@@ -10,6 +10,7 @@ import { createStyles, withStyles, Theme } from "@material-ui/core/styles";
 
 import { useSession, useActiveProject } from "../Session";
 import { ExposedProject } from "../../lib/projects";
+
 import useStyles from "./AppTopBarStyles";
 
 const ProjectInput = withStyles((theme: Theme) =>
@@ -36,23 +37,9 @@ export default function ProjectsMenu() {
   const { session } = useSession();
   const { project, setProject } = useActiveProject();
 
-  let menuItems = session.projects ? (
-    session.projects.map((project: ExposedProject) => (
-      <MenuItem key={project.id} value={project.id}>
-        {project.name}
-      </MenuItem>
-    ))
-  ) : (
-    <MenuItem key={-1} value={-1}>
-      --
-    </MenuItem>
-  );
-
   React.useEffect(() => {
     if (session?.projects && !project) {
       setProject(session?.projects[0]);
-    } else if (project) {
-      setProject(null);
     }
   }, [session]);
 
@@ -71,22 +58,30 @@ export default function ProjectsMenu() {
 
   return (
     <>
-      <FormControl variant="outlined" className={classes.projectsFormControl}>
-        <InputLabel className={classes.selectLabel} id="currentProjectLabel">
-          Current Project
-        </InputLabel>
-        <Select
-          labelId="currentProjectLabel"
-          id="currentProject"
-          value={selectValue?.id ?? -1}
-          label="Current Project"
-          classes={{ icon: classes.selectIcon }}
-          input={<ProjectInput />}
-          onChange={handleChange}
-        >
-          {menuItems}
-        </Select>
-      </FormControl>
+      {!!session?.projects?.length &&
+        <FormControl variant="outlined" className={classes.projectsFormControl}>
+          <InputLabel className={classes.selectLabel} id="currentProjectLabel">
+            Current Project
+          </InputLabel>
+          <Select
+            labelId="currentProjectLabel"
+            id="currentProject"
+            value={selectValue?.id ?? -1}
+            label="Current Project"
+            classes={{icon: classes.selectIcon}}
+            input={<ProjectInput/>}
+            onChange={handleChange}
+          >
+            {
+              session.projects.map((project: ExposedProject) => (
+                <MenuItem key={project.id} value={project.id}>
+                  {project.name}
+                </MenuItem>
+              ))
+            }
+          </Select>
+        </FormControl>
+      }
     </>
   );
 }
