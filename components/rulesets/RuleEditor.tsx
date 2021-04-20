@@ -2,7 +2,7 @@ import * as React from "react";
 import Grid from "@material-ui/core/Grid";
 import { Field } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
-import { Checkboxes, TextField, Select } from "mui-rff";
+import { TextField, Select } from "mui-rff";
 import Box from "@material-ui/core/Box";
 import SelectMUI from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
@@ -16,6 +16,8 @@ import ListItemText from "@material-ui/core/ListItemText";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Tooltip from "@material-ui/core/Tooltip";
 import Switch from "@material-ui/core/Switch";
+import Slider from "@material-ui/core/Slider";
+import { withStyles, makeStyles } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
@@ -24,10 +26,14 @@ import SyncAltIcon from "@material-ui/icons/SyncAlt";
 import CheckCircleOutlinedIcon from "@material-ui/icons/CheckCircleOutlined";
 import PauseCircleOutlinedIcon from "@material-ui/icons/PauseCircleOutlineOutlined";
 
-import { RuleInstruction } from "../../lib/rulesets/rules";
-import { Slider, withStyles, makeStyles } from "@material-ui/core";
+import {
+  RuleInstruction,
+  FilterInstruction,
+  UpDownInstruction,
+} from "../../lib/rulesets/rules";
 import { useEffect } from "react";
 import { parseNumber } from "../common/form";
+import InlineQueryEditor from "../rulesets/InlineQueryEditor";
 
 const UpBoostSlider = withStyles({
   root: {
@@ -103,10 +109,10 @@ function SynonymField({ name, disabled }: InstructionFieldProps) {
   );
 }
 
-function UpBoostField({ name, disabled }: InstructionFieldProps) {
+function UpBoostField({ name, value, disabled }: InstructionFieldProps) {
   return (
     <>
-      <Grid item xs={4}>
+      <Grid item xs={2}>
         <Field
           name={`${name}.weight`}
           render={(props) => {
@@ -143,17 +149,17 @@ function UpBoostField({ name, disabled }: InstructionFieldProps) {
           }}
         />
       </Grid>
-      <Grid item xs>
-        <TextField name={`${name}.term`} disabled={disabled} required />
+      <Grid style={{ position: "relative" }} item xs>
+        <InlineQueryEditor name={name} value={value as UpDownInstruction} />
       </Grid>
     </>
   );
 }
 
-function DownBoostField({ name, disabled }: InstructionFieldProps) {
+function DownBoostField({ name, value, disabled }: InstructionFieldProps) {
   return (
     <>
-      <Grid item xs={4}>
+      <Grid item xs={2}>
         <Field
           name={`${name}.weight`}
           render={(props) => {
@@ -192,24 +198,24 @@ function DownBoostField({ name, disabled }: InstructionFieldProps) {
           }}
         />
       </Grid>
-      <Grid item xs>
-        <TextField name={`${name}.term`} disabled={disabled} required />
+      <Grid style={{ position: "relative" }} item xs>
+        <InlineQueryEditor name={name} value={value as UpDownInstruction} />
       </Grid>
     </>
   );
 }
 
-function FilterField({ name, disabled }: InstructionFieldProps) {
+function FilterField({ name, value, disabled }: InstructionFieldProps) {
   return (
     <>
-      <Grid item xs={4}>
+      <Grid item xs={2}>
         <Select name={`${name}.include`} disabled={disabled} required>
           <MenuItem value={true as any}>MUST</MenuItem>
           <MenuItem value={false as any}>MUST NOT</MenuItem>
         </Select>
       </Grid>
-      <Grid item xs>
-        <TextField name={`${name}.term`} disabled={disabled} required />
+      <Grid style={{ position: "relative" }} item xs>
+        <InlineQueryEditor name={name} value={value as FilterInstruction} />
       </Grid>
     </>
   );
@@ -224,7 +230,7 @@ function DeleteField({ name, disabled }: InstructionFieldProps) {
 }
 
 const useInstructionFieldStyles = makeStyles((theme) => ({
-  deleteIcon: {
+  listItemIcon: {
     minWidth: 46,
     paddingLeft: 6,
   },
@@ -333,7 +339,7 @@ function InstructionField(props: InstructionFieldProps) {
               </Field>
             </MenuItem>
             <MenuItem button onClick={onDelete}>
-              <ListItemIcon className={classes.deleteIcon}>
+              <ListItemIcon className={classes.listItemIcon}>
                 <DeleteIcon />
               </ListItemIcon>
               <ListItemText>Delete</ListItemText>

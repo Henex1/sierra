@@ -14,6 +14,7 @@ export const upDownInstructionSchema = z.object({
   type: z.literal("updown"),
   weight: z.number(),
   term: z.string(),
+  query: z.string().optional(),
   enabled: z.boolean(),
 });
 
@@ -23,6 +24,7 @@ export const filterInstructionSchema = z.object({
   type: z.literal("filter"),
   include: z.boolean(),
   term: z.string(),
+  query: z.string().optional(),
   enabled: z.boolean(),
 });
 
