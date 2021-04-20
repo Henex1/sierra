@@ -9,11 +9,32 @@ import "ace-builds/src-noconflict/theme-github";
 type Props = {
   value: string;
   onChange: (value: string, event: React.ChangeEvent) => void;
+  height?: number;
+  className?: string;
+  inputRef?: React.MutableRefObject<AceEditor>;
+  adaptiveHeight?: boolean;
 };
 
-export default function JsonEditor({ value, onChange }: Props) {
+export default function JsonEditor({
+  value,
+  onChange,
+  height,
+  className,
+  inputRef,
+  adaptiveHeight,
+}: Props) {
+  const props = adaptiveHeight
+    ? {
+        maxLines: Infinity,
+      }
+    : {
+        height: height + "px",
+      };
+
   return (
     <AceEditor
+      ref={inputRef}
+      className={className || ""}
       value={value}
       onChange={onChange}
       name={uniqueId("JsonEditor")}
@@ -21,7 +42,6 @@ export default function JsonEditor({ value, onChange }: Props) {
       theme="github"
       fontSize={16}
       width="100%"
-      height="300px"
       showPrintMargin={false}
       setOptions={{
         enableBasicAutocompletion: true,
@@ -29,6 +49,12 @@ export default function JsonEditor({ value, onChange }: Props) {
         tabSize: 2,
       }}
       editorProps={{ $blockScrolling: true }}
+      minLines={3}
+      {...props}
     />
   );
 }
+
+JsonEditor.defaultProps = {
+  height: 300,
+};
