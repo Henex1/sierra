@@ -10,8 +10,7 @@
     "postinstall": "patch-package",
     "env": "NODE_ENV=${NODE_ENV:-development} dotenv -c $NODE_ENV --",
     "ts-node": "yarn env ts-node --compiler-options '{\"module\":\"CommonJS\"}' --files",
-    "prisma": "yarn env prisma",
-    "db:reset:test": "NODE_ENV=test yarn env prisma migrate reset --force && NODE_ENV=test yarn ts-node ./prisma/testSeed.ts"
+    "prisma": "yarn env prisma"
   },
   "dependencies": {
     "@emotion/cache": "^11.1.3",

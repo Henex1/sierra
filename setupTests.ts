@@ -2,11 +2,22 @@ import path from "path";
 import { loadEnvConfig } from "@next/env";
 import { IncomingMessage } from "http";
 
-import prisma from "./lib/prisma";
+import prisma, { User } from "./lib/prisma";
+import { mockModels } from "./lib/__mocks__/prisma";
 import { UserSession } from "./lib/authServer";
-import { TEST_USER_ID } from "./lib/test";
+import {
+  TEST_ORG as mockOrg,
+  TEST_PROJECT as mockProject,
+  TEST_USER,
+} from "./lib/test";
 
 import "@testing-library/jest-dom/extend-expect";
+
+// This explicit mock call necessary so that next-page-tester doesn't try to
+// "isolate" the prisma mocks between the client and the server. If it did
+// that, none of the mocked implementations would be available to the code
+// under test.
+jest.mock("./lib/prisma", () => jest.requireActual("./lib/__mocks__/prisma"));
 
 loadEnvConfig(path.dirname(__filename), true, {
   info(...args: any[]): void {
@@ -17,45 +28,38 @@ loadEnvConfig(path.dirname(__filename), true, {
   },
 });
 
-beforeEach(async (done) => {
-  await prisma.$executeRaw("BEGIN;");
-  done();
-});
-
-afterEach(async (done) => {
-  await prisma.$executeRaw("ROLLBACK;");
-  done();
-});
-
-afterAll(async (done) => {
-  await prisma.$disconnect();
-  done();
-});
-
 jest.mock("./components/Session", () => {
   return {
-    ...jest.requireActual("./components/Session"),
     SessionProvider: ({ children }: any) => children,
-    useSession: () => ({ session: { loading: true }, refresh: async () => {} }),
+    useSession: () => ({
+      session: { loading: false, user: mockUser },
+      refresh: async () => {},
+    }),
+    ActiveProjectProvider: ({ children }: any) => children,
+    useActiveProject: () => ({ project: mockProject, setProject: () => {} }),
   };
 });
 
-let mockUserId: number | undefined = TEST_USER_ID;
+const mockUser: User = {
+  ...TEST_USER,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  activeOrgId: mockOrg.id,
+};
 const mockGetUser = jest.fn(async () => {
-  if (mockUserId === undefined) {
-    return {};
-  }
-  const user =
-    (await prisma.user.findUnique({
-      where: { id: mockUserId },
-    })) ?? undefined;
-  return { session: {}, user };
-});
-
-afterEach(() => {
-  mockUserId = TEST_USER_ID;
+  return { session: {}, user: mockUser };
 });
 
 jest.mock("./lib/authServer", () => {
   return { getUser: mockGetUser };
+});
+
+jest.mock("next-auth/client", () => {
+  return {
+    Provider: ({ children }: any) => children,
+    useSession: () => [
+      { user: mockUser, orgs: [mockOrg], projects: [mockProject] },
+      false,
+    ],
+  };
 });

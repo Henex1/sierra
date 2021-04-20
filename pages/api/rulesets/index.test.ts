@@ -1,35 +1,40 @@
 import prisma from "../../../lib/prisma";
+import { mockModels } from "../../../lib/__mocks__/prisma";
 import { handleCreateRuleset, handleCreateRulesetVersion } from "./index";
-import { getApiRoute, TEST_ORG_ID } from "../../../lib/test";
+import { getApiRoute, TEST_ORG, TEST_USER } from "../../../lib/test";
 
 describe("api/rulesets", () => {
   it("/create", async () => {
-    // Test create
     const initialInfo = {
       name: "My Test Ruleset",
     };
+    mockModels("org").action("findMany").with({}).resolvesTo([TEST_ORG]);
+    mockModels("ruleset")
+      .action("create")
+      .with({ data: expect.objectContaining(initialInfo) })
+      .resolvesTo({ id: 42, ...initialInfo });
+    //throw new Error("I break the other test!");
+
     const { ruleset } = await getApiRoute(handleCreateRuleset, initialInfo, {
       method: "POST",
     });
     expect(ruleset).toHaveProperty("id");
     expect(ruleset).toMatchObject(initialInfo);
-
-    // Test actual underlying object
-    const actualRuleset = await prisma.ruleset.findUnique({
-      where: { id: ruleset.id },
-    });
-    expect(actualRuleset).toMatchObject(initialInfo);
   });
 
   it("/createVersion", async () => {
-    // Create ruleset
-    const ruleset = await prisma.ruleset.create({
-      data: { orgId: TEST_ORG_ID, name: "createRulesetVersion test" },
-    });
+    mockModels("ruleset")
+      .action("findFirst")
+      .with({ where: { AND: { id: 42 } } })
+      .resolvesTo({ name: "My Test Ruleset " });
+    mockModels("rulesetVersion")
+      .action("create")
+      .with({})
+      .hasImplementation(({ args: { data } }: any) => ({ ...data, id: 52 }));
 
     // Test endpoint
     const initialInfo = {
-      rulesetId: ruleset.id,
+      rulesetId: 42,
       parentId: null,
       value: {
         rules: [{ expression: "notebook", instructions: [], enabled: true }],
@@ -40,14 +45,7 @@ describe("api/rulesets", () => {
       initialInfo,
       { method: "POST" }
     );
-    expect(ruleset).toHaveProperty("id");
+    expect(version).toHaveProperty("id");
     expect(version.value).toMatchObject(initialInfo.value);
-
-    // Test actual underlying object
-    const actualVersion = await prisma.rulesetVersion.findUnique({
-      where: { id: version.id },
-    });
-    expect(actualVersion).not.toBeNull();
-    expect(actualVersion!.value).toMatchObject(initialInfo.value);
   });
 });
