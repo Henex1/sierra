@@ -1,19 +1,28 @@
-import * as React from "react";
+import React, { useState } from "react";
 
 import { makeStyles, Theme } from "@material-ui/core/styles";
-import { green, lime, yellow, orange, red } from '@material-ui/core/colors';
+import { green, yellow, orange, red, grey } from '@material-ui/core/colors';
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import Button from '@material-ui/core/Button';
 import Paper from "@material-ui/core/Paper";
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
+import Box from "@material-ui/core/Box";
 
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 import Link from "../../components/common/Link";
-import Box from "@material-ui/core/Box";
+import Tooltip from "@material-ui/core/Tooltip";
 
 const useStyles = makeStyles((theme: Theme) => ({
   judgeButton: {
     marginRight: theme.spacing(2)
+  },
+  notSelected: {
+    color: theme.palette.getContrastText(grey[500]),
+    backgroundColor: grey[500],
+    '&:hover': {
+      backgroundColor: grey[700],
+    },
   },
   greenButtonRoot: {
     color: theme.palette.getContrastText(green[500]),
@@ -45,11 +54,27 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   paperWrapper: {
     padding: theme.spacing(2)
+  },
+  tooltipIcon: {
+    marginLeft: theme.spacing(1)
   }
 }));
 
 export default function Judging() {
   const classes = useStyles();
+  const [rating, setRating] = useState<null | number>(null);
+
+  const handleDecisionButton = () => {
+    if (rating !== null) {
+      console.log(`Confirm Judgement with rating ${rating}`);
+    } else {
+      console.log("Skip Judgement");
+    }
+  };
+
+  const handleRatingDecision = (buttonRating: number) => {
+    buttonRating === rating ? setRating(null) : setRating(buttonRating);
+  };
 
   return (
     <div>
@@ -63,27 +88,60 @@ export default function Judging() {
           <Box style={{display: "flex", justifyContent: "space-between"}}>
             <Box />
             <Box>
-              <Button className={classes.judgeButton} classes={{root: classes.greenButtonRoot}} variant="contained">3 Perfect</Button>
-              <Button className={classes.judgeButton} classes={{root: classes.yellowButtonRoot}} variant="contained">2 Good</Button>
-              <Button className={classes.judgeButton} classes={{root: classes.orangeButtonRoot}} variant="contained">1 Fair</Button>
-              <Button className={classes.judgeButton} classes={{root: classes.redButtonRoot}} variant="contained">0 Poor</Button>
+              <Button
+                className={classes.judgeButton}
+                classes={{ root: rating === null || rating === 3 ? classes.greenButtonRoot : classes.notSelected }}
+                variant="contained"
+                onClick={() => handleRatingDecision(3)}
+              >
+                3 Perfect
+              </Button>
+              <Button
+                className={classes.judgeButton}
+                classes={{ root: rating === null || rating === 2 ? classes.yellowButtonRoot : classes.notSelected }}
+                variant="contained"
+                onClick={() => handleRatingDecision(2)}
+              >
+                2 Good
+              </Button>
+              <Button
+                className={classes.judgeButton}
+                classes={{ root: rating === null || rating === 1 ? classes.orangeButtonRoot : classes.notSelected }}
+                variant="contained"
+                onClick={() => handleRatingDecision(1)}
+              >
+                1 Fair
+              </Button>
+              <Button
+                className={classes.judgeButton}
+                classes={{ root: rating === null || rating === 0 ? classes.redButtonRoot : classes.notSelected }}
+                variant="contained"
+                onClick={() => handleRatingDecision(0)}
+              >
+                0 Poor
+              </Button>
               <Button
                 variant="outlined"
                 size="medium"
-                onClick={() => {}}
+                onClick={handleDecisionButton}
               >
-                Skip
+                {rating !== null ? "Confirm" : "Skip"}
               </Button>
             </Box>
           </Box>
         </Grid>
         <Grid item xs={6}>
-          <Typography variant="body1" style={{marginBottom: "25px"}}>Review the result on the right, and evaluate 
-          how relevant it is to the query below. Submit your evaluation by clicking on the buttons at top right.
+          <Typography variant="h4" style={{ marginBottom: "25px" }}>
+            bluetooth speaker
+            <Tooltip
+              title="Review the result on the right, and evaluate how relevant it is to the query below. Submit your evaluation by clicking on the buttons at top right."
+              arrow
+            >
+              <HelpOutlineIcon className={classes.tooltipIcon}/>
+            </Tooltip>
           </Typography>
-          <Typography variant="h4" style={{ marginBottom: "25px" }}>bluetooth speaker</Typography>
           <Typography variant="h6">Description</Typography>
-          <Typography variant="body1" style={{marginBottom: "10px"}}>An amplifier and loudspeaker with Bluetooth
+          <Typography variant="body1" style={{ marginBottom: "10px" }}>An amplifier and loudspeaker with Bluetooth
             wireless connectivity that is paired (pre-associated) with one or more smartphones, tablets, iPods or
             computers. Available in all sizes, including replaceable battery and rechargeable models, as well as
             wall-powered units, the Bluetooth speaker receives digital audio streams from the host device, which are
@@ -91,7 +149,6 @@ export default function Judging() {
         </Grid>
         <Grid item xs={6}>
           <Paper elevation={3} className={classes.paperWrapper}>
-            <Typography variant="h4" style={{ marginBottom: "25px" }}>Result</Typography>
             <Typography variant="h6">Name</Typography>
             <Typography variant="body1" style={{ marginBottom: "10px" }}>
               Roller Coaster
