@@ -52,53 +52,54 @@ export default function Judgements() {
           </Grid>
         }
         {project &&
-        <>
-          <Grid item xs={12}>
-            <Button
-              style={{ marginRight: "15px"}}
-              variant="outlined"
-              startIcon={<GavelIcon/>}
-              size="medium"
-              onClick={handleStartJudgmentsEndpoint}
-            >
-              Start Judging
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<AddIcon/>}
-              size="medium"
-              onClick={() => {}}
-            >
-              Add judgement
-            </Button>
-          </Grid>
-          <Grid item xs={12}>
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Query</TableCell>
-                    <TableCell>Title</TableCell>
-                    <TableCell>Supplier</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {judgements.map((judgement) => (
-                    <TableRow key={judgement.name}>
-                      <TableCell component="th">
-                        {judgement.name}
-                      </TableCell>
-                      <TableCell>{judgement.query}</TableCell>
-                      <TableCell>{judgement.title}</TableCell>
-                      <TableCell>{judgement.supplier}</TableCell>
+          <>
+            <Grid item xs={12}>
+              <Button
+                style={{marginRight: "15px"}}
+                variant="outlined"
+                startIcon={<GavelIcon/>}
+                size="medium"
+                onClick={handleStartJudgmentsEndpoint}
+              >
+                Start Judging
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<AddIcon/>}
+                size="medium"
+                onClick={() => {
+                }}
+              >
+                Add judgement
+              </Button>
+            </Grid>
+            <Grid item xs={12}>
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Name</TableCell>
+                      <TableCell>Query</TableCell>
+                      <TableCell>Title</TableCell>
+                      <TableCell>Supplier</TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Grid>
-        </>
+                  </TableHead>
+                  <TableBody>
+                    {judgements.map((judgement) => (
+                      <TableRow key={judgement.name}>
+                        <TableCell component="th">
+                          {judgement.name}
+                        </TableCell>
+                        <TableCell>{judgement.query}</TableCell>
+                        <TableCell>{judgement.title}</TableCell>
+                        <TableCell>{judgement.supplier}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Grid>
+          </>
         }
       </Grid>
     </div>

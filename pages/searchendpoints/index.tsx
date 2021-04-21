@@ -19,6 +19,7 @@ import {
   ExposedSearchEndpoint,
 } from "../../lib/searchendpoints";
 
+import { useActiveProject } from "../../components/Session";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
@@ -33,13 +34,14 @@ type Props = {
 
 const useStyles = makeStyles(() => ({
   wrapper: {
-    height: "100%"
+    height: "90%"
   }
 }));
 
 export default function SearchEndpoints({ searchEndpoints }: Props) {
   const classes = useStyles();
   const router = useRouter();
+  const { project } = useActiveProject();
 
   const handleAddNewSearchEndpoint = () => {
     router.push("/searchendpoints/create");
@@ -81,45 +83,58 @@ export default function SearchEndpoints({ searchEndpoints }: Props) {
       </BreadcrumbsButtons>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <Button
-            type="submit"
-            variant="outlined"
-            startIcon={<AddIcon/>}
-            size="medium"
-            onClick={handleAddNewSearchEndpoint}
-          >
-            Add New Search Endpoint
-          </Button>
+          <Typography variant="h4">Search Endpoints</Typography>
         </Grid>
-        <Grid item xs={12}>
-          <MaUTable {...getTableProps()}>
-            <TableHead>
-              {headerGroups.map((headerGroup) => (
-                <TableRow {...headerGroup.getHeaderGroupProps()}>
-                  {headerGroup.headers.map((column) => (
-                    <TableCell {...column.getHeaderProps()}>
-                      {column.render("Header")}
-                    </TableCell>
+        {!project &&
+          <Grid item xs={6} style={{ margin: "0 auto", textAlign: "center"}}>
+            <Typography variant="h6">No project is active</Typography>
+            <Typography variant="subtitle1">You must setup or activate project first</Typography>
+          </Grid>
+        }
+        {project &&
+          <>
+            <Grid item xs={12}>
+              <Button
+                type="submit"
+                variant="outlined"
+                startIcon={<AddIcon/>}
+                size="medium"
+                onClick={handleAddNewSearchEndpoint}
+              >
+                Add New Search Endpoint
+              </Button>
+            </Grid>
+            <Grid item xs={12}>
+              <MaUTable {...getTableProps()}>
+                <TableHead>
+                  {headerGroups.map((headerGroup) => (
+                    <TableRow {...headerGroup.getHeaderGroupProps()}>
+                      {headerGroup.headers.map((column) => (
+                        <TableCell {...column.getHeaderProps()}>
+                          {column.render("Header")}
+                        </TableCell>
+                      ))}
+                    </TableRow>
                   ))}
-                </TableRow>
-              ))}
-            </TableHead>
-            <TableBody {...getTableBodyProps()}>
-              {rows.map((row) => {
-                prepareRow(row);
-                return (
-                  <TableRow {...row.getRowProps()}>
-                    {row.cells.map((cell) => (
-                      <TableCell {...cell.getCellProps()}>
-                        {cell.render("Cell")}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </MaUTable>
-        </Grid>
+                </TableHead>
+                <TableBody {...getTableBodyProps()}>
+                  {rows.map((row) => {
+                    prepareRow(row);
+                    return (
+                      <TableRow {...row.getRowProps()}>
+                        {row.cells.map((cell) => (
+                          <TableCell {...cell.getCellProps()}>
+                            {cell.render("Cell")}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </MaUTable>
+            </Grid>
+          </>
+        }
       </Grid>
     </div>
   );
