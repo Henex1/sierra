@@ -24,6 +24,11 @@ const theme = createMuiTheme({
         padding: "6px 12px",
       },
     },
+    MuiPopover: {
+      paper: {
+        boxShadow: "0px 4px 8px rgb(0 0 0 / 10%)",
+      },
+    },
   },
 });
 

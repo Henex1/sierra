@@ -35,17 +35,11 @@ export default makeStyles((theme) => ({
     padding: "0 5px",
     color: "white",
     transform: "translate(14px, 13px) scale(1)",
-    '&.Mui-focused': {
+    "&.Mui-focused": {
       color: "white",
     },
   },
   selectIcon: {
     color: "white",
-  },
-  userAvatar: {
-    width: theme.spacing(5),
-    height: theme.spacing(5),
-    border: "solid 2px white",
-    margin: theme.spacing(1.5),
   },
 }));
