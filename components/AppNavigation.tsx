@@ -4,14 +4,12 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText, {
   ListItemTextProps,
 } from "@material-ui/core/ListItemText";
-import ListSubheader from "@material-ui/core/ListSubheader";
 import DashboardIcon from "@material-ui/icons/Dashboard";
 import StorageIcon from "@material-ui/icons/Storage";
 import PeopleIcon from "@material-ui/icons/People";
 import BarChartIcon from "@material-ui/icons/BarChart";
 import LayersIcon from "@material-ui/icons/Layers";
 import BlurLinearIcon from "@material-ui/icons/BlurLinear";
-import AssignmentIcon from "@material-ui/icons/Assignment";
 import AccountTreeIcon from "@material-ui/icons/AccountTree";
 import GavelIcon from '@material-ui/icons/Gavel';
 
@@ -76,29 +74,5 @@ export const mainListItems = (
       icon={<PeopleIcon />}
       text={{ primary: "Teams" }}
     />
-  </div>
-);
-
-export const secondaryListItems = (
-  <div>
-    <ListSubheader inset>Recent projects</ListSubheader>
-    <ListItem button>
-      <ListItemIcon>
-        <AssignmentIcon />
-      </ListItemIcon>
-      <ListItemText primary="Current month" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <AssignmentIcon />
-      </ListItemIcon>
-      <ListItemText primary="Last quarter" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <AssignmentIcon />
-      </ListItemIcon>
-      <ListItemText primary="Year-end sale" />
-    </ListItem>
   </div>
 );
