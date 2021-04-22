@@ -1,6 +1,5 @@
-const { PrismaClient, Prisma } = jest.requireActual(
-  "@prisma/client"
-) as typeof import("@prisma/client");
+import { PrismaClient, Prisma } from "@prisma/client";
+const { PrismaClient: RealPrismaClient } = jest.requireActual("@prisma/client");
 
 export interface MockPrismaWrapper {
   readonly client: MockPrismaClient;
@@ -98,24 +97,24 @@ afterEach(() => {
   }
 });
 
-const mockModels = (model) => ({
-  action: (action) => ({
-    with: (args) => {
+const mockModels = (model: keyof ModelDelegates) => ({
+  action: (action: string) => ({
+    with: (args: any) => {
       const matcher = {
         model: model.replace(/^[a-z]/, (a) => a.toUpperCase()) as any,
         action: action as any,
         args,
       };
       return {
-        hasImplementation: (implementation) =>
+        hasImplementation: (implementation: any) =>
           matchers.set(
             matcher,
             (params: Parameters<typeof implementation>[0]) =>
               Promise.resolve(params).then(implementation)
           ),
-        resolvesTo: (result) =>
+        resolvesTo: (result: any) =>
           matchers.set(matcher, () => Promise.resolve(result)),
-        rejectsWith: (error) =>
+        rejectsWith: (error: any) =>
           matchers.set(matcher, () => Promise.reject(error)),
         reset: () => matchers.delete(matcher),
       };
