@@ -1,29 +1,47 @@
-import * as React from "react";
+import React, { useState } from "react";
 import { Field, Form, FormProps as BaseFormProps } from "react-final-form";
 import { TextField, Select } from "mui-rff";
 
-import { MenuItem } from '@material-ui/core';
+import { makeStyles, MenuItem } from '@material-ui/core';
 import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
+import MUITextField from "@material-ui/core/TextField";
+import Chip from "@material-ui/core/Chip";
 
 import { ExposedQueryTemplate } from "../../lib/querytemplates";
 import JsonEditor from "../JsonEditor";
 import { ExposedProject } from "../../lib/projects";
-import ChipInput from "material-ui-chip-input";
 
 export type FormProps = BaseFormProps<ExposedQueryTemplate> & {
   onDelete?: () => void;
 };
 
+const useStyles = makeStyles((theme) => ({
+  tagsInputRoot: {
+    display: "flex",
+    flexWrap: "wrap"
+  },
+  tagsInput: {
+    maxWidth: "250px"
+  }
+}));
+
 export default function QueryTemplateForm({onDelete, projects, ...rest}: FormProps) {
+  const classes = useStyles();
   const isNew = rest.initialValues?.id === undefined;
+  const [tagInputValue, setTagInputValue] = useState('');
+
+  const handleOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = event.target.value;
+    setTagInputValue(inputValue);
+  }
 
   const parseChips = (tagsString: string) => {
     return tagsString ? tagsString.split(" ") : [];
   };
 
-  const handleAddChip = (oldTags: string, newTag: string) => {
-    return oldTags ? `${oldTags} ${newTag}` : newTag;
+  const handleAddChip = (oldTags: string) => {
+    return oldTags ? `${oldTags} ${tagInputValue.trim()}` : tagInputValue.trim();
   };
 
   const handleDeleteChip = (chips: Array<string>, index: number) => {
@@ -41,14 +59,14 @@ export default function QueryTemplateForm({onDelete, projects, ...rest}: FormPro
               label="Description"
               name="description"
               required={true}
-              variant="filled"
+              variant="outlined"
             />
           </Box>
           <Box pb={2}>
             <Select
               name="projectId"
               label="Project Id"
-              variant="filled"
+              variant="outlined"
               required={true}
             >
               {projects && projects.map((project: ExposedProject) => (
@@ -66,35 +84,54 @@ export default function QueryTemplateForm({onDelete, projects, ...rest}: FormPro
               label="Knobs"
               name="knobs"
               required={true}
-              variant="filled"
+              variant="outlined"
             />
           </Box>
           <Box pb={2}>
-            <Field name="tag">
+            <Field name="tag" required>
               {props => {
                 const chips = parseChips(props.input.value)
                 return (
-                  <ChipInput
+                  <MUITextField
                     fullWidth
                     required={!props.input.value}
                     label="Tag"
-                    variant="filled"
-                    value={chips}
-                    onAdd={(chip) => {
-                      props.input.onChange({
-                        target: {
-                          type: "input",
-                          value: handleAddChip(props.input.value, chip),
-                        },
-                      });
+                    variant="outlined"
+                    value={tagInputValue}
+                    onChange={handleOnChange}
+                    InputProps={{
+                      startAdornment: !!chips.length && chips.map((chip: string, index: number) => (
+                        <Chip
+                          style={{ marginRight: "8px", marginTop: "8px"}}
+                          key={index}
+                          tabIndex={-1}
+                          label={chip}
+                          onDelete={() => {
+                            props.input.onChange({
+                              target: {
+                                type: "input",
+                                value: handleDeleteChip(chips, index),
+                              },
+                            });
+                          }}
+                        />
+                      )),
+                      classes: {
+                        root: classes.tagsInputRoot,
+                        input: classes.tagsInput
+                      }
                     }}
-                    onDelete={(chip, index) => {
-                      props.input.onChange({
-                        target: {
-                          type: "input",
-                          value: handleDeleteChip(chips, index),
-                        },
-                      });
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        props.input.onChange({
+                          target: {
+                            type: "input",
+                            value: handleAddChip(props.input.value),
+                          },
+                        });
+                        setTagInputValue('');
+                        event.preventDefault();
+                      }
                     }}
                   />
                 )
