@@ -5,6 +5,7 @@ import prisma, { Prisma, User, Org } from "../prisma";
 const selectKeys = {
   id: true,
   name: true,
+  image: true,
 };
 
 export type ExposedOrg = Pick<Org, keyof typeof selectKeys>;

@@ -1,11 +1,11 @@
 import React, { useCallback } from "react";
 import { signIn } from "next-auth/client";
 
-import { AppBar, Avatar, Box, Typography, Button } from "@material-ui/core";
+import { AppBar, Box, Typography, Button } from "@material-ui/core";
 import HomeOutlinedIcon from "@material-ui/icons/HomeOutlined";
 import FlaskIcon from "../common/FlaskIcon";
 
-import { useSession, useActiveProject } from "../Session";
+import { useSession, useActiveProject, useActiveOrg } from "../Session";
 import Link, { LinkButton } from "../common/Link";
 import useStyles from "./AppTopBarStyles";
 import SettingsMenu from "./SettingsMenu";
@@ -17,6 +17,7 @@ export default function AppTopBar() {
   const classes = useStyles();
   const { session } = useSession();
   const { project } = useActiveProject();
+  const { activeOrg } = useActiveOrg();
 
   const activeProjectId = project?.id ?? 0;
 
@@ -55,15 +56,16 @@ export default function AppTopBar() {
           <ProjectsMenu />
           <SettingsMenu />
           {session.user ? (
-            <>
-              <Avatar
-                className={classes.userAvatar}
-                alt={session.user.name || ""}
-                title={`Signed in as ${session.user.name}`}
-                src={session.user.image || ""}
-              />
-              <UserMenu />
-            </>
+            <UserMenu
+              user={{
+                name: session.user.name || "",
+                image: session.user.image || "",
+              }}
+              org={{
+                name: activeOrg?.name || "",
+                image: activeOrg?.image || "",
+              }}
+            />
           ) : (
             <Button
               className={classes.topButton}
