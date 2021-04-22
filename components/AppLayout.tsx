@@ -105,7 +105,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   <ListSubheader inset>Recent projects</ListSubheader>
                   {
                     session.projects.slice(0, 3).map((project: ExposedProject) => (
-                      <ListItem button onClick={() => setProject(project ?? null)}>
+                      <ListItem key={project.id} button onClick={() => setProject(project ?? null)}>
                         <ListItemIcon>
                           <AssignmentIcon />
                         </ListItemIcon>
