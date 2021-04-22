@@ -15,15 +15,15 @@ import { authenticatedPage } from "../lib/auth";
 import { userCanAccessProject } from "../lib/projects";
 import prisma from "../lib/prisma";
 
-export const getServerSideProps = authenticatedPage<{
+type Props = {
   projects: RecentProject[];
-}>(async (context) => {
+};
+
+export const getServerSideProps = authenticatedPage<Props>(async (context) => {
   const activeOrgId = context.user.activeOrgId!;
   const orgUsers = await prisma.orgUser.findMany({
     where: {
-      userId: {
-        equals: context.user.id,
-      },
+      userId: context.user.id,
     },
   });
 
@@ -114,10 +114,6 @@ const useStyles = makeStyles((theme) => ({
     marginRight: theme.spacing(2),
   },
 }));
-
-type Props = {
-  projects: RecentProject[];
-};
 
 export default function Home({ projects }: Props) {
   const { session } = useSession();

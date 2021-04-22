@@ -1,6 +1,5 @@
 import * as React from "react";
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/client";
 import { useTable, Column } from "react-table";
 
 import { Typography } from "@material-ui/core";

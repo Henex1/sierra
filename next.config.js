@@ -4,8 +4,9 @@ module.exports = {
   webpack: (config, { webpack }) => {
     // Note: we provide webpack above so you should not `require` it
 
-    // Ignore colocated tests
+    // Ignore colocated tests and mocks
     config.plugins.push(new webpack.IgnorePlugin(/\.test.[tj]sx?$/));
+    config.plugins.push(new webpack.IgnorePlugin(/\/__mocks__\//));
 
     if (process.env.NODE_ENV === "production") {
       // Ignore pages in /dev/ folders

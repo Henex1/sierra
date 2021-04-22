@@ -1,11 +1,14 @@
 import * as React from "react";
 import Head from "next/head";
 import { AppProps } from "next/app";
-import { useSession, signIn } from 'next-auth/client'
 
 import { ThemeProvider } from "@material-ui/core/styles";
 import { CacheProvider } from "@emotion/react";
-import { Provider as NextSessionProvider } from "next-auth/client";
+import {
+  Provider as NextSessionProvider,
+  useSession,
+  signIn,
+} from "next-auth/client";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import createCache from "@emotion/cache";
 

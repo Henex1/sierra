@@ -41,7 +41,7 @@ export default function AppTopBar() {
             Home
           </LinkButton>
           <LinkButton
-            href={`${activeProjectId}/lab`}
+            href={`/${activeProjectId}/lab`}
             color="inherit"
             className={classes.topButton}
             size="large"
