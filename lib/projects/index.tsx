@@ -47,6 +47,10 @@ export async function listProjects(org: Org): Promise<Project[]> {
   return projects;
 }
 
+export interface SearchPhrase {
+  phrase: string;
+}
+
 export const createProjectSchema = z.object({
   name: z.string(),
 });

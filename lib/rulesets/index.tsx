@@ -1,8 +1,14 @@
 import _ from "lodash";
 import * as z from "zod";
 
-import prisma, { Prisma, Org, User, Ruleset, RulesetVersion } from "../prisma";
-import { userCanAccessOrg } from "../org";
+import prisma, {
+  Prisma,
+  Project,
+  User,
+  Ruleset,
+  RulesetVersion,
+} from "../prisma";
+import { userCanAccessProject } from "../projects";
 import { rulesetVersionValueSchema } from "./rules";
 
 export { rulesetVersionValueSchema };
@@ -11,7 +17,7 @@ export { rulesetVersionValueSchema };
 // by default.
 const selectKeys = {
   id: true,
-  orgId: true,
+  projectId: true,
   name: true,
 };
 
@@ -32,7 +38,9 @@ export function userCanAccessRuleset(
   user: User,
   rest?: Prisma.RulesetWhereInput
 ): Prisma.RulesetWhereInput {
-  const result: Prisma.RulesetWhereInput = { org: userCanAccessOrg(user) };
+  const result: Prisma.RulesetWhereInput = {
+    project: userCanAccessProject(user),
+  };
   if (rest) {
     result.AND = rest;
   }
@@ -66,11 +74,11 @@ export const createRulesetSchema = z.object({
 export type CreateRuleset = z.infer<typeof createRulesetSchema>;
 
 export async function createRuleset(
-  org: Org,
+  project: Project,
   input: CreateRuleset
 ): Promise<Ruleset> {
   const ruleset = await prisma.ruleset.create({
-    data: { ...input, orgId: org.id },
+    data: { ...input, projectId: project.id },
   });
   return ruleset;
 }
