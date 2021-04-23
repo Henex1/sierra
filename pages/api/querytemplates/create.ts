@@ -11,7 +11,7 @@ const createQueryTemplateSchema = z.object({
     description: z.string(),
     query: z.string(),
     knobs: z.any(),
-    tag: z.string(),
+    tag: z.string().optional(),
     projectId: z.number()
 });
 
@@ -38,7 +38,7 @@ export default async function createQueryTemplate(
     if (!project) {
         return res.status(500).json({ error: "Query template must be attached to a project" });
     }
-    const { description, query, knobs, projectId, tag } = input.data;
+    const { description, query, knobs, projectId, tag = '' } = input.data;
     const queryTemplate = await prisma.queryTemplate.create({
         data: { description, query, knobs, tag, projectId },
     });

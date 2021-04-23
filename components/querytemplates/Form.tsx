@@ -94,7 +94,6 @@ export default function QueryTemplateForm({onDelete, projects, ...rest}: FormPro
                 return (
                   <MUITextField
                     fullWidth
-                    required={!props.input.value}
                     label="Tag"
                     variant="outlined"
                     value={tagInputValue}
