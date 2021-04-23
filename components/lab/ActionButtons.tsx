@@ -3,12 +3,13 @@ import { Fab, Drawer, CircularProgress, colors } from "@material-ui/core";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import SettingsIcon from "@material-ui/icons/Settings";
 import { makeStyles } from "@material-ui/core/styles";
+import classnames from "classnames";
 
 const useStyles = makeStyles((theme) => ({
   fabContainer: {
     position: "fixed",
     right: 50,
-    bottom: 50,
+    bottom: 30,
   },
   runFab: {
     width: 140,
@@ -43,7 +44,7 @@ export default function ActionButtons({
   const handleClose = () => setOpen(false);
 
   return (
-    <div className={classes.fabContainer}>
+    <div className={classnames(classes.fabContainer, "mui-fixed")}>
       <Fab
         color="primary"
         variant="extended"

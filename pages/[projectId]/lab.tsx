@@ -1,65 +1,28 @@
 import React from "react";
-import {
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  Avatar,
-  Tooltip,
-  Typography,
-  colors,
-} from "@material-ui/core";
-import SearchIcon from "@material-ui/icons/Search";
-import { makeStyles } from "@material-ui/core/styles";
-import { scaleLinear } from "d3-scale";
+import { Grid, Typography, Box, makeStyles } from "@material-ui/core";
+import { Pagination } from "@material-ui/lab";
 import { useRouter } from "next/router";
 
 import Filters from "../../components/lab/Filters";
-import DetailModal from "../../components/lab/DetailModal";
+import SearchPhraseList from "../../components/lab/SearchPhraseList";
+import ResultList from "../../components/lab/ResultList";
 import ActionButtons from "../../components/lab/ActionButtons";
 import { getProject } from "../../lib/projects";
-import {
-  getSearchPhrases,
-  formatSearchPhrase,
-  ExposedSearchPhrase,
-} from "../../lib/searchphrases";
+import { getSearchPhrases } from "../../lib/searchphrases";
 import { MockSearchPhrase, ShowOptions, SortOptions } from "../../lib/lab";
 import { authenticatedPage } from "../../lib/auth";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 const useStyles = makeStyles((theme) => ({
-  list: {
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2),
+  listContainer: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(4),
   },
-  empty: {
-    marginTop: theme.spacing(16),
-    marginBottom: theme.spacing(16),
-    textAlign: "center",
-  },
-  avatar: {
-    fontSize: "18px",
-    color: "#111",
-  },
-  fabContainer: {
-    position: "fixed",
-    right: 50,
-    bottom: 50,
-  },
-  runFab: {
-    marginRight: theme.spacing(1),
-  },
-  fabIcon: {
-    marginRight: theme.spacing(1),
+  listBorder: {
+    borderRight: "5px solid rgba(0, 0, 0, 0.08)",
   },
 }));
-
-const colorScale = scaleLinear<string, string>()
-  .domain([0, 50, 100])
-  .range([colors.red[500], colors.yellow[500], colors.green[500]]);
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const projectId = parseInt(context.query.projectId as string, 10);
@@ -70,7 +33,9 @@ export const getServerSideProps = authenticatedPage(async (context) => {
   const opts = {
     sort: context.query.sort as string,
     show: context.query.show as string,
+    page: parseInt(context.query.page as string) || 1,
   };
+
   const searchPhrases = await getSearchPhrases(project);
   const mockObjects = searchPhrases.map((phrase) => {
     const randomValue = phrase.phrase
@@ -112,8 +77,27 @@ export default function Lab({ searchPhrases }: Props) {
     show: "all",
     sort: "search-phrase-asc",
   });
+  const [page, setPage] = React.useState(1);
   const [configurations, setConfigurations] = React.useState({});
   const [isTestRunning, setIsTestRunning] = React.useState(false);
+
+  React.useEffect(() => {
+    if (searchPhrase) {
+      const padding = window.innerWidth - document.body.offsetWidth;
+      document.body.style.paddingRight = padding + "px";
+      document.body.style.overflow = "hidden";
+      document.querySelectorAll(".mui-fixed").forEach((item) => {
+        (item as any).style.paddingRight =
+          (parseInt(getComputedStyle(item).paddingRight) || 0) + padding + "px";
+      });
+    } else {
+      document.body.style.removeProperty("padding");
+      document.body.style.removeProperty("overflow");
+      document.querySelectorAll(".mui-fixed").forEach((item) => {
+        (item as any).style.removeProperty("padding");
+      });
+    }
+  }, [searchPhrase]);
 
   React.useEffect(() => {
     router.push({
@@ -122,9 +106,10 @@ export default function Lab({ searchPhrases }: Props) {
         ...router.query,
         show: filters.show,
         sort: filters.sort,
+        page,
       },
     });
-  }, [filters]);
+  }, [filters, page]);
 
   const handleFilterChange = (
     key: "show" | "sort",
@@ -158,51 +143,56 @@ export default function Lab({ searchPhrases }: Props) {
         <Link href="/">Home</Link>
         <Typography>Lab</Typography>
       </BreadcrumbsButtons>
-      <Filters filters={filters} onFilterChange={handleFilterChange} />
-      {searchPhrases.length ? (
-        <List className={classes.list}>
-          {searchPhrases.map((item, i) => {
-            const handleClick = () => setSearchPhrase(item);
-            return (
-              <ListItem key={i}>
-                <ListItemAvatar>
-                  <Tooltip title="Sierra score">
-                    <Avatar
-                      variant="rounded"
-                      className={classes.avatar}
-                      style={{
-                        background: colorScale(item.score.sierra),
-                      }}
-                    >
-                      {item.score.sierra}
-                    </Avatar>
-                  </Tooltip>
-                </ListItemAvatar>
-                <ListItemText
-                  primary={item.phrase}
-                  secondary={item.results + " results"}
-                ></ListItemText>
-                <ListItemSecondaryAction>
-                  <IconButton
-                    edge="end"
-                    aria-label="Details"
-                    onClick={handleClick}
-                  >
-                    <SearchIcon />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-            );
-          })}
-        </List>
-      ) : (
-        <Typography variant="body1" className={classes.empty}>
-          No results.
-        </Typography>
-      )}
-      {searchPhrase && (
-        <DetailModal searchPhrase={searchPhrase} onClose={handleModalClose} />
-      )}
+      <Grid container justify="space-between">
+        <Grid item>
+          <Box pl={2} mb={1}>
+            <Typography>Showing 18 results..</Typography>
+            <Box pt={1}>
+              <Typography variant="body2" color="textSecondary">
+                Latency Percentiles (ms):
+                <br />
+                Mean <b>90</b>, 95th percentile <b>320</b>, 99th percentile{" "}
+                <b>2204</b>
+              </Typography>
+            </Box>
+          </Box>
+        </Grid>
+        <Grid item>
+          <Filters filters={filters} onFilterChange={handleFilterChange} />
+        </Grid>
+      </Grid>
+      <Grid container className={classes.listContainer}>
+        <Grid
+          item
+          sm={searchPhrase ? 3 : true}
+          className={searchPhrase ? classes.listBorder : undefined}
+        >
+          <SearchPhraseList
+            searchPhrases={searchPhrases}
+            activePhrase={searchPhrase}
+            setActivePhrase={setSearchPhrase}
+          />
+          {searchPhrases.length && (
+            <Box mt={4} display="flex" justifyContent="center">
+              <Pagination
+                page={page}
+                count={10}
+                onChange={(e: React.ChangeEvent<unknown>, value: number) =>
+                  setPage(value)
+                }
+              />
+            </Box>
+          )}
+        </Grid>
+        {searchPhrase && (
+          <Grid item md>
+            <ResultList
+              searchPhrase={searchPhrase}
+              onClose={handleModalClose}
+            />
+          </Grid>
+        )}
+      </Grid>
       <ActionButtons
         configurations={configurations}
         isRunning={isTestRunning}

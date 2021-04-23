@@ -1,5 +1,17 @@
-@import "fontsource-roboto";
+.custom-scrollbar {
+  scrollbar-width: thin;
+}
 
-body {
-  font-family: "Roboto", sans-serif;
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  border-radius: 8px;
+  background-color: #efefef;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background-color: #c3c3c3;
 }
