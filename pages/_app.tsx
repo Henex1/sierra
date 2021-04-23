@@ -16,6 +16,8 @@ import theme from "../lib/theme";
 import AppLayout from "../components/AppLayout";
 import { SessionProvider, ActiveProjectProvider } from "../components/Session";
 
+import "../styles/globals.css";
+
 export const cache = createCache({ key: "css", prepend: true });
 
 export default function MyApp(props: AppProps) {

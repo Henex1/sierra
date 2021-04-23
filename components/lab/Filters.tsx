@@ -5,8 +5,8 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  makeStyles,
   SvgIconProps,
+  makeStyles,
 } from "@material-ui/core";
 import ArrowUpwardIcon from "@material-ui/icons/ArrowUpward";
 import ArrowDownwardIcon from "@material-ui/icons/ArrowDownward";
