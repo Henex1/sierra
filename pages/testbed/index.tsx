@@ -28,7 +28,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { Alert } from "@material-ui/lab";
 
 import { useActiveProject, useSession } from "../../components/Session";
-import { authenticatedPage } from "../../lib/auth";
+import { authenticatedPage } from "../../lib/pageHelpers";
 import {
   ExposedRuleset,
   formatRuleset,

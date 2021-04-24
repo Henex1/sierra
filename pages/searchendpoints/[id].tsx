@@ -5,7 +5,7 @@ import { Grid, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
 import Form from "../../components/searchendpoints/Form";
-import { authenticatedPage } from "../../lib/auth";
+import { authenticatedPage } from "../../lib/pageHelpers";
 import { apiRequest } from "../../lib/api";
 import {
   formatSearchEndpoint,
@@ -32,8 +32,8 @@ type Props = {
 
 const useStyles = makeStyles(() => ({
   wrapper: {
-    height: "100%"
-  }
+    height: "100%",
+  },
 }));
 
 export default function EditSearchEndpoint({ searchEndpoint }: Props) {
@@ -72,9 +72,7 @@ export default function EditSearchEndpoint({ searchEndpoint }: Props) {
       </BreadcrumbsButtons>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <Typography variant="h4">
-            Update search endpoint:
-          </Typography>
+          <Typography variant="h4">Update search endpoint:</Typography>
         </Grid>
         <Grid item xs={6}>
           <Form

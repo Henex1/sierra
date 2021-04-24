@@ -4,7 +4,6 @@ import * as z from "zod";
 import { HttpError } from "../apiServer";
 import prisma, { Prisma, User, SearchEndpoint } from "../prisma";
 import { SearchEndpointSchema } from "../schema";
-import { UserSession } from "../authServer";
 import { userCanAccessOrg } from "../org";
 import { handleElasticsearchQuery } from "./elasticsearch";
 
@@ -57,7 +56,9 @@ export async function getSearchEndpoint(
 
 export async function listSearchEndpoints({
   user,
-}: UserSession): Promise<ExposedSearchEndpoint[]> {
+}: {
+  user: User;
+}): Promise<ExposedSearchEndpoint[]> {
   if (!user) {
     return [];
   }

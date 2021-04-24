@@ -83,6 +83,16 @@ export async function createRuleset(
   return ruleset;
 }
 
+export async function getLatestRulesetVersion(
+  ruleset: Ruleset
+): Promise<RulesetVersion | null> {
+  const version = await prisma.rulesetVersion.findFirst({
+    where: { ruleset: { id: ruleset.id } },
+    orderBy: [{ updatedAt: "desc" }],
+  });
+  return version;
+}
+
 export const createRulesetVersionSchema = z.object({
   parentId: z.number().nullable(),
   value: rulesetVersionValueSchema,

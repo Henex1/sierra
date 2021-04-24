@@ -15,7 +15,7 @@ import {
   SearchPhraseExecutionInfo,
 } from "../../lib/execution";
 import { MockSearchPhrase, ShowOptions, SortOptions } from "../../lib/lab";
-import { authenticatedPage } from "../../lib/auth";
+import { authenticatedPage, requireNumberParam } from "../../lib/pageHelpers";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const projectId = parseInt(context.query.projectId as string, 10);
+  const projectId = requireNumberParam(context, "projectId");
   const project = await getProject(context.user, projectId);
   if (!project) {
     return { notFound: true };

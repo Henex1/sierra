@@ -11,7 +11,7 @@ import ProjectList, {
 } from "../components/dashboard/ProjectList";
 import TeamList from "../components/dashboard/TeamList";
 import { useSession } from "../components/Session";
-import { authenticatedPage } from "../lib/auth";
+import { authenticatedPage } from "../lib/pageHelpers";
 import { userCanAccessProject } from "../lib/projects";
 import prisma from "../lib/prisma";
 

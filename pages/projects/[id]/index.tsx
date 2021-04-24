@@ -1,3 +1,4 @@
+import * as z from "zod";
 import * as React from "react";
 import { GetServerSideProps } from "next";
 
@@ -7,21 +8,21 @@ import Typography from "@material-ui/core/Typography";
 
 import Link, { LinkButton } from "../../../components/common/Link";
 import DebugQuery from "../../../components/searchendpoints/DebugQuery";
-import { authenticatedPage } from "../../../lib/auth";
+import {
+  authenticatedPage,
+  requireNumberParam,
+} from "../../../lib/pageHelpers";
 import {
   userCanAccessProject,
   formatProject,
+  getProject,
   ExposedProject,
 } from "../../../lib/projects";
-import prisma from "../../../lib/prisma";
 import BreadcrumbsButtons from "../../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const project = await prisma.project.findFirst({
-    where: userCanAccessProject(context.user, {
-      id: parseInt(context.params!.id! as string, 10),
-    }),
-  });
+  const id = requireNumberParam(context, "id");
+  const project = await getProject(context.user, id);
   if (!project) {
     return { notFound: true };
   }
@@ -47,7 +48,7 @@ export default function ViewProject({ project }: Props) {
           </LinkButton>
         </Box>
         <Typography variant="h3">Project: {project.name}</Typography>
-        <DebugQuery/>
+        <DebugQuery />
       </Container>
     </div>
   );

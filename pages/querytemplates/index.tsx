@@ -9,9 +9,8 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import { Typography } from "@material-ui/core";
 
-
 import Link, { LinkButton } from "../../components/common/Link";
-import { authenticatedPage } from "../../lib/auth";
+import { authenticatedPage } from "../../lib/pageHelpers";
 import {
   userCanAccessQueryTemplate,
   ExposedQueryTemplate,
