@@ -13,9 +13,7 @@ export default function SettingsMenu() {
       buttonClassName={classes.topButton}
       menuClassName={classes.dropMenu}
     >
-      <MenuItemLink href="/teams">Teams</MenuItemLink>
       <MenuItemLink href="/projects">Projects</MenuItemLink>
-      <MenuItemLink href="/scores">Scores</MenuItemLink>
       <MenuItemLink href="/settings">Settings</MenuItemLink>
     </MenuButton>
   );

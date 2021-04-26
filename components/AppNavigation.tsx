@@ -7,7 +7,6 @@ import ListItemText, {
 import DashboardIcon from "@material-ui/icons/Dashboard";
 import StorageIcon from "@material-ui/icons/Storage";
 import PeopleIcon from "@material-ui/icons/People";
-import BarChartIcon from "@material-ui/icons/BarChart";
 import LayersIcon from "@material-ui/icons/Layers";
 import BlurLinearIcon from "@material-ui/icons/BlurLinear";
 import AccountTreeIcon from "@material-ui/icons/AccountTree";
@@ -46,18 +45,13 @@ export const mainListItems = (
     />
     <NavigationItem
       href="/projects"
-      icon={<BarChartIcon />}
+      icon={<AccountTreeIcon />}
       text={{ primary: "Projects" }}
     />
     <NavigationItem
       href="/rulesets"
       icon={<LayersIcon />}
       text={{ primary: "Rulesets" }}
-    />
-    <NavigationItem
-      href="/querytemplates"
-      icon={<AccountTreeIcon />}
-      text={{ primary: "Query Templates" }}
     />
     <NavigationItem
       href="/judgements"
@@ -67,12 +61,12 @@ export const mainListItems = (
     <NavigationItem
       href="/testbed"
       icon={<BlurLinearIcon />}
-      text={{ primary: "Testbed" }}
+      text={{ primary: "Test Bed" }}
     />
     <NavigationItem
-      href="/teams"
+      href="/team"
       icon={<PeopleIcon />}
-      text={{ primary: "Teams" }}
+      text={{ primary: "Team" }}
     />
   </div>
 );
