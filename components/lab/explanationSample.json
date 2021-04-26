@@ -1,0 +1,558 @@
+{
+  "value": 566.6583,
+  "description": "sum of:",
+  "details": [
+    {
+      "value": 566.6583,
+      "description": "sum of:",
+      "details": [
+        {
+          "value": 163.79355,
+          "description": "sum of:",
+          "details": [
+            {
+              "value": 131.03484,
+              "description": "weight(es_pubtitle.localized:servicenow in 534) [PerFieldSimilarity], result of:",
+              "details": [
+                {
+                  "value": 131.03484,
+                  "description": "score(freq=1.0), computed as boost * idf * tf from:",
+                  "details": [
+                    {
+                      "value": 88,
+                      "description": "boost",
+                      "details": []
+                    },
+                    {
+                      "value": 3.3580925,
+                      "description": "idf, computed as log(1 + (N - n + 0.5) / (n + 0.5)) from:",
+                      "details": [
+                        {
+                          "value": 167,
+                          "description": "n, number of documents containing term",
+                          "details": []
+                        },
+                        {
+                          "value": 4812,
+                          "description": "N, total number of documents with field",
+                          "details": []
+                        }
+                      ]
+                    },
+                    {
+                      "value": 0.44341606,
+                      "description": "tf, computed as freq / (freq + k1 * (1 - b + b * dl / avgdl)) from:",
+                      "details": [
+                        {
+                          "value": 1,
+                          "description": "freq, occurrences of term within document",
+                          "details": []
+                        },
+                        {
+                          "value": 1.2,
+                          "description": "k1, term saturation parameter",
+                          "details": []
+                        },
+                        {
+                          "value": 0.75,
+                          "description": "b, length normalization parameter",
+                          "details": []
+                        },
+                        {
+                          "value": 6,
+                          "description": "dl, length of field",
+                          "details": []
+                        },
+                        {
+                          "value": 5.6531587,
+                          "description": "avgdl, average length of field",
+                          "details": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "value": 0,
+              "description": "ConstantScore(es_pubtitle.standard:servicenow)^0.0",
+              "details": []
+            },
+            {
+              "value": 32.75871,
+              "description": "weight(es_pubtitle.localized:servicenow in 534) [PerFieldSimilarity], result of:",
+              "details": [
+                {
+                  "value": 32.75871,
+                  "description": "score(freq=1.0), computed as boost * idf * tf from:",
+                  "details": [
+                    {
+                      "value": 22,
+                      "description": "boost",
+                      "details": []
+                    },
+                    {
+                      "value": 3.3580925,
+                      "description": "idf, computed as log(1 + (N - n + 0.5) / (n + 0.5)) from:",
+                      "details": [
+                        {
+                          "value": 167,
+                          "description": "n, number of documents containing term",
+                          "details": []
+                        },
+                        {
+                          "value": 4812,
+                          "description": "N, total number of documents with field",
+                          "details": []
+                        }
+                      ]
+                    },
+                    {
+                      "value": 0.44341606,
+                      "description": "tf, computed as freq / (freq + k1 * (1 - b + b * dl / avgdl)) from:",
+                      "details": [
+                        {
+                          "value": 1,
+                          "description": "freq, occurrences of term within document",
+                          "details": []
+                        },
+                        {
+                          "value": 1.2,
+                          "description": "k1, term saturation parameter",
+                          "details": []
+                        },
+                        {
+                          "value": 0.75,
+                          "description": "b, length normalization parameter",
+                          "details": []
+                        },
+                        {
+                          "value": 6,
+                          "description": "dl, length of field",
+                          "details": []
+                        },
+                        {
+                          "value": 5.6531587,
+                          "description": "avgdl, average length of field",
+                          "details": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "value": 209.95432,
+          "description": "sum of:",
+          "details": [
+            {
+              "value": 196.83217,
+              "description": "weight(es_text.localized:servicenow in 534) [PerFieldSimilarity], result of:",
+              "details": [
+                {
+                  "value": 196.83217,
+                  "description": "score(freq=7.0), computed as boost * idf * tf from:",
+                  "details": [
+                    {
+                      "value": 66,
+                      "description": "boost",
+                      "details": []
+                    },
+                    {
+                      "value": 3.3401096,
+                      "description": "idf, computed as log(1 + (N - n + 0.5) / (n + 0.5)) from:",
+                      "details": [
+                        {
+                          "value": 166,
+                          "description": "n, number of documents containing term",
+                          "details": []
+                        },
+                        {
+                          "value": 4698,
+                          "description": "N, total number of documents with field",
+                          "details": []
+                        }
+                      ]
+                    },
+                    {
+                      "value": 0.89287657,
+                      "description": "tf, computed as freq / (freq + k1 * (1 - b + b * dl / avgdl)) from:",
+                      "details": [
+                        {
+                          "value": 7,
+                          "description": "freq, occurrences of term within document",
+                          "details": []
+                        },
+                        {
+                          "value": 1.2,
+                          "description": "k1, term saturation parameter",
+                          "details": []
+                        },
+                        {
+                          "value": 0.75,
+                          "description": "b, length normalization parameter",
+                          "details": []
+                        },
+                        {
+                          "value": 200,
+                          "description": "dl, length of field (approximate)",
+                          "details": []
+                        },
+                        {
+                          "value": 333.4387,
+                          "description": "avgdl, average length of field",
+                          "details": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "value": 0,
+              "description": "ConstantScore(es_text.standard:servicenow)^0.0",
+              "details": []
+            },
+            {
+              "value": 13.122145,
+              "description": "weight(es_text.localized:servicenow in 534) [PerFieldSimilarity], result of:",
+              "details": [
+                {
+                  "value": 13.122145,
+                  "description": "score(freq=7.0), computed as boost * idf * tf from:",
+                  "details": [
+                    {
+                      "value": 4.4,
+                      "description": "boost",
+                      "details": []
+                    },
+                    {
+                      "value": 3.3401096,
+                      "description": "idf, computed as log(1 + (N - n + 0.5) / (n + 0.5)) from:",
+                      "details": [
+                        {
+                          "value": 166,
+                          "description": "n, number of documents containing term",
+                          "details": []
+                        },
+                        {
+                          "value": 4698,
+                          "description": "N, total number of documents with field",
+                          "details": []
+                        }
+                      ]
+                    },
+                    {
+                      "value": 0.89287657,
+                      "description": "tf, computed as freq / (freq + k1 * (1 - b + b * dl / avgdl)) from:",
+                      "details": [
+                        {
+                          "value": 7,
+                          "description": "freq, occurrences of term within document",
+                          "details": []
+                        },
+                        {
+                          "value": 1.2,
+                          "description": "k1, term saturation parameter",
+                          "details": []
+                        },
+                        {
+                          "value": 0.75,
+                          "description": "b, length normalization parameter",
+                          "details": []
+                        },
+                        {
+                          "value": 200,
+                          "description": "dl, length of field (approximate)",
+                          "details": []
+                        },
+                        {
+                          "value": 333.4387,
+                          "description": "avgdl, average length of field",
+                          "details": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "value": 3.5600476,
+          "description": "sum of:",
+          "details": [
+            {
+              "value": 3.5600476,
+              "description": "sum of:",
+              "details": [
+                {
+                  "value": 3.5600476,
+                  "description": "weight(es_text.localized:servic in 534) [PerFieldSimilarity], result of:",
+                  "details": [
+                    {
+                      "value": 3.5600476,
+                      "description": "score(freq=1.0), computed as boost * idf * tf from:",
+                      "details": [
+                        {
+                          "value": 4.4,
+                          "description": "boost",
+                          "details": []
+                        },
+                        {
+                          "value": 1.4886092,
+                          "description": "idf, computed as log(1 + (N - n + 0.5) / (n + 0.5)) from:",
+                          "details": [
+                            {
+                              "value": 1060,
+                              "description": "n, number of documents containing term",
+                              "details": []
+                            },
+                            {
+                              "value": 4698,
+                              "description": "N, total number of documents with field",
+                              "details": []
+                            }
+                          ]
+                        },
+                        {
+                          "value": 0.5435287,
+                          "description": "tf, computed as freq / (freq + k1 * (1 - b + b * dl / avgdl)) from:",
+                          "details": [
+                            {
+                              "value": 1,
+                              "description": "freq, occurrences of term within document",
+                              "details": []
+                            },
+                            {
+                              "value": 1.2,
+                              "description": "k1, term saturation parameter",
+                              "details": []
+                            },
+                            {
+                              "value": 0.75,
+                              "description": "b, length normalization parameter",
+                              "details": []
+                            },
+                            {
+                              "value": 200,
+                              "description": "dl, length of field (approximate)",
+                              "details": []
+                            },
+                            {
+                              "value": 333.4387,
+                              "description": "avgdl, average length of field",
+                              "details": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "value": 0,
+              "description": "ConstantScore(es_text.standard:service es_text.standard:now)^0.0",
+              "details": []
+            }
+          ]
+        },
+        {
+          "value": 189.35039,
+          "description": "sum of:",
+          "details": [
+            {
+              "value": 0,
+              "description": "ConstantScore(es_title.standard:servicenow)^0.0",
+              "details": []
+            },
+            {
+              "value": 157.79199,
+              "description": "weight(es_title.localized:servicenow in 534) [PerFieldSimilarity], result of:",
+              "details": [
+                {
+                  "value": 157.79199,
+                  "description": "score(freq=1.0), computed as boost * idf * tf from:",
+                  "details": [
+                    {
+                      "value": 66,
+                      "description": "boost",
+                      "details": []
+                    },
+                    {
+                      "value": 4.154943,
+                      "description": "idf, computed as log(1 + (N - n + 0.5) / (n + 0.5)) from:",
+                      "details": [
+                        {
+                          "value": 75,
+                          "description": "n, number of documents containing term",
+                          "details": []
+                        },
+                        {
+                          "value": 4812,
+                          "description": "N, total number of documents with field",
+                          "details": []
+                        }
+                      ]
+                    },
+                    {
+                      "value": 0.5754081,
+                      "description": "tf, computed as freq / (freq + k1 * (1 - b + b * dl / avgdl)) from:",
+                      "details": [
+                        {
+                          "value": 1,
+                          "description": "freq, occurrences of term within document",
+                          "details": []
+                        },
+                        {
+                          "value": 1.2,
+                          "description": "k1, term saturation parameter",
+                          "details": []
+                        },
+                        {
+                          "value": 0.75,
+                          "description": "b, length normalization parameter",
+                          "details": []
+                        },
+                        {
+                          "value": 2,
+                          "description": "dl, length of field",
+                          "details": []
+                        },
+                        {
+                          "value": 4.110557,
+                          "description": "avgdl, average length of field",
+                          "details": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "value": 31.5584,
+              "description": "weight(es_title.localized:servicenow in 534) [PerFieldSimilarity], result of:",
+              "details": [
+                {
+                  "value": 31.5584,
+                  "description": "score(freq=1.0), computed as boost * idf * tf from:",
+                  "details": [
+                    {
+                      "value": 13.200001,
+                      "description": "boost",
+                      "details": []
+                    },
+                    {
+                      "value": 4.154943,
+                      "description": "idf, computed as log(1 + (N - n + 0.5) / (n + 0.5)) from:",
+                      "details": [
+                        {
+                          "value": 75,
+                          "description": "n, number of documents containing term",
+                          "details": []
+                        },
+                        {
+                          "value": 4812,
+                          "description": "N, total number of documents with field",
+                          "details": []
+                        }
+                      ]
+                    },
+                    {
+                      "value": 0.5754081,
+                      "description": "tf, computed as freq / (freq + k1 * (1 - b + b * dl / avgdl)) from:",
+                      "details": [
+                        {
+                          "value": 1,
+                          "description": "freq, occurrences of term within document",
+                          "details": []
+                        },
+                        {
+                          "value": 1.2,
+                          "description": "k1, term saturation parameter",
+                          "details": []
+                        },
+                        {
+                          "value": 0.75,
+                          "description": "b, length normalization parameter",
+                          "details": []
+                        },
+                        {
+                          "value": 2,
+                          "description": "dl, length of field",
+                          "details": []
+                        },
+                        {
+                          "value": 4.110557,
+                          "description": "avgdl, average length of field",
+                          "details": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "value": 0,
+      "description": "match on required clause, product of:",
+      "details": [
+        {
+          "value": 0,
+          "description": "# clause",
+          "details": []
+        },
+        {
+          "value": 1,
+          "description": "es_searchable:T",
+          "details": []
+        }
+      ]
+    },
+    {
+      "value": 0,
+      "description": "match on required clause, product of:",
+      "details": [
+        {
+          "value": 0,
+          "description": "# clause",
+          "details": []
+        },
+        {
+          "value": 1,
+          "description": "es_publish_status:T",
+          "details": []
+        }
+      ]
+    },
+    {
+      "value": 0,
+      "description": "match on required clause, product of:",
+      "details": [
+        {
+          "value": 0,
+          "description": "# clause",
+          "details": []
+        },
+        {
+          "value": 1,
+          "description": "es_content_prefix:bundle es_content_prefix:resourcetopic",
+          "details": []
+        }
+      ]
+    }
+  ]
+}

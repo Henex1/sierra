@@ -70,7 +70,10 @@ export default function SearchPhraseList({
     <>
       <List className={classes.list}>
         {searchPhrases.slice(0, 10).map((item, i) => {
-          const handleClick = () => {
+          const handleClick = (
+            e: React.MouseEvent<HTMLDivElement | HTMLButtonElement>
+          ) => {
+            e.stopPropagation();
             if (activePhrase?.id !== item.id) {
               setActivePhrase(item);
             } else {

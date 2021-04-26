@@ -18,25 +18,24 @@ import CloseIcon from "@material-ui/icons/Close";
 import classnames from "classnames";
 
 import { MockSearchPhrase } from "../../lib/lab";
+
 import ScoreBox from "./ScoreBox";
+import ExplainBlock from "./ExplainBlock";
+import Scrollable from "../common/Scrollable";
+import explanationSample from "./explanationSample.json";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    position: "sticky",
-    top: 80,
-    maxHeight: `calc(100vh - 350px)`,
     display: "flex",
     flexDirection: "column",
     alignItems: "stretch",
   },
-  actions: {
-    flex: "none",
-  },
-  tableContainer: {
+  scrollable: {
     marginTop: theme.spacing(2),
     flex: "1 1 100%",
-    overflowX: "hidden",
-    overflowY: "auto",
+  },
+  actions: {
+    flex: "none",
   },
   tableRow: {
     verticalAlign: "top",
@@ -69,6 +68,38 @@ function mockGetResults(id: number): Promise<MockResults[]> {
   });
 }
 
+function mockExplainBlockProps() {
+  const scores: {
+    name: string;
+    score: number;
+  }[] = [
+    { name: 'es_title.localized:"per applianc licens"', score: 210.5973 },
+    { name: 'es_title.localized:"per applianc"', score: 143.95348 },
+    { name: 'es_text.localized:"per applianc licens"', score: 131.2363 },
+    { name: 'es_text.localized:"per applianc"', score: 87.43645 },
+    { name: 'es_title.localized:"per"', score: 17.299545 },
+    { name: 'es_title.localized:"applianc"', score: 13.328762 },
+    { name: 'es_title.localized:"licens"', score: 11.491154 },
+    { name: 'es_text.localized:"per"', score: 3.8000762 },
+    { name: 'es_text.localized:"applianc"', score: 3.7269855 },
+    { name: 'es_text.localized:"licens"', score: 3.612312 },
+    { name: "Constant Scored Query", score: 0 },
+  ];
+  const totalScore = scores.reduce((result, item) => {
+    return result + item.score;
+  }, 0);
+
+  return {
+    scores,
+    explanation: {
+      summary:
+        `${totalScore} Sum of the following:\n` +
+        scores.map((item) => `\n${item.score} ${item.name}\n`).join(""),
+      json: explanationSample,
+    },
+  };
+}
+
 type Props = {
   searchPhrase: MockSearchPhrase;
   onClose: () => void;
@@ -86,12 +117,14 @@ export default function ResultList({ searchPhrase, onClose }: Props) {
     getResults();
   }, [searchPhrase]);
 
+  const explainBlockProps = mockExplainBlockProps();
+
   if (!results) {
     return (
       <ClickAwayListener onClickAway={onClose}>
         <Box mt={10}>
           {Array.from(Array(5)).map((item, i) => (
-            <Box marginLeft={3} my={4}>
+            <Box key={i} marginLeft={3} my={4}>
               <Grid container>
                 <Grid item xs={1}>
                   <Skeleton
@@ -139,7 +172,12 @@ export default function ResultList({ searchPhrase, onClose }: Props) {
             </IconButton>
           </Grid>
         </Grid>
-        <div className={classnames(classes.tableContainer, "custom-scrollbar")}>
+        <Scrollable
+          maxHeight="calc(100vh - 350px)"
+          classes={{
+            root: classes.scrollable,
+          }}
+        >
           <Table>
             <TableBody>
               {results.map((result) => (
@@ -153,12 +191,14 @@ export default function ResultList({ searchPhrase, onClose }: Props) {
                     </Typography>
                     <Typography>{result.description}</Typography>
                   </TableCell>
-                  <TableCell>Explain block</TableCell>
+                  <TableCell width="33%">
+                    <ExplainBlock {...explainBlockProps} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </div>
+        </Scrollable>
       </div>
     </ClickAwayListener>
   );

@@ -145,8 +145,8 @@ export default function Lab({ searchPhrases }: Props) {
       </BreadcrumbsButtons>
       <Grid container justify="space-between">
         <Grid item>
-          <Box pl={2} mb={1}>
-            <Typography>Showing 18 results..</Typography>
+          <Box mb={1}>
+            <Typography>Showing 18 search phrases..</Typography>
             <Box pt={1}>
               <Typography variant="body2" color="textSecondary">
                 Latency Percentiles (ms):
