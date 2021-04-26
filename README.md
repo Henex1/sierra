@@ -5,10 +5,26 @@
 ### Libraries used
 
 - The application is based on [Next.js](https://nextjs.org/docs/getting-started) and [Material UI](https://material-ui.com/getting-started/usage/) on the frontend.
-  - Note: use `components/common/Link`, which is a combination of `next/link` and `@material-ui/core/Link`.
 - [Prisma 2](https://www.prisma.io/docs/concepts/overview/what-is-prisma) is used to interact with a PostgreSQL database. Prisma handles all migrations and also provides an admin GUI.
 - [Zod](https://github.com/colinhacks/zod) is used for data validation. It's a TypeScript analog to Joi.
 - [React Final Form](https://final-form.org/docs/react-final-form/getting-started) is used for managing form state, especially in combination with [mui-rff](https://github.com/lookfirst/mui-rff) for the integration between Material UI and React Final Form.
+
+### General tips
+
+#### In React code
+
+- Links must be created with `components/common/Link`, which properly handles client-side routing and integrates with Material-UI.
+- Most "global" data should be accessed through the methods in `components/Session`. This includes active Orgs and Projects.
+
+#### In `getServerSideProps`
+
+- Avoid using `lib/prisma` directly. Doing so bypasses all authentication checks and will lead to security problems.
+- Similarly, always remember use the `formatWhatever` method before returning the props. These methods properly handle converting data to JSON-safe data.
+- Use the functions in `lib/pageHelpers` whenever possible. Always use `authenticatedPage` to get access to the User object.
+
+#### In API routes
+
+- Use the functions in `lib/apiServer` whenever possible.
 
 ### File structure
 
@@ -28,7 +44,27 @@
 
 ### Data model
 
-The data model is described in `prisma/schema.prisma`, and is the source of truth for the database schema. Read this file for documentation.
+The data model is described in `prisma/schema.prisma`, and is the source of truth for the database schema. Read this file for documentation. Here is a diagram which shows the major components of the system. Note: this diagram is meant to be explanatory. It does not show all of the fields or tables. Consult the schema file for the true, complete schema.
+
+![](docs/database.png)
+
+There are a few important organizational constructs as well.
+
+#### Active Org
+
+The active org is tracked for a User and for each tab. To determine which Org is active in a particular context:
+
+- For API routes, there is no active Org. The desired Org must be passed in as a request parameter.
+- For `getServerSideProps`, use `requireActiveOrg` from `lib/pageHelpers`. This method will also handle the case where a new user doesn't have have an Org.
+- For anywhere else, use `useActiveOrg` from `components/Session`.
+
+#### Active Project
+
+The active Project is purely a client-side concept, and is used to jump between projects in the navigation. If you need to know it:
+
+- For API routes, there is no active Project. The desired Project must be passed in as a request parameter.
+- For `getServerSideProps`, find the Project by navigating relationships from the object you are writing.
+- For anywhere else, use `useActiveProject` from `components/Session`.
 
 ## Runbook
 

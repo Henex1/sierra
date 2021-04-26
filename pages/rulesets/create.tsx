@@ -5,7 +5,7 @@ import Container from "@material-ui/core/Container";
 import { Typography } from "@material-ui/core";
 
 import { ExposedRuleset } from "../../lib/rulesets";
-import { authenticatedPage } from "../../lib/auth";
+import { authenticatedPage } from "../../lib/pageHelpers";
 import { apiRequest } from "../../lib/api";
 import Form from "../../components/rulesets/Form";
 import Link from "../../components/common/Link";

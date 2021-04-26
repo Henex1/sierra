@@ -11,7 +11,7 @@ import ProjectList, {
 } from "../components/dashboard/ProjectList";
 import TeamList from "../components/dashboard/TeamList";
 import { useSession } from "../components/Session";
-import { authenticatedPage } from "../lib/auth";
+import { authenticatedPage } from "../lib/pageHelpers";
 import { userCanAccessProject } from "../lib/projects";
 import prisma from "../lib/prisma";
 
@@ -30,33 +30,19 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
   const projects = await prisma.project.findMany({
     where: userCanAccessProject(context.user, { orgId: activeOrgId }),
     include: {
-      org: {
-        select: {
-          name: true,
-          updatedAt: true,
-        },
+      judgements: {
+        select: { updatedAt: true },
+        orderBy: { updatedAt: "desc" },
+        take: 1,
       },
-      searchEndpoint: {
-        select: {
-          updatedAt: true,
-        },
-      },
-      searchPhrases: {
-        select: {
-          updatedAt: true,
-        },
-        orderBy: {
-          updatedAt: "desc",
-        },
+      rulesets: {
+        select: { updatedAt: true },
+        orderBy: { updatedAt: "desc" },
         take: 1,
       },
       queryTemplates: {
-        select: {
-          updatedAt: true,
-        },
-        orderBy: {
-          updatedAt: "desc",
-        },
+        select: { updatedAt: true },
+        orderBy: { updatedAt: "desc" },
         take: 1,
       },
     },
@@ -72,19 +58,15 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
           searchEndpointId,
           name,
           updatedAt,
-          org,
-          searchEndpoint,
-          searchPhrases,
+          judgements,
+          rulesets,
           queryTemplates,
         } = project;
-        const role = orgUsers.find((orgUser) => orgUser.orgId === orgId)
-          ?.role as RecentProject["org"]["role"];
 
         const projectLastUpdate = Math.max(
           updatedAt.valueOf(),
-          org.updatedAt.valueOf(),
-          searchEndpoint.updatedAt.valueOf(),
-          searchPhrases[0]?.updatedAt.valueOf() || 0,
+          judgements[0]?.updatedAt.valueOf() || 0,
+          rulesets[0]?.updatedAt.valueOf() || 0,
           queryTemplates[0]?.updatedAt.valueOf() || 0
         );
 
@@ -94,10 +76,6 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
           searchEndpointId,
           name,
           updatedAt: projectLastUpdate,
-          org: {
-            name: org.name,
-            role,
-          },
         };
       }),
     },

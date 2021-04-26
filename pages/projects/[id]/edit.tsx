@@ -5,25 +5,28 @@ import Typography from "@material-ui/core/Typography";
 import Container from "@material-ui/core/Container";
 
 import Form from "../../../components/projects/Form";
-import { authenticatedPage } from "../../../lib/auth";
+import {
+  authenticatedPage,
+  requireNumberParam,
+} from "../../../lib/pageHelpers";
 import { apiRequest } from "../../../lib/api";
-import { ExposedSearchEndpoint, listSearchEndpoints } from "../../../lib/searchendpoints";
+import {
+  ExposedSearchEndpoint,
+  listSearchEndpoints,
+} from "../../../lib/searchendpoints";
 import {
   userCanAccessProject,
   formatProject,
+  getProject,
   ExposedProject,
 } from "../../../lib/projects";
-import prisma from "../../../lib/prisma";
 
 import Link from "../../../components/common/Link";
 import BreadcrumbsButtons from "../../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const project = await prisma.project.findFirst({
-    where: userCanAccessProject(context.user, {
-      id: parseInt(context.params!.id! as string, 10),
-    }),
-  });
+  const id = requireNumberParam(context, "id");
+  const project = await getProject(context.user, id);
   const searchEndpoints = await listSearchEndpoints(context);
 
   if (!project) {
@@ -32,8 +35,8 @@ export const getServerSideProps = authenticatedPage(async (context) => {
   return {
     props: {
       project: formatProject(project),
-      searchEndpoints
-    }
+      searchEndpoints,
+    },
   };
 });
 
@@ -72,7 +75,12 @@ export default function EditProject({ project, searchEndpoints }: Props) {
         <Typography>Edit</Typography>
       </BreadcrumbsButtons>
       <Container maxWidth="sm">
-        <Form endpoints={searchEndpoints} onSubmit={onSubmit} onDelete={onDelete} initialValues={project} />
+        <Form
+          endpoints={searchEndpoints}
+          onSubmit={onSubmit}
+          onDelete={onDelete}
+          initialValues={project}
+        />
       </Container>
     </div>
   );

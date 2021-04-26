@@ -9,21 +9,20 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Typography from "@material-ui/core/Typography";
 
-
 import Link, { LinkButton } from "../../components/common/Link";
-import { authenticatedPage } from "../../lib/auth";
+import { authenticatedPage, requireActiveOrg } from "../../lib/pageHelpers";
 import {
   userCanAccessProject,
   formatProject,
+  listProjects,
   ExposedProject,
 } from "../../lib/projects";
 import prisma from "../../lib/prisma";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const projects = await prisma.project.findMany({
-    where: userCanAccessProject(context.user),
-  });
+  const activeOrg = await requireActiveOrg(context);
+  const projects = await listProjects(activeOrg);
   return { props: { projects: projects.map(formatProject) } };
 });
 

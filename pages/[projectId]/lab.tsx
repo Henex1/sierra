@@ -8,9 +8,14 @@ import SearchPhraseList from "../../components/lab/SearchPhraseList";
 import ResultList from "../../components/lab/ResultList";
 import ActionButtons from "../../components/lab/ActionButtons";
 import { getProject } from "../../lib/projects";
-import { getSearchPhrases } from "../../lib/searchphrases";
+import { getActiveSearchConfiguration } from "../../lib/searchconfigurations";
+import {
+  getLatestExecution,
+  getSearchPhrases,
+  SearchPhraseExecutionInfo,
+} from "../../lib/execution";
 import { MockSearchPhrase, ShowOptions, SortOptions } from "../../lib/lab";
-import { authenticatedPage } from "../../lib/auth";
+import { authenticatedPage, requireNumberParam } from "../../lib/pageHelpers";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
@@ -25,18 +30,19 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const projectId = parseInt(context.query.projectId as string, 10);
+  const projectId = requireNumberParam(context, "projectId");
   const project = await getProject(context.user, projectId);
   if (!project) {
     return { notFound: true };
   }
+  const sc = await getActiveSearchConfiguration(project);
+  const execution = sc ? await getLatestExecution(sc) : null;
+  const searchPhrases = execution ? await getSearchPhrases(execution) : [];
   const opts = {
     sort: context.query.sort as string,
     show: context.query.show as string,
     page: parseInt(context.query.page as string) || 1,
   };
-
-  const searchPhrases = await getSearchPhrases(project);
   const mockObjects = searchPhrases.map((phrase) => {
     const randomValue = phrase.phrase
       .split("")

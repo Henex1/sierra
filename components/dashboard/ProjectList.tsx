@@ -4,7 +4,6 @@ import {
   TableCell,
   TableContainer,
   TableRow,
-  Chip,
   makeStyles,
 } from "@material-ui/core";
 
@@ -21,10 +20,6 @@ const useStyles = makeStyles((theme) => ({
 
 export type RecentProject = ExposedProject & {
   updatedAt: number;
-  org: {
-    name: Org["name"];
-    role: UserOrgRole;
-  };
 };
 
 type Props = {
@@ -48,15 +43,8 @@ export default function ProjectList({ projects }: Props) {
                 <TableRow key={project.id}>
                   <TableCell>
                     <Link href={`/projects/${project.id}`}>
-                      {`${project.org.name} / `}
                       <b>{project.name}</b>
                     </Link>
-                    <Chip
-                      label={project.org.role.toLowerCase()}
-                      variant="outlined"
-                      size="small"
-                      className={classes.chip}
-                    />
                   </TableCell>
                   <TableCell>{`Updated ${getTimeAgo(
                     project.updatedAt

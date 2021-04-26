@@ -17,10 +17,9 @@ describe("Home", () => {
         {
           ...TEST_PROJECT,
           updatedAt: testDate,
-          org: { updatedAt: testDate },
-          searchEndpoint: { updatedAt: testDate },
-          searchPhrases: [],
           queryTemplates: [],
+          rulesets: [],
+          judgements: [],
         },
       ]);
     const { render } = await getPage({

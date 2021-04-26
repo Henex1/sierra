@@ -1,19 +1,19 @@
 import prisma from "../../../lib/prisma";
 import { mockModels } from "../../../lib/__mocks__/prisma";
 import { handleCreateRuleset, handleCreateRulesetVersion } from "./index";
-import { getApiRoute, TEST_ORG, TEST_USER } from "../../../lib/test";
+import { getApiRoute, TEST_PROJECT, TEST_USER } from "../../../lib/test";
 
 describe("api/rulesets", () => {
   it("/create", async () => {
     const initialInfo = {
+      projectId: TEST_PROJECT.id,
       name: "My Test Ruleset",
     };
-    mockModels("org").action("findMany").with({}).resolvesTo([TEST_ORG]);
+    mockModels("project").action("findFirst").with({}).resolvesTo(TEST_PROJECT);
     mockModels("ruleset")
       .action("create")
       .with({ data: expect.objectContaining(initialInfo) })
       .resolvesTo({ id: 42, ...initialInfo });
-    //throw new Error("I break the other test!");
 
     const { ruleset } = await getApiRoute(handleCreateRuleset, initialInfo, {
       method: "POST",

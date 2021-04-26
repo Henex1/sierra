@@ -4,7 +4,7 @@ import { GetServerSideProps } from "next";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 
-import { authenticatedPage } from "../../lib/auth";
+import { authenticatedPage } from "../../lib/pageHelpers";
 import { ExposedOrg, listOrgs, formatOrg } from "../../lib/org";
 import { useActiveOrg } from "../../components/Session";
 import Link from "../../components/common/Link";

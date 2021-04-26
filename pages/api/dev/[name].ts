@@ -1,11 +1,8 @@
+import _ from "lodash";
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { RulesetVersionValue } from "../../../lib/rulesets/rules";
-import {
-  CreateSearchPhrase,
-  createSearchPhrase,
-} from "../../../lib/searchphrases";
-import prisma from "../../../lib/prisma";
+import prisma, { Prisma } from "../../../lib/prisma";
 import { notAuthorized, notFound } from "../../../lib/errors";
 import { getUser, ValidUserSession } from "../../../lib/authServer";
 import { userCanAccessOrg } from "../../../lib/org";
@@ -39,13 +36,45 @@ const mockRuleset: RulesetVersionValue = {
   ],
 };
 
-const mockSearchPhrases: CreateSearchPhrase[] = [
-  { phrase: "notebook" },
-  { phrase: "fruits" },
-  { phrase: "tote bags" },
-  { phrase: "briefcase" },
-  { phrase: "suitcase" },
-];
+const mockQuery = JSON.stringify({
+  query: {
+    match: {
+      base_name: "##$query##",
+    },
+  },
+});
+
+const mockPhrases = [
+  "notebook",
+  "fruits",
+  "tote bags",
+  "briefcase",
+  "suitcase",
+].map(
+  (phrase: string): Prisma.SearchPhraseExecutionCreateWithoutExecutionInput => {
+    const randomValue = phrase
+      .split("")
+      .map((c) => c.charCodeAt(0))
+      .reduce((a, b) => a + b);
+    const s = ((randomValue * 79) % 1000) / 10;
+    const r = Math.floor((randomValue * 97) % 250);
+    return {
+      phrase,
+      totalResults: r,
+      results: _.times(20, (i) => [
+        `doc_${(randomValue * i) % 1000000}`,
+        ((randomValue + i * 97) % 1000) / 10,
+      ]),
+      explanation: {},
+      scores: {
+        sierra: s,
+        "ndc@5": s,
+        "ap@5": s,
+        "p@5": s,
+      },
+    };
+  }
+);
 
 async function handleSeed(
   { user }: ValidUserSession,
@@ -78,7 +107,7 @@ async function handleSeed(
 
   await prisma.ruleset.create({
     data: {
-      orgId: org.id,
+      projectId: project.id,
       name: "Dev Ruleset",
       rulesetVersion: {
         create: {
@@ -88,9 +117,30 @@ async function handleSeed(
     },
   });
 
-  await Promise.all(
-    mockSearchPhrases.map((phrase) => createSearchPhrase(project, phrase))
-  );
+  const queryTemplate = await prisma.queryTemplate.create({
+    data: {
+      projectId: project.id,
+      query: mockQuery,
+      knobs: {},
+    },
+  });
+
+  const sc = await prisma.searchConfiguration.create({
+    data: {
+      queryTemplateId: queryTemplate.id,
+    },
+  });
+
+  const execution = await prisma.execution.create({
+    data: {
+      searchConfigurationId: sc.id,
+      meta: { documents: 150000 },
+      scores: { sierra: 85 },
+      phrases: {
+        create: mockPhrases,
+      },
+    },
+  });
 
   return res.status(200).json({ success: true });
 }

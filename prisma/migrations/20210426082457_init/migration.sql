@@ -103,18 +103,6 @@ CREATE TABLE "Project" (
 );
 
 -- CreateTable
-CREATE TABLE "SearchPhrase" (
-    "id" SERIAL NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "projectId" INTEGER NOT NULL,
-    "phrase" TEXT NOT NULL,
-    "judgement" JSONB NOT NULL,
-
-    PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "QueryTemplate" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -123,8 +111,101 @@ CREATE TABLE "QueryTemplate" (
     "parentId" INTEGER,
     "query" TEXT NOT NULL,
     "knobs" JSONB NOT NULL,
-    "tag" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
+    "tag" TEXT,
+    "description" TEXT,
+
+    PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Judgement" (
+    "id" SERIAL NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "projectId" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+
+    PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "JudgementPhrase" (
+    "id" SERIAL NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "judgementId" INTEGER NOT NULL,
+    "phrase" TEXT NOT NULL,
+
+    PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Vote" (
+    "id" SERIAL NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "judgementPhraseId" INTEGER NOT NULL,
+    "documentId" TEXT NOT NULL,
+    "score" DOUBLE PRECISION NOT NULL,
+
+    PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SearchConfiguration" (
+    "id" SERIAL NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "queryTemplateId" INTEGER NOT NULL,
+
+    PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SearchConfigurationLabel" (
+    "id" SERIAL NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "name" TEXT NOT NULL,
+    "searchConfigurationId" INTEGER NOT NULL,
+    "projectId" INTEGER NOT NULL,
+
+    PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "JudgementSearchConfiguration" (
+    "id" SERIAL NOT NULL,
+    "judgementId" INTEGER NOT NULL,
+    "searchConfigurationId" INTEGER NOT NULL,
+    "weight" DOUBLE PRECISION NOT NULL DEFAULT 1.0,
+
+    PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Execution" (
+    "id" SERIAL NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "searchConfigurationId" INTEGER NOT NULL,
+    "meta" JSONB NOT NULL,
+    "scores" JSONB NOT NULL,
+
+    PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SearchPhraseExecution" (
+    "id" SERIAL NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "executionId" INTEGER NOT NULL,
+    "phrase" TEXT NOT NULL,
+    "totalResults" INTEGER NOT NULL,
+    "results" JSONB NOT NULL,
+    "explanation" JSONB NOT NULL,
+    "scores" JSONB NOT NULL,
 
     PRIMARY KEY ("id")
 );
@@ -134,7 +215,7 @@ CREATE TABLE "Ruleset" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "orgId" INTEGER NOT NULL,
+    "projectId" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
@@ -153,7 +234,7 @@ CREATE TABLE "RulesetVersion" (
 );
 
 -- CreateTable
-CREATE TABLE "_QueryTemplateToRulesetVersion" (
+CREATE TABLE "_RulesetVersionToSearchConfiguration" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
 );
@@ -183,10 +264,13 @@ CREATE UNIQUE INDEX "sessions.access_token_unique" ON "sessions"("access_token")
 CREATE UNIQUE INDEX "OrgUser.userId_orgId_unique" ON "OrgUser"("userId", "orgId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_QueryTemplateToRulesetVersion_AB_unique" ON "_QueryTemplateToRulesetVersion"("A", "B");
+CREATE UNIQUE INDEX "SearchConfigurationLabel.projectId_name_unique" ON "SearchConfigurationLabel"("projectId", "name");
 
 -- CreateIndex
-CREATE INDEX "_QueryTemplateToRulesetVersion_B_index" ON "_QueryTemplateToRulesetVersion"("B");
+CREATE UNIQUE INDEX "_RulesetVersionToSearchConfiguration_AB_unique" ON "_RulesetVersionToSearchConfiguration"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_RulesetVersionToSearchConfiguration_B_index" ON "_RulesetVersionToSearchConfiguration"("B");
 
 -- AddForeignKey
 ALTER TABLE "users" ADD FOREIGN KEY ("activeOrgId") REFERENCES "Org"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -207,25 +291,52 @@ ALTER TABLE "Project" ADD FOREIGN KEY ("orgId") REFERENCES "Org"("id") ON DELETE
 ALTER TABLE "Project" ADD FOREIGN KEY ("searchEndpointId") REFERENCES "SearchEndpoint"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "SearchPhrase" ADD FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "QueryTemplate" ADD FOREIGN KEY ("parentId") REFERENCES "QueryTemplate"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "QueryTemplate" ADD FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "QueryTemplate" ADD FOREIGN KEY ("parentId") REFERENCES "QueryTemplate"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Judgement" ADD FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Ruleset" ADD FOREIGN KEY ("orgId") REFERENCES "Org"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "JudgementPhrase" ADD FOREIGN KEY ("judgementId") REFERENCES "Judgement"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "RulesetVersion" ADD FOREIGN KEY ("rulesetId") REFERENCES "Ruleset"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Vote" ADD FOREIGN KEY ("judgementPhraseId") REFERENCES "JudgementPhrase"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SearchConfiguration" ADD FOREIGN KEY ("queryTemplateId") REFERENCES "QueryTemplate"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SearchConfigurationLabel" ADD FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SearchConfigurationLabel" ADD FOREIGN KEY ("searchConfigurationId") REFERENCES "SearchConfiguration"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "JudgementSearchConfiguration" ADD FOREIGN KEY ("judgementId") REFERENCES "Judgement"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "JudgementSearchConfiguration" ADD FOREIGN KEY ("searchConfigurationId") REFERENCES "SearchConfiguration"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Execution" ADD FOREIGN KEY ("searchConfigurationId") REFERENCES "SearchConfiguration"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SearchPhraseExecution" ADD FOREIGN KEY ("executionId") REFERENCES "Execution"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Ruleset" ADD FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "RulesetVersion" ADD FOREIGN KEY ("parentId") REFERENCES "RulesetVersion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_QueryTemplateToRulesetVersion" ADD FOREIGN KEY ("A") REFERENCES "QueryTemplate"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "RulesetVersion" ADD FOREIGN KEY ("rulesetId") REFERENCES "Ruleset"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_QueryTemplateToRulesetVersion" ADD FOREIGN KEY ("B") REFERENCES "RulesetVersion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_RulesetVersionToSearchConfiguration" ADD FOREIGN KEY ("A") REFERENCES "RulesetVersion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_RulesetVersionToSearchConfiguration" ADD FOREIGN KEY ("B") REFERENCES "SearchConfiguration"("id") ON DELETE CASCADE ON UPDATE CASCADE;

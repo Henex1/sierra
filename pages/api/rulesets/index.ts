@@ -10,6 +10,7 @@ import {
   createRulesetVersionSchema,
   createRulesetVersion,
 } from "../../../lib/rulesets";
+import { getProject } from "../../../lib/projects";
 import {
   apiHandler,
   requireMethod,
@@ -20,9 +21,20 @@ import {
 
 export const handleCreateRuleset = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
-  const org = await requireOnlyOrg(req);
-  const input = requireBody(req, createRulesetSchema);
-  const ruleset = await createRuleset(org, input);
+  const user = requireUser(req);
+  const { projectId, ...input } = requireBody(
+    req,
+    createRulesetSchema.merge(
+      z.object({
+        projectId: z.number(),
+      })
+    )
+  );
+  const project = await getProject(user, projectId);
+  if (!project) {
+    return res.status(404).json({ error: "project does not exist" });
+  }
+  const ruleset = await createRuleset(project, input);
   res.status(200).json({ ruleset: formatRuleset(ruleset) });
 });
 

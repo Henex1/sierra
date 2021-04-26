@@ -3,32 +3,27 @@ import Container from "@material-ui/core/Container";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 
-import { authenticatedPage } from "../../lib/auth";
+import { authenticatedPage, requireNumberParam } from "../../lib/pageHelpers";
 import { apiRequest } from "../../lib/api";
 import {
   userCanAccessRuleset,
   formatRuleset,
   formatRulesetVersion,
+  getRuleset,
+  getLatestRulesetVersion,
   ExposedRuleset,
   ExposedRulesetVersion,
 } from "../../lib/rulesets";
 import { RulesetVersionValue } from "../../lib/rulesets/rules";
 import RulesetEditor from "../../components/rulesets/RulesetEditor";
-import prisma from "../../lib/prisma";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const ruleset = await prisma.ruleset.findFirst({
-    where: userCanAccessRuleset(context.user, {
-      id: parseInt(context.params!.id! as string, 10),
-    }),
-  });
+  const id = requireNumberParam(context, "id");
+  const ruleset = await getRuleset(context.user, id);
   if (!ruleset) {
     return { notFound: true };
   }
-  let version = await prisma.rulesetVersion.findFirst({
-    where: { ruleset: { id: ruleset.id } },
-    orderBy: [{ updatedAt: "desc" }],
-  });
+  let version = await getLatestRulesetVersion(ruleset);
   if (!version) {
     // Create a fake initial version
     version = {

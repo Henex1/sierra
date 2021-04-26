@@ -5,8 +5,11 @@ import Typography from "@material-ui/core/Typography";
 import Container from "@material-ui/core/Container";
 
 import { ExposedProject } from "../../lib/projects";
-import {ExposedSearchEndpoint, listSearchEndpoints} from "../../lib/searchendpoints";
-import { authenticatedPage } from "../../lib/auth";
+import {
+  ExposedSearchEndpoint,
+  listSearchEndpoints,
+} from "../../lib/searchendpoints";
+import { authenticatedPage } from "../../lib/pageHelpers";
 import { apiRequest } from "../../lib/api";
 import { useSession } from "../../components/Session";
 import Form from "../../components/projects/Form";
@@ -46,7 +49,7 @@ export default function CreateProject({ searchEndpoints }: Props) {
         <Typography>New Project</Typography>
       </BreadcrumbsButtons>
       <Container maxWidth="sm">
-        <Form onSubmit={onSubmit} endpoints={searchEndpoints}/>
+        <Form onSubmit={onSubmit} endpoints={searchEndpoints} />
       </Container>
     </div>
   );

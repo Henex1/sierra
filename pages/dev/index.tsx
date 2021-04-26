@@ -7,7 +7,7 @@ import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 
-import { authenticatedPage } from "../../lib/auth";
+import { authenticatedPage } from "../../lib/pageHelpers";
 import { apiRequest } from "../../lib/api";
 
 export const getServerSideProps = authenticatedPage();

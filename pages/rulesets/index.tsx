@@ -12,7 +12,7 @@ import Grid from "@material-ui/core/Grid";
 
 import Link, { LinkButton } from "../../components/common/Link";
 import { useActiveProject } from "../../components/Session";
-import { authenticatedPage } from "../../lib/auth";
+import { authenticatedPage } from "../../lib/pageHelpers";
 import { redirectToLogin } from "../../lib/errors";
 import {
   userCanAccessRuleset,
@@ -68,13 +68,15 @@ export default function Rulesets({ rulesets }: Props) {
         <Grid item xs={12}>
           <Typography variant="h4">Rulesets</Typography>
         </Grid>
-        {!project &&
-          <Grid item xs={6} style={{ margin: "0 auto", textAlign: "center"}}>
+        {!project && (
+          <Grid item xs={6} style={{ margin: "0 auto", textAlign: "center" }}>
             <Typography variant="h6">No project is active</Typography>
-            <Typography variant="subtitle1">You must setup or activate project first</Typography>
+            <Typography variant="subtitle1">
+              You must setup or activate project first
+            </Typography>
           </Grid>
-        }
-        {project &&
+        )}
+        {project && (
           <>
             <LinkButton href="/rulesets/create" variant="contained">
               Add ruleset
@@ -107,7 +109,7 @@ export default function Rulesets({ rulesets }: Props) {
               </TableBody>
             </MaUTable>
           </>
-        }
+        )}
       </Grid>
     </div>
   );

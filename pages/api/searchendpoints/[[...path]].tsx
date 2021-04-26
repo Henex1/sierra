@@ -2,7 +2,6 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 import prisma, { User, SearchEndpoint } from "../../../lib/prisma";
 import { SearchEndpointSchema } from "../../../lib/schema";
-import { getUser } from "../../../lib/authServer";
 import {
   formatSearchEndpoint,
   createSearchEndpointSchema,

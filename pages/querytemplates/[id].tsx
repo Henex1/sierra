@@ -5,8 +5,12 @@ import { Typography } from "@material-ui/core";
 import Container from "@material-ui/core/Container";
 
 import { apiRequest } from "../../lib/api";
-import { authenticatedPage } from "../../lib/auth";
-import { ExposedProject, formatProject, userCanAccessProject } from "../../lib/projects";
+import { authenticatedPage, requireNumberParam } from "../../lib/pageHelpers";
+import {
+  ExposedProject,
+  formatProject,
+  userCanAccessProject,
+} from "../../lib/projects";
 import {
   ExposedQueryTemplate,
   formatQueryTemplate,
@@ -19,10 +23,9 @@ import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
+  const id = requireNumberParam(context, "id");
   const template = await prisma.queryTemplate.findFirst({
-    where: userCanAccessQueryTemplate(context.user, {
-      id: parseInt(context.params!.id! as string, 10),
-    }),
+    where: userCanAccessQueryTemplate(context.user, { id }),
   });
   const projects = await prisma.project.findMany({
     where: userCanAccessProject(context.user),
@@ -33,7 +36,7 @@ export const getServerSideProps = authenticatedPage(async (context) => {
   return {
     props: {
       template: formatQueryTemplate(template),
-      projects: projects.map(formatProject)
+      projects: projects.map(formatProject),
     },
   };
 });
@@ -68,7 +71,11 @@ export default function EditQueryTemplate({ template, projects }: Props) {
         <Typography>{template.description}</Typography>
       </BreadcrumbsButtons>
       <Container maxWidth="sm">
-        <Form onSubmit={onSubmit} projects={projects} initialValues={template} />
+        <Form
+          onSubmit={onSubmit}
+          projects={projects}
+          initialValues={template}
+        />
       </Container>
     </div>
   );

@@ -4,9 +4,13 @@ import { useRouter } from "next/router";
 import { Typography } from "@material-ui/core";
 import Container from "@material-ui/core/Container";
 
-import { ExposedProject, formatProject, userCanAccessProject } from "../../lib/projects";
+import {
+  ExposedProject,
+  formatProject,
+  userCanAccessProject,
+} from "../../lib/projects";
 import { ExposedQueryTemplate } from "../../lib/querytemplates";
-import { authenticatedPage } from "../../lib/auth";
+import { authenticatedPage } from "../../lib/pageHelpers";
 import { apiRequest } from "../../lib/api";
 import prisma from "../../lib/prisma";
 

@@ -35,6 +35,7 @@ jest.mock("./components/Session", () => {
       session: { loading: false, user: mockUser },
       refresh: async () => {},
     }),
+    useActiveOrg: () => ({ activeOrg: mockOrg, setActiveOrg: async () => {} }),
     ActiveProjectProvider: ({ children }: any) => children,
     useActiveProject: () => ({ project: mockProject, setProject: () => {} }),
   };
