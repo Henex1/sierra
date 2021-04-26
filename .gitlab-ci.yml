@@ -1,24 +1,57 @@
-image: node
+image: node:15.14.0
 
 stages:
+  - build
   - test
+  - dockerize
 
 cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
     - node_modules/
-    - .next/cache/
+    - .next/
 
-test:
-  variables:
-    DATABASE_URL: "postgresql://postgres:example@localhost:5432/postgres?schema=public"
-    NEXTAUTH_URL: http://localhost:3000/api/auth
-    ALLOW_REGISTRATION_FROM: bigdataboutique.com
-    QUERY_EXPANDER_URL: http://localhost:8080
-    GOOGLE_ID: "unset_google_id"
-    GOOGLE_SECRET: "unset_google_secret"
-  stage: test
+variables:
+  STAGING_REGISTRY: "registry.gitlab.com"
+  DATABASE_URL: "postgresql://postgres:example@postgres:5432/postgres?schema=public"
+  NEXTAUTH_URL: http://localhost:3000/api/auth
+  ALLOW_REGISTRATION_FROM: bigdataboutique.com
+  QUERY_EXPANDER_URL: http://localhost:8080
+  GOOGLE_ID: "unset_google_id"
+  GOOGLE_SECRET: "unset_google_secret"
+
+build:
+  stage: build
   script:
     - yarn
     - yarn build
 
+test:
+  stage: test
+  services:
+    - postgres:12.2-alpine
+  variables:
+    POSTGRES_DB: postgres
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: "example"
+    POSTGRES_HOST_AUTH_METHOD: trust
+  script:
+    - yarn prisma migrate reset -f
+    - yarn test
+    
+dockerize:
+  image: docker:19.03.12
+  stage: dockerize
+  services:
+    - docker:19.03.12-dind
+  before_script:
+    - echo "$CI_BUILD_TOKEN" | docker login -u gitlab-ci-token --password-stdin $STAGING_REGISTRY
+
+  script:
+    - RELEASE_IMAGE=$CI_REGISTRY_IMAGE:`date '+%Y-%m-%d-%H%M'`-${CI_COMMIT_SHA:0:9}
+    - docker build --tag $CI_REGISTRY_IMAGE:latest .
+    - docker tag $CI_REGISTRY_IMAGE:latest $RELEASE_IMAGE
+    - docker push $RELEASE_IMAGE
+    - docker push $CI_REGISTRY_IMAGE:latest
+  only:
+    - master

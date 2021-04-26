@@ -92,3 +92,11 @@ Make your change to `prisma/schema.prisma`, then:
 ```bash
 prisma migrate dev
 ```
+
+### Build the docker image
+
+```bash
+yarn
+yarn build
+docker build . -t sierra
+```
