@@ -190,7 +190,8 @@ CREATE TABLE "Execution" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "searchConfigurationId" INTEGER NOT NULL,
     "meta" JSONB NOT NULL,
-    "scores" JSONB NOT NULL,
+    "combinedScore" DOUBLE PRECISION NOT NULL,
+    "allScores" JSONB NOT NULL,
 
     PRIMARY KEY ("id")
 );
@@ -205,7 +206,8 @@ CREATE TABLE "SearchPhraseExecution" (
     "totalResults" INTEGER NOT NULL,
     "results" JSONB NOT NULL,
     "explanation" JSONB NOT NULL,
-    "scores" JSONB NOT NULL,
+    "combinedScore" DOUBLE PRECISION NOT NULL,
+    "allScores" JSONB NOT NULL,
 
     PRIMARY KEY ("id")
 );
@@ -262,6 +264,12 @@ CREATE UNIQUE INDEX "sessions.access_token_unique" ON "sessions"("access_token")
 
 -- CreateIndex
 CREATE UNIQUE INDEX "OrgUser.userId_orgId_unique" ON "OrgUser"("userId", "orgId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "JudgementPhrase.judgementId_phrase_unique" ON "JudgementPhrase"("judgementId", "phrase");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Vote.judgementPhraseId_documentId_unique" ON "Vote"("judgementPhraseId", "documentId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "SearchConfigurationLabel.projectId_name_unique" ON "SearchConfigurationLabel"("projectId", "name");

@@ -1,3 +1,4 @@
+import _ from "lodash";
 import * as z from "zod";
 import prisma, {
   Prisma,
@@ -40,9 +41,8 @@ export function userCanAccessProject(
   return result;
 }
 
-export function formatProject(project: Project): ExposedProject {
-  const { id, orgId, searchEndpointId, name } = project;
-  return { id, orgId, searchEndpointId, name };
+export function formatProject(val: Project): ExposedProject {
+  return _.pick(val, _.keys(selectKeys)) as ExposedProject;
 }
 
 export async function getProject(
@@ -60,10 +60,6 @@ export async function listProjects(org: Org): Promise<Project[]> {
     where: { orgId: org.id },
   });
   return projects;
-}
-
-export interface SearchPhrase {
-  phrase: string;
 }
 
 export const createProjectSchema = z.object({
