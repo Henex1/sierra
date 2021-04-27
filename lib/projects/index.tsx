@@ -20,7 +20,7 @@ const selectKeys = {
 };
 
 // This is the default query templated, created when a new project is created.
-const defaultQueryTemplate = {
+export const defaultQueryTemplate = {
   description: "Initial query",
   tag: "",
   query: '{"query":{"match":{"title":"##$query##"}}}', // TODO rely on the data source title: field

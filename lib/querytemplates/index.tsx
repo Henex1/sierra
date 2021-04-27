@@ -31,7 +31,7 @@ export function formatQueryTemplate(val: QueryTemplate): ExposedQueryTemplate {
   return _.pick(val, _.keys(selectKeys)) as ExposedQueryTemplate;
 }
 
-const createKeys = {
+const createQueryTemplateKeys = {
   projectId: true,
   description: true,
   knobs: true,
@@ -39,10 +39,10 @@ const createKeys = {
   query: true,
 };
 
-type CreateQueryTemplate = Pick<QueryTemplate, keyof typeof createKeys>;
+type CreateQueryTemplateType = Pick<QueryTemplate, keyof typeof createQueryTemplateKeys>;
 
 export async function createQueryTemplate(
-  input: CreateQueryTemplate
+  input: CreateQueryTemplateType
 ): Promise<QueryTemplate> {
   return await prisma.queryTemplate.create({
     data: { ...input },
