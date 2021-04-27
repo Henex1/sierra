@@ -66,8 +66,8 @@ const mockPhrases = [
         ((randomValue + i * 97) % 1000) / 10,
       ]),
       explanation: {},
-      scores: {
-        sierra: s,
+      combinedScore: s,
+      allScores: {
         "ndc@5": s,
         "ap@5": s,
         "p@5": s,
@@ -135,7 +135,12 @@ async function handleSeed(
     data: {
       searchConfigurationId: sc.id,
       meta: { documents: 150000 },
-      scores: { sierra: 85 },
+      combinedScore: 85,
+      allScores: {
+        "ndc@5": 90,
+        "ap@5": 10,
+        "p@5": 45,
+      },
       phrases: {
         create: mockPhrases,
       },

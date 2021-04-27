@@ -12,6 +12,7 @@ cache:
     - .next/
 
 variables:
+  DEBUG: "prisma:client,prisma:engine"
   STAGING_REGISTRY: "registry.gitlab.com"
   DATABASE_URL: "postgresql://postgres:example@postgres:5432/postgres?schema=public"
   NEXTAUTH_URL: http://localhost:3000/api/auth
@@ -36,9 +37,10 @@ test:
     POSTGRES_PASSWORD: "example"
     POSTGRES_HOST_AUTH_METHOD: trust
   script:
+    - yarn
     - yarn prisma migrate reset -f
     - yarn test
-    
+
 dockerize:
   image: docker:19.03.12
   stage: dockerize

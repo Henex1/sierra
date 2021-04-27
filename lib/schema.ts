@@ -5,21 +5,21 @@ export const SearchEndpointType = z.union([
   z.literal("OPEN_SEARCH"),
   z.literal("SOLR"),
   z.literal("VESPA"),
-  z.literal("REDIS_SEARCH")
+  z.literal("REDIS_SEARCH"),
 ]);
 
 export const ElasticsearchInfoSchema = z.object({
   endpoint: z.string(),
   index: z.string(),
   username: z.string().optional(),
-  password: z.string().optional()
+  password: z.string().optional(),
 });
 
 export const OpenSearchInfoSchema = z.object({
   endpoint: z.string(),
   index: z.string(),
   username: z.string().optional(),
-  password: z.string().optional()
+  password: z.string().optional(),
 });
 
 export const SolrInfoSchema = z.object({
@@ -39,31 +39,17 @@ export const SearchEndpointInfo = z.union([
   OpenSearchInfoSchema,
   SolrInfoSchema,
   VespaInfoSchema,
-  RedisSearchInfoSchema
+  RedisSearchInfoSchema,
 ]);
 
-export const SearchEndpointSchema = z
-  .object({
-    id: z.number(),
-    createdAt: z.date(),
-    updatedAt: z.date(),
-    orgId: z.number(),
-    name: z.string(),
-    description: z.string(),
-    whitelist: z.array(z.string())
-  })
-  .merge(
-    z.object({
-      type: SearchEndpointType,
-      info: SearchEndpointInfo,
-    })
-  );
-
-export const ProjectSchema = z.object({
+export const SearchEndpointSchema = z.object({
   id: z.number(),
   createdAt: z.date(),
   updatedAt: z.date(),
-  searchEndpointType: SearchEndpointType,
   orgId: z.number(),
   name: z.string(),
+  description: z.string(),
+  whitelist: z.array(z.string()),
+  type: SearchEndpointType,
+  info: SearchEndpointInfo,
 });

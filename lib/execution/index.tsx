@@ -10,7 +10,8 @@ const speSelect = {
   id: true,
   executionId: true,
   phrase: true,
-  scores: true,
+  combinedScore: true,
+  allScores: true,
 };
 
 export type SearchPhraseExecutionInfo = Pick<
