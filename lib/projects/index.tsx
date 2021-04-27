@@ -1,7 +1,14 @@
 import * as z from "zod";
-
-import prisma, { Prisma, User, Org, SearchEndpoint, Project } from "../prisma";
+import prisma, {
+  Prisma,
+  User,
+  Org,
+  SearchEndpoint,
+  Project,
+  SearchEndpointType,
+} from "../prisma";
 import { userCanAccessOrg } from "../org";
+import { createQueryTemplate } from "../querytemplates";
 
 // This is the list of keys which are included in user requests for Project
 // by default.
@@ -10,6 +17,14 @@ const selectKeys = {
   orgId: true,
   searchEndpointId: true,
   name: true,
+};
+
+// This is the default query templated, created when a new project is created.
+const defaultQueryTemplate = {
+  description: "Initial query",
+  tag: "",
+  query: '{"query":{"match":{"title":"##$query##"}}}', // TODO rely on the data source title: field
+  knobs: {},
 };
 
 export type ExposedProject = Pick<Project, keyof typeof selectKeys>;
@@ -67,8 +82,22 @@ export async function createProject(
       ...input,
       orgId: org.id,
       searchEndpointId: searchEndpoint.id,
+      judgements: {
+        create: {
+          name: "Judgements by internal users",
+        },
+      },
     },
   });
+  if (
+    searchEndpoint.type == SearchEndpointType.ELASTICSEARCH ||
+    searchEndpoint.type == SearchEndpointType.OPEN_SEARCH
+  ) {
+    await createQueryTemplate({
+      ...defaultQueryTemplate,
+      projectId: project.id,
+    });
+  }
   return project;
 }
 
