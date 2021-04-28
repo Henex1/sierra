@@ -112,15 +112,17 @@ enum UserOrgRole {
 
 // SearchEndpoint represents a remote datasource which can be queried.
 model SearchEndpoint {
-  id          Int                @id @default(autoincrement())
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  orgId       Int
-  name        String
-  description String
-  whitelist   String[]
-  type        SearchEndpointType
-  info        Json
+  id            Int                @id @default(autoincrement())
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  orgId         Int
+  name          String
+  description   String
+  whitelist     String[]
+  resultId      String
+  displayFields String[]
+  type          SearchEndpointType
+  info          Json
 
   org      Org       @relation(fields: [orgId], references: [id])
   projects Project[]

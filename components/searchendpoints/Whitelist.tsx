@@ -28,7 +28,6 @@ export default function Whitelist({whitelistProps}: WhitelistProps) {
 
   const handleDeleteIpAddress = (index: number) => {
     whitelistProps.input.value.splice(index, 1)
-    console.log(whitelistProps.input.value);
     whitelistProps.input.onChange({
       target: {
         type: "input",

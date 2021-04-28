@@ -15,8 +15,10 @@ const selectKeys = {
   name: true,
   description: true,
   whitelist: true,
+  resultId: true,
+  displayFields: true,
   type: true,
-  info: true,
+  info: true
 };
 
 export type ExposedSearchEndpoint = Pick<

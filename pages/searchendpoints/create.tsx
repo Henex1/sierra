@@ -23,6 +23,10 @@ export default function CreateSearchEndpoint() {
   const classes = useStyles();
   const router = useRouter();
 
+  const initialValue = {
+    resultId: "_id"
+  }
+
   async function onSubmit(values: ExposedSearchEndpoint) {
     const newSearchEndpoint = {
       ...values,
@@ -47,7 +51,10 @@ export default function CreateSearchEndpoint() {
           <Typography variant="h4">Create new search endpoint:</Typography>
         </Grid>
         <Grid item xs={6}>
-          <Form onSubmit={onSubmit} />
+          <Form
+            onSubmit={onSubmit}
+            initialValues={initialValue}
+          />
         </Grid>
       </Grid>
     </div>
