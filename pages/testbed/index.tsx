@@ -166,7 +166,7 @@ export default function Testbed({ rulesets }: Props) {
   const [
     autocompleteSearchEndpoint,
     setAutocompleteSearchEndpoint,
-  ] = React.useState(3);
+  ] = React.useState(-1);
   const [searchResults, setSearchResults] = React.useState<any[]>([]);
   const [totalResults, setTotalResults] = React.useState("0");
   const [error, setError] = React.useState<string | null>(null);
@@ -200,35 +200,37 @@ export default function Testbed({ rulesets }: Props) {
   };
 
   const loadAutocomplete = async (text: string, searchEndpoint: number) => {
-    try {
-      const json = await apiRequest(`/api/searchendpoints/query`, {
-        query: JSON.stringify({
-          suggest: {
-            autocomplete: {
-              prefix: text,
-              completion: {
-                field: "suggest",
-                size: 10,
-                skip_duplicates: false,
+    if (searchEndpoint > 0) {
+      try {
+        const json = await apiRequest(`/api/searchendpoints/query`, {
+          query: JSON.stringify({
+            suggest: {
+              autocomplete: {
+                prefix: text,
+                completion: {
+                  field: "suggest",
+                  size: 10,
+                  skip_duplicates: false,
+                },
               },
             },
-          },
-        }),
-        searchEndpointId: searchEndpoint,
-      });
-      if (
-        json.suggest?.autocomplete?.length &&
-        json.suggest?.autocomplete[0].options?.length
-      ) {
-        setSuggestions(
-          json.suggest?.autocomplete[0].options.map(
-            (option: any) => option.text
-          )
-        );
+          }),
+          searchEndpointId: searchEndpoint,
+        });
+        if (
+            json.suggest?.autocomplete?.length &&
+            json.suggest?.autocomplete[0].options?.length
+        ) {
+          setSuggestions(
+              json.suggest?.autocomplete[0].options.map(
+                  (option: any) => option.text
+              )
+          );
+        }
+      } catch (err) {
+        setError(err.message);
+        return;
       }
-    } catch (err) {
-      setError(err.message);
-      return;
     }
   };
 

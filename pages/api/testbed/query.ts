@@ -32,7 +32,7 @@ async function expandQuery(
 ): Promise<any> {
   try {
     const config: any = {};
-    Object.entries(JSON.parse(knobs)).forEach(([k, v]) => {
+    Object.entries(knobs).forEach(([k, v]) => {
       config[k] = v;
     });
     config.rules = rules;

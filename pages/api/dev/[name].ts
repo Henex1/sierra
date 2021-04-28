@@ -39,7 +39,7 @@ const mockRuleset: RulesetVersionValue = {
 const mockQuery = JSON.stringify({
   query: {
     match: {
-      base_name: "##$query##",
+      title: "##$query##",
     },
   },
 });

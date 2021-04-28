@@ -7,6 +7,7 @@ import {
   InputBase,
 } from "@material-ui/core";
 import { createStyles, withStyles, Theme } from "@material-ui/core/styles";
+import { useRouter } from "next/router";
 
 import { useSession, useActiveProject } from "../Session";
 import { ExposedProject } from "../../lib/projects";
@@ -36,12 +37,25 @@ export default function ProjectsMenu() {
   const classes = useStyles();
   const { session } = useSession();
   const { project, setProject } = useActiveProject();
+  const router = useRouter();
+  const prevProject = React.useRef<ExposedProject | null>();
 
   React.useEffect(() => {
     if (session?.projects && !project) {
       setProject(session?.projects[0]);
     }
   }, [session]);
+
+  React.useEffect(() => {
+    if (
+      project &&
+      prevProject.current &&
+      project.id !== prevProject.current?.id
+    ) {
+      router.push(`/projects/${project.id}`);
+    }
+    prevProject.current = project;
+  }, [project]);
 
   // This oddity avoids a console warning message when the session first loads.
   const selectValue =
@@ -58,7 +72,7 @@ export default function ProjectsMenu() {
 
   return (
     <>
-      {!!session?.projects?.length &&
+      {!!session?.projects?.length && (
         <FormControl variant="outlined" className={classes.projectsFormControl}>
           <InputLabel className={classes.selectLabel} id="currentProjectLabel">
             Current Project
@@ -68,20 +82,18 @@ export default function ProjectsMenu() {
             id="currentProject"
             value={selectValue?.id ?? -1}
             label="Current Project"
-            classes={{icon: classes.selectIcon}}
-            input={<ProjectInput/>}
+            classes={{ icon: classes.selectIcon }}
+            input={<ProjectInput />}
             onChange={handleChange}
           >
-            {
-              session.projects.map((project: ExposedProject) => (
-                <MenuItem key={project.id} value={project.id}>
-                  {project.name}
-                </MenuItem>
-              ))
-            }
+            {session.projects.map((project: ExposedProject) => (
+              <MenuItem key={project.id} value={project.id}>
+                {project.name}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
-      }
+      )}
     </>
   );
 }
