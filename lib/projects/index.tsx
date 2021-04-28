@@ -6,10 +6,15 @@ import prisma, {
   Org,
   SearchEndpoint,
   Project,
+  Judgement,
+  Ruleset,
+  QueryTemplate,
   SearchEndpointType,
 } from "../prisma";
 import { userCanAccessOrg } from "../org";
-import { createQueryTemplate } from "../querytemplates";
+import { createQueryTemplate, ExposedQueryTemplate, formatQueryTemplate } from "../querytemplates";
+import { ExposedJudgement, formatJudgement } from "../judgements";
+import { ExposedRuleset, formatRuleset } from "../rulesets";
 
 // This is the list of keys which are included in user requests for Project
 // by default.
@@ -30,6 +35,15 @@ export const defaultQueryTemplate = {
 
 export type ExposedProject = Pick<Project, keyof typeof selectKeys>;
 
+export type ExtendedProject = {
+  id: number;
+  orgId: number;
+  searchEndpointId: number;
+  name: string;
+  judgements: Array<ExposedJudgement>;
+  rulesets: Array<ExposedRuleset>;
+}
+
 export function userCanAccessProject(
   user: User,
   rest?: Prisma.ProjectWhereInput
@@ -45,6 +59,17 @@ export function formatProject(val: Project): ExposedProject {
   return _.pick(val, _.keys(selectKeys)) as ExposedProject;
 }
 
+export function formatExtendedProject(val: any): ExtendedProject {
+  return {
+    id: val.id,
+    orgId: val.orgId,
+    searchEndpointId: val.searchEndpointId,
+    name: val.name,
+    judgements: val.judgements.map((judgement: Judgement) => formatJudgement(judgement)),
+    rulesets: val.rulesets.map((rulesets: Ruleset) => formatRuleset(rulesets))
+  };
+}
+
 export async function getProject(
   user: User,
   id: number
@@ -53,6 +78,20 @@ export async function getProject(
     where: userCanAccessProject(user, { id }),
   });
   return project;
+}
+
+export async function getExtendedProject(user: User, id: number): Promise<Project | null> {
+  return await prisma.project.findFirst({
+    where: userCanAccessProject(user, { id }),
+    include: {
+      judgements: {
+        orderBy: { updatedAt: "desc" }
+      },
+      rulesets: {
+        orderBy: { updatedAt: "desc" }
+      }
+    }
+  });
 }
 
 export async function listProjects(org: Org): Promise<Project[]> {
