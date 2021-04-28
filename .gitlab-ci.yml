@@ -45,8 +45,8 @@ test:
     POSTGRES_PASSWORD: "example"
     POSTGRES_HOST_AUTH_METHOD: trust
   script:
-    - yarn prisma migrate reset -f
-    - yarn test
+    - docker run $BUILDER_IMAGE prisma migrate reset -f
+    - docker run $BUILDER_IMAGE test
     
 dockerize:
   stage: dockerize

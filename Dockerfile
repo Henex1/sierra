@@ -17,6 +17,8 @@ RUN yarn --frozen-lockfile
 COPY . ./
 RUN yarn build
 
+ENTRYPOINT ["yarn"]
+
 from node:15.14.0-alpine
 # Release
 WORKDIR /app
