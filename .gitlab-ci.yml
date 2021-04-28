@@ -22,23 +22,22 @@ before_script:
 
 
 stages:
-  - build
+  # - build
   - test
   - dockerize
 
-build:
-  stage: build
-  script:
-    - docker build --cache-from $BUILDER_IMAGE --cache-from $LATEST_IMAGE --tag $BUILDER_IMAGE --target builder .
-    - docker push $BUILDER_IMAGE
+# build:
+#   stage: build
+#   script:
+#     - docker build --cache-from $BUILDER_IMAGE --cache-from $LATEST_IMAGE --tag $BUILDER_IMAGE --target builder .
+#     - docker push $BUILDER_IMAGE
 
 
 test:
   stage: test
-  image: $BUILDER_IMAGE
-  before_script: []
   services:
     - postgres:12.2-alpine
+    - docker:19.03.12-dind
   variables:
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
