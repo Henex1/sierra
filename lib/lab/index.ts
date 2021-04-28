@@ -10,6 +10,24 @@ export type MockSearchPhrase = {
   results: number;
 };
 
+export type MockSearchResult = {
+  id: number;
+  title: string;
+  description: string;
+  url: string;
+  score: number;
+  matches: {
+    scores: {
+      name: string;
+      score: number;
+    }[];
+    explanation: {
+      summary: string;
+      json: any;
+    };
+  };
+};
+
 export type ShowOptions =
   | "all"
   | "no-errors"

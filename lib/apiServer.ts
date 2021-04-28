@@ -87,3 +87,16 @@ export function requireBody<Schema extends z.ZodType<any, any>>(
   }
   return parsed.data;
 }
+
+export function requireQuery<Schema extends z.ZodType<any, any>>(
+  req: SierraApiRequest,
+  schema: Schema,
+  transform?: (query: NextApiRequest["query"]) => any
+): z.infer<Schema> {
+  const input = transform ? transform(req.query) : req.query;
+  const parsed = schema.safeParse(input);
+  if (!parsed.success) {
+    throw new HttpError(400, parsed.error);
+  }
+  return parsed.data;
+}
