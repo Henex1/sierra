@@ -35,7 +35,9 @@ stages:
 
 test:
   stage: test
-  image: $BUILDER_IMAGE
+  image: 
+    name: $BUILDER_IMAGE
+    entrypoint: ["/usr/bin/env"]
   before_script: []
   services:
     - postgres:12.2-alpine
@@ -45,6 +47,7 @@ test:
     POSTGRES_PASSWORD: "example"
     POSTGRES_HOST_AUTH_METHOD: trust
   script:
+    - cd /app
     - yarn prisma migrate reset -f
     - yarn test
     
