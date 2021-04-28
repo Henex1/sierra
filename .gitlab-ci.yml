@@ -17,8 +17,8 @@ services:
 
 before_script:
   - echo "$CI_BUILD_TOKEN" | docker login -u gitlab-ci-token --password-stdin $STAGING_REGISTRY
-  - docker pull $LATEST_IMAGE || true
-  - docker pull $BUILDER_IMAGE || true
+  - docker pull -q $LATEST_IMAGE || true
+  - docker pull -q $BUILDER_IMAGE || true
 
 
 stages:
@@ -30,7 +30,7 @@ build:
   stage: build
   script:
     - docker build --cache-from $BUILDER_IMAGE --cache-from $LATEST_IMAGE --tag $BUILDER_IMAGE --target builder .
-    - docker push $BUILDER_IMAGE
+    - docker push -q $BUILDER_IMAGE
 
 
 test:
@@ -56,7 +56,7 @@ dockerize:
   script:
     - RELEASE_IMAGE=$CI_REGISTRY_IMAGE:`date '+%Y-%m-%d-%H%M'`-${CI_COMMIT_SHA:0:9}
     - docker build --cache-from $BUILDER_IMAGE --tag $LATEST_IMAGE --tag $RELEASE_IMAGE .
-    - docker push $LATEST_IMAGE
-    - docker push $RELEASE_IMAGE
+    - docker push -q $LATEST_IMAGE
+    - docker push -q $RELEASE_IMAGE
   # only:
   #   - master
