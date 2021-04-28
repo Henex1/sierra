@@ -9,6 +9,8 @@ describe("api/searchendpoints", () => {
     type: "ELASTICSEARCH",
     description: "",
     whitelist: [],
+    resultId: "_id",
+    displayFields: [],
     info: { endpoint: "http://localhost:9200/_search" },
   };
   it("POST /", async () => {

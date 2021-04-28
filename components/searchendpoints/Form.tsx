@@ -12,6 +12,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import { ExposedSearchEndpoint } from "../../lib/searchendpoints";
 
 import Whitelist from "./Whitelist";
+import DisplayFields from "./DisplayFields";
 
 export type FormProps = BaseFormProps<ExposedSearchEndpoint> & {
   onDelete?: () => void;
@@ -126,6 +127,19 @@ export default function SearchEndpointForm({onDelete, ...rest}: FormProps) {
             <Grid item xs={12}>
               <Field name="whitelist">
                 {props => (<Whitelist whitelistProps={props}/>)}
+              </Field>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Result ID"
+                name="resultId"
+                required={true}
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Field name="displayFields">
+                {props => (<DisplayFields displayFields={props}/>)}
               </Field>
             </Grid>
             <Grid item xs={12}>
