@@ -22,15 +22,15 @@ before_script:
 
 
 stages:
-  - build
+  # - build
   - test
   - dockerize
 
-build:
-  stage: build
-  script:
-    - docker build --cache-from $BUILDER_IMAGE --cache-from $LATEST_IMAGE --tag $BUILDER_IMAGE --target builder .
-    - docker push $BUILDER_IMAGE
+# build:
+#   stage: build
+#   script:
+#     - docker build --cache-from $BUILDER_IMAGE --cache-from $LATEST_IMAGE --tag $BUILDER_IMAGE --target builder .
+#     - docker push $BUILDER_IMAGE
 
 
 test:
@@ -45,8 +45,8 @@ test:
     POSTGRES_PASSWORD: "example"
     POSTGRES_HOST_AUTH_METHOD: trust
   script:
-    - /bin/bash yarn prisma migrate reset -f
-    - /bin/bash yarn test
+    - yarn prisma migrate reset -f
+    - yarn test
     
 dockerize:
   stage: dockerize
