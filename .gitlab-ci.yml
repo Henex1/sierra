@@ -8,26 +8,37 @@ variables:
   QUERY_EXPANDER_URL: http://localhost:8080
   GOOGLE_ID: "unset_google_id"
   GOOGLE_SECRET: "unset_google_secret"
+  DEPS_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}-deps
   BUILDER_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}-builder
+  LATEST_IMAGE: ${CI_REGISTRY_IMAGE}:latest
 
 services:
   - docker:19.03.12-dind
 
 before_script:
   - echo "$CI_BUILD_TOKEN" | docker login -u gitlab-ci-token --password-stdin $STAGING_REGISTRY
-  - docker pull $BUILDER_IMAGE || true
+  - docker pull $LATEST_IMAGE || true
 
 
 stages:
+  - deps
   - build
   - test
   - dockerize
+
+deps:
+  stage: deps
+  script:
+    - docker pull $DEPS_IMAGE || true
+    - docker build --cache-from $DEPS_IMAGE --cache-from $LATEST_IMAGE --tag $DEPS_IMAGE --target deps .
+    - docker push $DEPS_IMAGE
 
 
 build:
   stage: build
   script:
-    - docker build --cache-from $BUILDER_IMAGE --tag $BUILDER_IMAGE --target builder .
+    - docker pull $BUILDER_IMAGE || true
+    - docker build --cache-from $BUILDER_IMAGE --cache-from $LATEST_IMAGE --tag $BUILDER_IMAGE --target builder .
     - docker push $BUILDER_IMAGE
 
 
@@ -50,8 +61,8 @@ dockerize:
   stage: dockerize
   script:
     - RELEASE_IMAGE=$CI_REGISTRY_IMAGE:`date '+%Y-%m-%d-%H%M'`-${CI_COMMIT_SHA:0:9}
-    - docker build --cache-from $BUILDER_IMAGE --tag $CI_REGISTRY_IMAGE:latest --tag $RELEASE_IMAGE .
-    - docker push $CI_REGISTRY_IMAGE:latest
-    - docker tag $CI_REGISTRY_IMAGE:latest $RELEASE_IMAGE
+    - docker build --cache-from $BUILDER_IMAGE --tag $LATEST_IMAGE --tag $RELEASE_IMAGE .
+    - docker push $LATEST_IMAGE
+    - docker push $RELEASE_IMAGE
   # only:
   #   - master
