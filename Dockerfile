@@ -1,12 +1,4 @@
-FROM node:15.14.0 AS deps
-# Install dependencies
-WORKDIR /app
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
-
-
-from node:15.14.0 as builder
-# Build
+FROM node:15.14.0 AS builder
 ENV DATABASE_URL=postgresql://postgres:example@postgres:5432/postgres?schema=public \
     NEXTAUTH_URL=http://localhost:3000/api/auth \
     ALLOW_REGISTRATION_FROM=bigdataboutique.com \
@@ -14,9 +6,15 @@ ENV DATABASE_URL=postgresql://postgres:example@postgres:5432/postgres?schema=pub
     GOOGLE_ID=unset_google_id \
     GOOGLE_SECRET=unset_google_secret
 
+
+# Install dependencies
 WORKDIR /app
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
+
+
+# Build
 COPY . ./
-COPY --from=deps /app/node_modules ./node_modules
 RUN yarn
 RUN yarn build
 

@@ -18,26 +18,17 @@ services:
 before_script:
   - echo "$CI_BUILD_TOKEN" | docker login -u gitlab-ci-token --password-stdin $STAGING_REGISTRY
   - docker pull $LATEST_IMAGE || true
+  - docker pull $BUILDER_IMAGE || true
 
 
 stages:
-  - deps
   - build
   - test
   - dockerize
 
-deps:
-  stage: deps
-  script:
-    - docker pull $DEPS_IMAGE || true
-    - docker build --cache-from $DEPS_IMAGE --cache-from $LATEST_IMAGE --tag $DEPS_IMAGE --target deps .
-    - docker push $DEPS_IMAGE
-
-
 build:
   stage: build
   script:
-    - docker pull $BUILDER_IMAGE || true
     - docker build --cache-from $BUILDER_IMAGE --cache-from $LATEST_IMAGE --tag $BUILDER_IMAGE --target builder .
     - docker push $BUILDER_IMAGE
 
