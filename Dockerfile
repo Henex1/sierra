@@ -10,12 +10,11 @@ ENV DATABASE_URL=postgresql://postgres:example@postgres:5432/postgres?schema=pub
 # Install dependencies
 WORKDIR /app
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+RUN yarn --frozen-lockfile
 
 
 # Build
 COPY . ./
-RUN yarn
 RUN yarn build
 
 from node:15.14.0-alpine
