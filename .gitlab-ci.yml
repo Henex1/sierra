@@ -44,7 +44,6 @@ test:
     - yarn test
     
 dockerize:
-  image: docker:stable
   stage: dockerize
   script:
     - RELEASE_IMAGE=$CI_REGISTRY_IMAGE:`date '+%Y-%m-%d-%H%M'`-${CI_COMMIT_SHA:0:9}
