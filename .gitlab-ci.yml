@@ -17,6 +17,7 @@ before_script:
   - echo "$CI_BUILD_TOKEN" | docker login -u gitlab-ci-token --password-stdin $STAGING_REGISTRY
   - docker pull $BUILDER_IMAGE || true
 
+
 stages:
   - build
   - test
@@ -27,6 +28,7 @@ build:
   stage: build
   script:
     - docker build --cache-from $BUILDER_IMAGE --tag $BUILDER_IMAGE --target builder .
+    - docker push $BUILDER_IMAGE
 
 
 test:
