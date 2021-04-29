@@ -1,18 +1,6 @@
-image: node:15.14.0
-
-stages:
-  - build
-  - test
-  - dockerize
-
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - node_modules/
-    - .next/
+image: docker:20.10.6
 
 variables:
-  DEBUG: "prisma:client,prisma:engine"
   STAGING_REGISTRY: "registry.gitlab.com"
   DATABASE_URL: "postgresql://postgres:example@postgres:5432/postgres?schema=public"
   NEXTAUTH_URL: http://localhost:3000/api/auth
@@ -20,15 +8,37 @@ variables:
   QUERY_EXPANDER_URL: http://localhost:8080
   GOOGLE_ID: "unset_google_id"
   GOOGLE_SECRET: "unset_google_secret"
+  DEPS_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}-deps
+  BUILDER_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}-builder
+  LATEST_IMAGE: ${CI_REGISTRY_IMAGE}:latest
+
+services:
+  - docker:20.10.6-dind
+
+before_script:
+  - echo "$CI_BUILD_TOKEN" | docker login -u gitlab-ci-token --password-stdin $STAGING_REGISTRY
+  - docker pull -q $LATEST_IMAGE || true
+  - docker pull -q $BUILDER_IMAGE || true
+
+
+stages:
+  - build
+  - test
+  - dockerize
 
 build:
   stage: build
   script:
-    - yarn
-    - yarn build
+    - docker build --cache-from $BUILDER_IMAGE --cache-from $LATEST_IMAGE --tag $BUILDER_IMAGE --target builder .
+    - docker push -q $BUILDER_IMAGE
+
 
 test:
   stage: test
+  image: 
+    name: $BUILDER_IMAGE
+    entrypoint: ["/usr/bin/env"]
+  before_script: []
   services:
     - postgres:12.2-alpine
   variables:
@@ -37,23 +47,16 @@ test:
     POSTGRES_PASSWORD: "example"
     POSTGRES_HOST_AUTH_METHOD: trust
   script:
-    - yarn
+    - cd /app
     - yarn prisma migrate reset -f
     - yarn test
-
+    
 dockerize:
-  image: docker:19.03.12
   stage: dockerize
-  services:
-    - docker:19.03.12-dind
-  before_script:
-    - echo "$CI_BUILD_TOKEN" | docker login -u gitlab-ci-token --password-stdin $STAGING_REGISTRY
-
   script:
     - RELEASE_IMAGE=$CI_REGISTRY_IMAGE:`date '+%Y-%m-%d-%H%M'`-${CI_COMMIT_SHA:0:9}
-    - docker build --tag $CI_REGISTRY_IMAGE:latest .
-    - docker tag $CI_REGISTRY_IMAGE:latest $RELEASE_IMAGE
-    - docker push $RELEASE_IMAGE
-    - docker push $CI_REGISTRY_IMAGE:latest
-  only:
-    - master
+    - docker build --cache-from $BUILDER_IMAGE --tag $LATEST_IMAGE --tag $RELEASE_IMAGE .
+    - docker push -q $LATEST_IMAGE
+    - docker push -q $RELEASE_IMAGE
+  # only:
+  #   - master
