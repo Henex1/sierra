@@ -1,4 +1,4 @@
-image: docker:19.03.12
+image: docker:20.10.6
 
 variables:
   STAGING_REGISTRY: "registry.gitlab.com"
@@ -13,7 +13,7 @@ variables:
   LATEST_IMAGE: ${CI_REGISTRY_IMAGE}:latest
 
 services:
-  - docker:19.03.12-dind
+  - docker:20.10.6-dind
 
 before_script:
   - echo "$CI_BUILD_TOKEN" | docker login -u gitlab-ci-token --password-stdin $STAGING_REGISTRY
@@ -30,7 +30,7 @@ build:
   stage: build
   script:
     - docker build --cache-from $BUILDER_IMAGE --cache-from $LATEST_IMAGE --tag $BUILDER_IMAGE --target builder .
-    - docker push $BUILDER_IMAGE
+    - docker push -q $BUILDER_IMAGE
 
 
 test:

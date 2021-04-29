@@ -9,12 +9,13 @@ ENV DATABASE_URL=postgresql://postgres:example@postgres:5432/postgres?schema=pub
 
 # Install dependencies
 WORKDIR /app
-COPY ./ ./
-# COPY package.json yarn.lock ./
+# COPY ./ ./
+COPY package.json yarn.lock ./
 RUN yarn --frozen-lockfile
 
 # Build
-# COPY . ./
+COPY . ./
+RUN yarn --frozen-lockfile
 RUN yarn build
 
 
