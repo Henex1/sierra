@@ -26,6 +26,12 @@ import SyncAltIcon from "@material-ui/icons/SyncAlt";
 import CheckCircleOutlinedIcon from "@material-ui/icons/CheckCircleOutlined";
 import PauseCircleOutlinedIcon from "@material-ui/icons/PauseCircleOutlineOutlined";
 
+// regex editor
+import dynamic from "next/dynamic";
+const RegexInput = dynamic(() => import("../RegexInput"), {
+  ssr: false,
+});
+
 import {
   RuleInstruction,
   FilterInstruction,
@@ -364,18 +370,50 @@ export type RuleEditorProps = {
 
 export default function RuleEditor({ name, onDelete }: RuleEditorProps) {
   const classes = useRuleEditorStyles();
+  const [expressionText, setExpressionText] = React.useState<string>("");
+  const [disableColor, setDisableColor] = React.useState<boolean>(true);
+  const [isCaseSensitive, setIsCaseSensitive] = React.useState<boolean>(false);
+  const [isRegex, setIsRegex] = React.useState<boolean>(false);
+  const [searchType, setSearchType] = React.useState<string>("Contained");
+
+  const handleCaseSensitive = () => setIsCaseSensitive((state) => !state);
+
+  React.useEffect(() => {
+    const isRegexDetected = (): boolean =>
+      expressionText[0] === "/" &&
+      expressionText[expressionText.length - 1] == "/";
+    if (expressionText.trim().length > 2) {
+      setIsRegex(isRegexDetected());
+    }
+  }, [expressionText]);
 
   return (
     <React.Fragment key={name}>
       <Box pb={2}>
         <Grid container alignItems="center">
           <Grid item xs>
-            <TextField
+            {/* <TextField
               name={`${name}.expression`}
               label="Expression"
               variant="filled"
               classes={{
                 root: classes.input,
+              }}
+            /> */}
+            <RegexInput
+              pattern={expressionText}
+              expression={expressionText}
+              searchType={searchType}
+              // setDisableColor={setDisableColor}
+              width={"100%"}
+              height={35}
+              setSearchType={setSearchType}
+              isRegex={isRegex}
+              isCaseSensitive={isCaseSensitive}
+              handleCaseSensitive={handleCaseSensitive}
+              onPatternChange={() => {}}
+              onPatternBeforeChange={(editor, data, value) => {
+                setExpressionText(value);
               }}
             />
           </Grid>
