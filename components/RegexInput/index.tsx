@@ -13,7 +13,7 @@ import MenuList from "@material-ui/core/MenuList";
 import Popper from "@material-ui/core/Popper";
 
 const useStyles = makeStyles((theme) => ({
-  inputContainer: {
+  inputParentContainer: {
     display: "flex",
     flexDirection: "column",
     backgroundColor: "#eee",
@@ -28,34 +28,53 @@ const useStyles = makeStyles((theme) => ({
   button: {
     textTransform: "none",
   },
+  inputChildContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  labelInputContainer: { display: "flex", flexDirection: "column", flex: 1 },
+  inputContainer: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+  },
+  disableColoring: {
+    "& span[role='presentation'] .exp-error": {
+      borderBottom: "none",
+    },
+    "& span[role='presentation'] *": {
+      color: "#000 !important",
+      backgroundColor: "#eee",
+    },
+  },
+  enableColoring: {},
 }));
 
 const searchTypes = ["Contained", "Starts With", "Ends With"];
 
 type ExpressionEditorFieldProps = {
   pattern: string;
-  expression: string;
   onPatternChange: () => void;
   onPatternBeforeChange: (editor: object, data: object, value: string) => void;
   handleCaseSensitive: () => void;
   isCaseSensitive: boolean;
   width: number | string;
   height: number | string;
-  isRegex: boolean;
   searchType: string;
   setSearchType: (text: string) => void;
 };
 
 function ExpressionEditor({
   pattern,
-  expression,
   onPatternChange,
   onPatternBeforeChange,
   width,
   handleCaseSensitive,
   isCaseSensitive,
   height,
-  isRegex,
   searchType,
   setSearchType,
 }: ExpressionEditorFieldProps) {
@@ -91,49 +110,44 @@ function ExpressionEditor({
     prevOpen.current = open;
   }, [open]);
 
-  function handleListKeyDown(event: React.KeyboardEvent<HTMLElement>) {
+  function handleListKeyDown(event: React.KeyboardEvent<HTMLElement>): void {
     if (event.key === "Tab") {
       event.preventDefault();
       setOpen(false);
     }
   }
 
+  function isRegexDetected(): boolean {
+    return (
+      pattern.trim().length > 2 &&
+      pattern[0] === "/" &&
+      pattern[pattern.length - 1] == "/"
+    );
+  }
+
   return (
-    <div className={classes.inputContainer}>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+    <div className={classes.inputParentContainer}>
+      <div className={classes.inputChildContainer}>
+        <div className={classes.labelInputContainer}>
           <div className={classes.label}>Expression</div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",              
-              width: "100%",
-            }}
-          >
-            <div className="regexr regexr-expression">
+          <div className={classes.inputContainer}>
+            <div
+              className={`regexr regexr-expression ${
+                isRegexDetected() ? "" : classes.disableColoring
+              }`}
+            >
               <PatternEditor
                 height={height}
-                value={pattern}
-                expression={expression}
-                onChange={onPatternChange}
-                isCaseSensitive={isCaseSensitive}
-                setIsCaseSensitive={handleCaseSensitive}
-                onBeforeChange={onPatternBeforeChange}
                 width={width}
+                value={pattern}
+                onChange={onPatternChange}
+                onBeforeChange={onPatternBeforeChange}
               />
             </div>
           </div>
         </div>
         <div>
-          {!isRegex && (
+          {!isRegexDetected() && (
             <React.Fragment>
               <Button
                 size="small"
@@ -188,7 +202,7 @@ function ExpressionEditor({
               </Popper>
             </React.Fragment>
           )}
-          {!isRegex && (
+          {!isRegexDetected() && (
             <Tooltip
               title={isCaseSensitive ? "Case Sensitive" : "Case Insensitive"}
             >

@@ -80,10 +80,6 @@ p.initialize = function (cm, highlighter) {
   this.highlighter = highlighter;
   this.offset = highlighter.offset;
 
-  //  this.tooltip = Tooltip.add(cm.display.lineDiv, null, {className:"expr"});
-  //  this.tooltip.on("mousemove", this.onMouseMove, this);
-  //  this.tooltip.on("mouseout", this.onMouseOut, this);
-
   cm.on("mousedown", $.bind(this, this.onMouseDown));
 };
 
@@ -141,7 +137,6 @@ p.onMouseMove = function (evt) {
   if (rect) {
     rect.right = rect.left = evt.clientX;
   }
-  //  this.tooltip.show(Docs.forToken(target), rect);
 };
 
 p.onMouseOut = function (evt) {

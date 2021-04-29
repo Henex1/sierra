@@ -24,6 +24,7 @@
 
 var RegExLexer = function () {
 };
+
 var p = RegExLexer.prototype;
 
 // \ ^ $ . | ? * + ( ) [ {

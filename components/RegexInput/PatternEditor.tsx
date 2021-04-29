@@ -1,12 +1,22 @@
 import React from "react";
-import PropTypes from "prop-types";
 import { Controlled as CodeMirror } from "react-codemirror2";
 import ExpressionHighlighter from "./ExpressionHighlighter";
 import ExpressionHover from "./ExpressionHover";
 import RegexUtils from "./RegexUtils";
 import "codemirror/addon/display/placeholder";
 
-class PatternEditor extends React.Component {
+type PatternEditorPropField = {
+  width: number | string;
+  height: number | string;
+  value: string;
+  onChange: (text: string) => void;
+  onBeforeChange: (editor: object, data: object, value: string) => void;
+};
+class PatternEditor extends React.Component<PatternEditorPropField> {
+  _cmElem: object | any;
+  _expressionHighlighter: object | any;
+  _expressionHover: object | any;
+
   UNSAFE_componentWillMount() {
     this._cmElem = React.createRef();
   }
@@ -32,7 +42,7 @@ class PatternEditor extends React.Component {
     this.updateCodeMirror(this.props.value);
   }
 
-  updateCodeMirror(pattern) {
+  updateCodeMirror(pattern: string) {
     var parsed = RegexUtils.parsePattern(pattern);
     this._expressionHighlighter.draw(parsed.tree);
     this._expressionHover.token = parsed.token;
@@ -69,11 +79,4 @@ class PatternEditor extends React.Component {
   }
 }
 
-PatternEditor.propTypes = {
-  value: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-
-  width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), // Defaults to 100%
-  height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), // Defaults to auto
-};
 export default PatternEditor;

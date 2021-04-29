@@ -524,13 +524,6 @@
     padding-right: 0.1px;
   }
   
-  @media print {
-    /* Hide the cursor when printing */
-    .CodeMirror div.CodeMirror-cursors {
-      visibility: hidden;
-    }
-  }
-  
   /* See issue #2901 */
   .cm-tab-wrap-hack:after {
     content: "";
@@ -772,31 +765,6 @@
     background: rgba(255, 246, 0, 0.3);
   }
   
-  /* Excerpted from scss/menus.scss */
-  .regexr-menu {
-    cursor: default;
-    line-height: 1.75rem;
-    min-width: 10rem;
-  }
-  .regexr-menu header {
-    font-weight: bold;
-    display: block;
-    color: #bdbec7;
-    font-family: "Cabin", sans-serif;
-  }
-  
-  .regexr-menu a {
-    text-decoration: none;
-    color: #66ccff;
-    cursor: pointer;
-  }
-  .regexr-menu a:hover {
-    color: white;
-    text-decoration: none;
-  }
-  .regexr-menu a code {
-    color: white;
-  }
   
   .regexr-react-tooltip {
     position: absolute;

@@ -357,65 +357,40 @@ function InstructionField(props: InstructionFieldProps) {
   );
 }
 
-const useRuleEditorStyles = makeStyles((theme) => ({
-  input: {
-    paddingRight: theme.spacing(2),
-  },
-}));
-
 export type RuleEditorProps = {
   name: string;
   onDelete: () => void;
 };
 
 export default function RuleEditor({ name, onDelete }: RuleEditorProps) {
-  const classes = useRuleEditorStyles();
-  const [expressionText, setExpressionText] = React.useState<string>("");
-  const [disableColor, setDisableColor] = React.useState<boolean>(true);
   const [isCaseSensitive, setIsCaseSensitive] = React.useState<boolean>(false);
-  const [isRegex, setIsRegex] = React.useState<boolean>(false);
   const [searchType, setSearchType] = React.useState<string>("Contained");
-
   const handleCaseSensitive = () => setIsCaseSensitive((state) => !state);
-
-  React.useEffect(() => {
-    const isRegexDetected = (): boolean =>
-      expressionText[0] === "/" &&
-      expressionText[expressionText.length - 1] == "/";
-    if (expressionText.trim().length > 2) {
-      setIsRegex(isRegexDetected());
-    }
-  }, [expressionText]);
 
   return (
     <React.Fragment key={name}>
       <Box pb={2}>
         <Grid container alignItems="center">
           <Grid item xs>
-            {/* <TextField
-              name={`${name}.expression`}
-              label="Expression"
-              variant="filled"
-              classes={{
-                root: classes.input,
+            <Field name={`${name}.expression`}>
+              {({ input }) => {
+                return (
+                  <RegexInput
+                    pattern={input.value}
+                    searchType={searchType}
+                    width={"100%"}
+                    height={35}
+                    setSearchType={setSearchType}
+                    isCaseSensitive={isCaseSensitive}
+                    handleCaseSensitive={handleCaseSensitive}
+                    onPatternChange={() => {}}
+                    onPatternBeforeChange={(editor, data, value) =>
+                      input.onChange(value)
+                    }
+                  />
+                );
               }}
-            /> */}
-            <RegexInput
-              pattern={expressionText}
-              expression={expressionText}
-              searchType={searchType}
-              // setDisableColor={setDisableColor}
-              width={"100%"}
-              height={35}
-              setSearchType={setSearchType}
-              isRegex={isRegex}
-              isCaseSensitive={isCaseSensitive}
-              handleCaseSensitive={handleCaseSensitive}
-              onPatternChange={() => {}}
-              onPatternBeforeChange={(editor, data, value) => {
-                setExpressionText(value);
-              }}
-            />
+            </Field>
           </Grid>
           <Grid item>
             <Field name={`${name}.enabled`}>
