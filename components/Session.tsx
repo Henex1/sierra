@@ -2,9 +2,8 @@ import React from "react";
 import {
   getSession as getNextSession,
   useSession as useNextSession,
-  Session as NextSession,
 } from "next-auth/client";
-import { User as NextUser } from "next-auth";
+import { Session as NextSession, User as NextUser } from "next-auth";
 
 import { ExposedOrg } from "../lib/org";
 import { ExposedProject } from "../lib/projects";

@@ -1,5 +1,5 @@
 import { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
-import { Session } from "next-auth/client";
+import { Session } from "next-auth";
 import * as z from "zod";
 
 import prisma, { User, Org } from "./prisma";
