@@ -22,7 +22,7 @@ describe("api/judgements", () => {
     };
     mockModels("judgement")
       .action("create")
-      .with({ data: initialInfo })
+      .with({ data: { name: initialInfo.name, project: { connect: { id: initialInfo.projectId } } } })
       .resolvesTo({ id: 42, ...initialInfo });
     const { judgement } = await getApiRoute(
       handleCreateJudgement,

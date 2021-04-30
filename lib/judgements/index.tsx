@@ -32,6 +32,12 @@ const vSelectKeys = {
 };
 
 export type ExposedJudgement = Pick<Judgement, keyof typeof jSelectKeys>;
+
+export type ExposedJudgementExtendedMetadata = ExposedJudgement & {
+  totalSearchPhrases: number,
+  totalVotes: number
+}
+
 export type ExposedJudgementPhrase = Pick<
   JudgementPhrase,
   keyof typeof jpSelectKeys
@@ -72,6 +78,10 @@ export async function listJudgements(project: Project): Promise<Judgement[]> {
   return judgements;
 }
 
+export async function listJudgementsExtended(project: Project): Promise<ExposedJudgementExtendedMetadata> {
+  return await prisma.$queryRaw`SELECT J.id, J.name, count(DISTINCT JP.id) as "totalSearchPhrases", count(DISTINCT V.id) as "totalVotes" FROM "Judgement" AS J left join "JudgementPhrase" JP on J.id = JP."judgementId" left join "Vote" V on JP.id = V."judgementPhraseId" WHERE J."projectId" = ${project.id} GROUP BY j.id, J.name;`;
+}
+
 export const createJudgementSchema = z.object({
   name: z.string(),
 });
@@ -85,7 +95,11 @@ export async function createJudgement(
   const judgement = await prisma.judgement.create({
     data: {
       ...input,
-      projectId: project.id,
+      project: {
+        connect: {
+          id: project.id
+        }
+      },
     },
   });
   return judgement;

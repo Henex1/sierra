@@ -39,8 +39,8 @@ export const getServerSideProps = authenticatedPage(async (context) => {
   const execution = sc ? await getLatestExecution(sc) : null;
   const searchPhrases = execution ? await getSearchPhrases(execution) : [];
   const opts = {
-    sort: context.query.sort as string,
-    show: context.query.show as string,
+    show: (context.query.show as string) || "all",
+    sort: (context.query.sort as string) || "search-phrase-asc",
     page: parseInt(context.query.page as string) || 1,
   };
   const mockObjects = searchPhrases.map((phrase) => {
@@ -62,28 +62,43 @@ export const getServerSideProps = authenticatedPage(async (context) => {
       results: r,
     };
   });
-  return { props: { searchPhrases: mockObjects } };
+  const { page, ...filters } = opts;
+  return {
+    props: {
+      searchPhrases: mockObjects,
+      searchPhrasesTotal: 1001,
+      filters,
+      page,
+    },
+  };
 });
 
 type Props = {
   searchPhrases: MockSearchPhrase[];
+  searchPhrasesTotal: number;
+  filters: {
+    show: ShowOptions;
+    sort: SortOptions;
+  };
+  page: number;
 };
 
-export default function Lab({ searchPhrases }: Props) {
+export default function Lab({
+  searchPhrases,
+  searchPhrasesTotal,
+  ...props
+}: Props) {
   const classes = useStyles();
   const router = useRouter();
   const [
     searchPhrase,
     setSearchPhrase,
   ] = React.useState<MockSearchPhrase | null>(null);
-  const [filters, setFilters] = React.useState<{
-    show: ShowOptions;
-    sort: SortOptions;
-  }>({
-    show: "all",
-    sort: "search-phrase-asc",
+  const [filters, setFilters] = React.useState<Props["filters"]>({
+    show: props.filters.show,
+    sort: props.filters.sort,
   });
-  const [page, setPage] = React.useState(1);
+  const [page, setPage] = React.useState(props.page);
   const [configurations, setConfigurations] = React.useState({});
   const [isTestRunning, setIsTestRunning] = React.useState(false);
 
@@ -145,10 +160,6 @@ export default function Lab({ searchPhrases }: Props) {
 
   return (
     <div>
-      <BreadcrumbsButtons>
-        <Link href="/">Home</Link>
-        <Typography>Lab</Typography>
-      </BreadcrumbsButtons>
       <Grid container justify="space-between">
         <Grid item>
           <Box mb={1}>
@@ -178,20 +189,9 @@ export default function Lab({ searchPhrases }: Props) {
             activePhrase={searchPhrase}
             setActivePhrase={setSearchPhrase}
           />
-          {searchPhrases.length && (
-            <Box mt={4} display="flex" justifyContent="center">
-              <Pagination
-                page={page}
-                count={10}
-                onChange={(e: React.ChangeEvent<unknown>, value: number) =>
-                  setPage(value)
-                }
-              />
-            </Box>
-          )}
         </Grid>
         {searchPhrase && (
-          <Grid item md>
+          <Grid item md={9}>
             <ResultList
               searchPhrase={searchPhrase}
               onClose={handleModalClose}
@@ -199,6 +199,15 @@ export default function Lab({ searchPhrases }: Props) {
           </Grid>
         )}
       </Grid>
+      <Box mt={4} display="flex" justifyContent="center">
+        <Pagination
+          page={page}
+          count={Math.ceil(searchPhrasesTotal / 10)}
+          onChange={(e: React.ChangeEvent<unknown>, value: number) =>
+            setPage(value)
+          }
+        />
+      </Box>
       <ActionButtons
         configurations={configurations}
         isRunning={isTestRunning}

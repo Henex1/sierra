@@ -53,7 +53,9 @@ export const TEST_SEARCHENDPOINT: NoTimestamps<SearchEndpoint> = {
   orgId: TEST_ORG_ID,
   name: "Local Elasticsearch",
   description: "Local elasticsearch instance",
+  resultId: "_id",
   whitelist: [],
+  displayFields: [],
   type: "ELASTICSEARCH",
   info: { endpoint: "http://localhost:9200/icecat/_search" },
 };

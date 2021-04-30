@@ -84,6 +84,8 @@ CREATE TABLE "SearchEndpoint" (
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "whitelist" TEXT[],
+    "resultId" TEXT NOT NULL,
+    "displayFields" TEXT[],
     "type" "SearchEndpointType" NOT NULL,
     "info" JSONB NOT NULL,
 

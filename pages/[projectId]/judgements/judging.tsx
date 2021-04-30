@@ -9,9 +9,10 @@ import Paper from "@material-ui/core/Paper";
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import Box from "@material-ui/core/Box";
 
-import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
-import Link from "../../components/common/Link";
+import BreadcrumbsButtons from "../../../components/common/BreadcrumbsButtons";
+import Link from "../../../components/common/Link";
 import Tooltip from "@material-ui/core/Tooltip";
+import {useActiveProject} from "../../../components/Session";
 
 const useStyles = makeStyles((theme: Theme) => ({
   judgeButton: {
@@ -62,6 +63,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 export default function Judging() {
   const classes = useStyles();
+  const { project } = useActiveProject();
   const [rating, setRating] = useState<null | number>(null);
 
   const handleDecisionButton = () => {
@@ -80,7 +82,7 @@ export default function Judging() {
     <div>
       <BreadcrumbsButtons>
         <Link href="/">Home</Link>
-        <Link href="/judgements">Judgements</Link>
+        <Link href={`/${project?.id}/judgements`}>Judgements</Link>
         <Typography>Judging</Typography>
       </BreadcrumbsButtons>
       <Grid container spacing={3}>
