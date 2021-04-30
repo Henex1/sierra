@@ -149,16 +149,18 @@ function ExpressionEditor({
         <div>
           {!isRegexDetected() && (
             <React.Fragment>
-              <Button
-                size="small"
-                ref={anchorRef}
-                aria-controls={open ? "search-type" : undefined}
-                aria-haspopup="true"
-                onClick={handleToggle}
-                className={classes.button}
-              >
-                {searchType}
-              </Button>
+              <Tooltip title="Expression type">
+                <Button
+                  size="small"
+                  ref={anchorRef}
+                  aria-controls={open ? "search-type" : undefined}
+                  aria-haspopup="true"
+                  onClick={handleToggle}
+                  className={classes.button}
+                >
+                  {searchType}
+                </Button>
+              </Tooltip>
               <Popper
                 open={open}
                 anchorEl={anchorRef.current}
@@ -204,7 +206,7 @@ function ExpressionEditor({
           )}
           {!isRegexDetected() && (
             <Tooltip
-              title={isCaseSensitive ? "Case Sensitive" : "Case Insensitive"}
+              title={isCaseSensitive ? "Case sensitive" : "Case insensitive"}
             >
               <IconButton
                 style={{ paddingBottom: 0 }}
