@@ -5,18 +5,8 @@ import ExpressionHover from "./ExpressionHover";
 import RegexUtils from "./RegexUtils";
 import "codemirror/addon/display/placeholder";
 
-type PatternEditorPropField = {
-  width: number | string;
-  height: number | string;
-  value: string;
-  onChange: (text: string) => void;
-  onBeforeChange: (editor: object, data: object, value: string) => void;
-};
-class PatternEditor extends React.Component<PatternEditorPropField> {
-  _cmElem: object | any;
-  _expressionHighlighter: object | any;
-  _expressionHover: object | any;
-
+class PatternEditor extends React.Component {
+  
   UNSAFE_componentWillMount() {
     this._cmElem = React.createRef();
   }
@@ -42,7 +32,7 @@ class PatternEditor extends React.Component<PatternEditorPropField> {
     this.updateCodeMirror(this.props.value);
   }
 
-  updateCodeMirror(pattern: string) {
+  updateCodeMirror(pattern) {
     var parsed = RegexUtils.parsePattern(pattern);
     this._expressionHighlighter.draw(parsed.tree);
     this._expressionHover.token = parsed.token;
