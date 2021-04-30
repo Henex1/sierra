@@ -19,7 +19,7 @@ RUN yarn --frozen-lockfile
 RUN yarn build
 
 
-from node:15.14.0-alpine
+FROM node:15.14.0-alpine
 # Release
 WORKDIR /app
 
