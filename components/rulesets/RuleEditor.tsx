@@ -25,12 +25,7 @@ import ArrowRightAltIcon from "@material-ui/icons/ArrowRightAlt";
 import SyncAltIcon from "@material-ui/icons/SyncAlt";
 import CheckCircleOutlinedIcon from "@material-ui/icons/CheckCircleOutlined";
 import PauseCircleOutlinedIcon from "@material-ui/icons/PauseCircleOutlineOutlined";
-
-// regex editor
-import dynamic from "next/dynamic";
-const RegexInput = dynamic(() => import("../RegexInput"), {
-  ssr: false,
-});
+import RegexInput from "../RegexInput";
 
 import {
   RuleInstruction,
