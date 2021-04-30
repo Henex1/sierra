@@ -23,17 +23,8 @@ export default function CreateSearchEndpoint() {
   const classes = useStyles();
   const router = useRouter();
 
-  const initialValue = {
-    resultId: "_id"
-  }
-
   async function onSubmit(values: ExposedSearchEndpoint) {
-    const newSearchEndpoint = {
-      ...values,
-      whitelist: values.whitelist ? values.whitelist : [],
-      description: values.description ? values.description : "",
-    };
-    await apiRequest(`/api/searchendpoints`, newSearchEndpoint);
+    await create(values);
     router.push("/searchendpoints");
     // Keep the form stuck as pending
     return new Promise(() => {});
@@ -51,12 +42,18 @@ export default function CreateSearchEndpoint() {
           <Typography variant="h4">Create new search endpoint:</Typography>
         </Grid>
         <Grid item xs={6}>
-          <Form
-            onSubmit={onSubmit}
-            initialValues={initialValue}
-          />
+          <Form onSubmit={onSubmit} />
         </Grid>
       </Grid>
     </div>
   );
+}
+
+export async function create(values: ExposedSearchEndpoint) {
+  const newSearchEndpoint = {
+    ...values,
+    whitelist: values.whitelist ? values.whitelist : [],
+    description: values.description ? values.description : "",
+  };
+  return await apiRequest(`/api/searchendpoints`, newSearchEndpoint);
 }

@@ -1,9 +1,8 @@
 import { IncomingMessage } from "http";
-import { User as UserBase, InitOptions } from "next-auth";
-import { SessionBase } from "next-auth/_utils";
+import { Session, NextAuthOptions } from "next-auth";
 import Providers from "next-auth/providers";
 import Adapters from "next-auth/adapters";
-import { Session, getSession } from "next-auth/client";
+import { getSession } from "next-auth/client";
 
 import prisma, { User, UserOrgRole } from "./prisma";
 import { requireEnv } from "./env";
@@ -23,7 +22,7 @@ const googleId = requireEnv("GOOGLE_ID");
 const googleSecret = requireEnv("GOOGLE_SECRET");
 const allowRegistrationFrom = requireEnv("ALLOW_REGISTRATION_FROM").split(",");
 
-export const authOptions: InitOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     Providers.Google({
       clientId: process.env.GOOGLE_ID!,
@@ -33,7 +32,7 @@ export const authOptions: InitOptions = {
   adapter: Adapters.Prisma.Adapter({ prisma }),
   secret: process.env.SECRET,
   callbacks: {
-    async session(session: SessionBase, user: User) {
+    async session(session: Session, user: User) {
       // For some reason next auth doesn't include this by default.
       (session as any).user.id = (user as any).id;
 
@@ -78,11 +77,11 @@ export const authOptions: InitOptions = {
 };
 
 export async function getUser(req: IncomingMessage): Promise<UserSession> {
-  const session = await getSession({ req });
+  const session = (await getSession({ req })) as UserSession | null;
   if (!session) {
     return {};
   }
-  const userId = (session.user as any)?.id;
+  const userId = session.user?.id;
   if (!userId) {
     return { session };
   }
@@ -95,7 +94,7 @@ export async function getUser(req: IncomingMessage): Promise<UserSession> {
   }
   if (!user.activeOrgId) {
     // We have to have a default Org or else we can't show any resources.
-    user.activeOrgId = session.orgs[0]?.id;
+    user.activeOrgId = session.orgs?.[0]?.id ?? null;
     if (!user.activeOrgId) {
       throw new Error("User has no Orgs!");
     }

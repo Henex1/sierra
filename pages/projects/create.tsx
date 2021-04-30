@@ -4,15 +4,15 @@ import { useRouter } from "next/router";
 import Typography from "@material-ui/core/Typography";
 import Container from "@material-ui/core/Container";
 
-import { ExposedProject } from "../../lib/projects";
 import {
   ExposedSearchEndpoint,
   listSearchEndpoints,
 } from "../../lib/searchendpoints";
+import { create as createSearchEndpoint } from "../searchendpoints/create";
 import { authenticatedPage } from "../../lib/pageHelpers";
 import { apiRequest } from "../../lib/api";
 import { useSession } from "../../components/Session";
-import Form from "../../components/projects/Form";
+import Form, { NewProject } from "../../components/projects/Form";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
@@ -30,8 +30,19 @@ export default function CreateProject({ searchEndpoints }: Props) {
   const { refresh: refreshSession } = useSession();
 
   const onSubmit = React.useCallback(
-    async (values: ExposedProject) => {
-      await apiRequest(`/api/projects/create`, values);
+    async (values: NewProject) => {
+      let searchEndpointId = values.searchEndpointId;
+      if (values.searchEndpointId === -1 && values.searchEndpoint) {
+        const { searchEndpoint } = await createSearchEndpoint(
+          values.searchEndpoint
+        );
+        searchEndpointId = searchEndpoint.id;
+      }
+
+      await apiRequest(`/api/projects/create`, {
+        name: values.name,
+        searchEndpointId,
+      });
       router.push("/projects");
       // Reload the global projects list dropdown
       refreshSession();

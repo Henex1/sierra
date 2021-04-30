@@ -2,9 +2,8 @@ import React from "react";
 import {
   getSession as getNextSession,
   useSession as useNextSession,
-  Session as NextSession,
 } from "next-auth/client";
-import { User as NextUser } from "next-auth";
+import { Session as NextSession, User as NextUser } from "next-auth";
 
 import { ExposedOrg } from "../lib/org";
 import { ExposedProject } from "../lib/projects";
@@ -58,7 +57,7 @@ export function SessionProvider({ children }: ProviderProps) {
     setVal(mkSession(nextLoading, nextSession));
   }, [nextLoading, nextSession]);
 
-  return <Context.Provider value={context} children={children} />;
+  return <Context.Provider value={context}>{children}</Context.Provider>;
 }
 
 export function useSession(): SessionContext {
@@ -106,10 +105,9 @@ export function ActiveProjectProvider({ children }: ProviderProps) {
   const [project, setProject] = React.useState<ExposedProject | null>(null);
 
   return (
-    <ActiveProjectContext.Provider
-      value={{ project, setProject }}
-      children={children}
-    />
+    <ActiveProjectContext.Provider value={{ project, setProject }}>
+      {children}
+    </ActiveProjectContext.Provider>
   );
 }
 
