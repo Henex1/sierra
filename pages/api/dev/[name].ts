@@ -1,8 +1,11 @@
 import _ from "lodash";
 import { NextApiRequest, NextApiResponse } from "next";
+import * as fs from "fs";
+import * as path from "path";
 
 import { RulesetVersionValue } from "../../../lib/rulesets/rules";
 import prisma, { Prisma } from "../../../lib/prisma";
+import { setVotes, parseVotesCsv } from "../../../lib/judgements";
 import { notAuthorized, notFound } from "../../../lib/errors";
 import { getUser, ValidUserSession } from "../../../lib/authServer";
 import { userCanAccessOrg } from "../../../lib/org";
@@ -44,36 +47,9 @@ const mockQuery = JSON.stringify({
   },
 });
 
-const mockPhrases = [
-  "notebook",
-  "fruits",
-  "tote bags",
-  "briefcase",
-  "suitcase",
-].map(
-  (phrase: string): Prisma.SearchPhraseExecutionCreateWithoutExecutionInput => {
-    const randomValue = phrase
-      .split("")
-      .map((c) => c.charCodeAt(0))
-      .reduce((a, b) => a + b);
-    const s = ((randomValue * 79) % 1000) / 10;
-    const r = Math.floor((randomValue * 97) % 250);
-    return {
-      phrase,
-      totalResults: r,
-      results: _.times(20, (i) => [
-        `doc_${(randomValue * i) % 1000000}`,
-        ((randomValue + i * 97) % 1000) / 10,
-      ]),
-      explanation: {},
-      combinedScore: s,
-      allScores: {
-        "ndc@5": s,
-        "ap@5": s,
-        "p@5": s,
-      },
-    };
-  }
+const seedJudgementFile = path.join(
+  process.cwd(),
+  "fixtures/Broad_Query_Set_rated.csv"
 );
 
 async function handleSeed(
@@ -107,6 +83,15 @@ async function handleSeed(
     },
   });
 
+  const judgement = await prisma.judgement.create({
+    data: {
+      projectId: project.id,
+      name: "Crowdsourced Judgements",
+    },
+  });
+  const votes = parseVotesCsv(fs.readFileSync(seedJudgementFile, "utf-8"));
+  await setVotes(judgement, votes);
+
   await prisma.ruleset.create({
     data: {
       projectId: project.id,
@@ -130,22 +115,7 @@ async function handleSeed(
   const sc = await prisma.searchConfiguration.create({
     data: {
       queryTemplateId: queryTemplate.id,
-    },
-  });
-
-  const execution = await prisma.execution.create({
-    data: {
-      searchConfigurationId: sc.id,
-      meta: { documents: 150000 },
-      combinedScore: 85,
-      allScores: {
-        "ndc@5": 90,
-        "ap@5": 10,
-        "p@5": 45,
-      },
-      phrases: {
-        create: mockPhrases,
-      },
+      judgements: { create: [{ judgementId: judgement.id, weight: 1.0 }] },
     },
   });
 

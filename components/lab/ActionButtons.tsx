@@ -26,6 +26,7 @@ const useStyles = makeStyles((theme) => ({
 
 type Props = {
   configurations: {};
+  canRun: boolean;
   isRunning: boolean;
   onRun: () => void;
   onConfigurationsChange: (config: {}) => void;
@@ -33,6 +34,7 @@ type Props = {
 
 export default function ActionButtons({
   configurations,
+  canRun,
   isRunning,
   onRun,
   onConfigurationsChange,
@@ -50,7 +52,7 @@ export default function ActionButtons({
         variant="extended"
         className={classes.runFab}
         onClick={onRun}
-        disabled={isRunning}
+        disabled={!canRun || isRunning}
       >
         {isRunning ? (
           <CircularProgress size={24} className={classes.fabProgress} />
