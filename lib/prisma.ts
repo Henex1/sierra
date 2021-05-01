@@ -4,3 +4,8 @@ const prisma = new PrismaClient();
 
 export default prisma;
 export * from "@prisma/client";
+
+export type OffsetPagination = {
+  take?: number;
+  skip?: number;
+};

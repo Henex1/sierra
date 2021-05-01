@@ -6,6 +6,9 @@ import prisma, { Prisma, User, SearchEndpoint } from "../prisma";
 import { SearchEndpointSchema } from "../schema";
 import { userCanAccessOrg } from "../org";
 import { handleElasticsearchQuery } from "./elasticsearch";
+import { requireEnv } from "../env";
+
+const QUERY_EXPANDER_URL = requireEnv("QUERY_EXPANDER_URL");
 
 // This is the list of keys which are included in user requests for SearchEndpoint
 // by default.
@@ -18,7 +21,7 @@ const selectKeys = {
   resultId: true,
   displayFields: true,
   type: true,
-  info: true
+  info: true,
 };
 
 export type ExposedSearchEndpoint = Pick<
@@ -141,14 +144,51 @@ export async function updateSearchEndpoint(
   return endpoint;
 }
 
-export async function handleQuery(
+export async function handleQuery<ResultType = any>(
   searchEndpoint: SearchEndpoint,
   query: string
-): Promise<unknown> {
+): Promise<ResultType> {
   if (searchEndpoint.type === "ELASTICSEARCH") {
-    return handleElasticsearchQuery(searchEndpoint, query);
+    return (handleElasticsearchQuery(
+      searchEndpoint,
+      query
+    ) as any) as ResultType;
   }
   throw new Error(
     `unsupported searchEndpoint type ${JSON.stringify(searchEndpoint.type)}`
   );
+}
+
+export async function expandQuery(
+  query: string,
+  template: string,
+  knobs: any,
+  rules: any[],
+  ltrModelName: string | undefined
+): Promise<object> {
+  try {
+    const config: any = {};
+    Object.entries(knobs).forEach(([k, v]) => {
+      config[k] = v;
+    });
+    config.rules = rules;
+    config.ltr_model = ltrModelName;
+    const body = JSON.stringify({
+      template: JSON.parse(template),
+      config,
+    });
+    const response = await fetch(
+      `${QUERY_EXPANDER_URL}/query/expand?q=${encodeURI(query)}`,
+      {
+        method: "POST",
+        body,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return await response.json();
+  } catch (e) {
+    throw new Error(`Failed to expand query ${e}`);
+  }
 }

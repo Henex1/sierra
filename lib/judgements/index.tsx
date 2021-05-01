@@ -1,5 +1,6 @@
 import _ from "lodash";
 import * as z from "zod";
+import csvParser from "csv-parse/lib/sync";
 
 import prisma, {
   Prisma,
@@ -34,9 +35,9 @@ const vSelectKeys = {
 export type ExposedJudgement = Pick<Judgement, keyof typeof jSelectKeys>;
 
 export type ExposedJudgementExtendedMetadata = ExposedJudgement & {
-  totalSearchPhrases: number,
-  totalVotes: number
-}
+  totalSearchPhrases: number;
+  totalVotes: number;
+};
 
 export type ExposedJudgementPhrase = Pick<
   JudgementPhrase,
@@ -78,8 +79,19 @@ export async function listJudgements(project: Project): Promise<Judgement[]> {
   return judgements;
 }
 
-export async function listJudgementsExtended(project: Project): Promise<ExposedJudgementExtendedMetadata> {
-  return await prisma.$queryRaw`SELECT J.id, J.name, count(DISTINCT JP.id) as "totalSearchPhrases", count(DISTINCT V.id) as "totalVotes" FROM "Judgement" AS J left join "JudgementPhrase" JP on J.id = JP."judgementId" left join "Vote" V on JP.id = V."judgementPhraseId" WHERE J."projectId" = ${project.id} GROUP BY j.id, J.name;`;
+export async function listJudgementsExtended(
+  project: Project
+): Promise<ExposedJudgementExtendedMetadata> {
+  return await prisma.$queryRaw`
+    SELECT J.id, J.name, COUNT(DISTINCT JP.id) AS "totalSearchPhrases", COUNT(DISTINCT V.id) AS "totalVotes"
+    FROM "Judgement" AS J
+    LEFT JOIN "JudgementPhrase" JP
+    ON J.id = JP."judgementId"
+    LEFT JOIN "Vote" V
+    ON JP.id = V."judgementPhraseId"
+    WHERE J."projectId" = ${project.id}
+    GROUP BY j.id, J.name
+  `;
 }
 
 export const createJudgementSchema = z.object({
@@ -97,8 +109,8 @@ export async function createJudgement(
       ...input,
       project: {
         connect: {
-          id: project.id
-        }
+          id: project.id,
+        },
       },
     },
   });
@@ -228,4 +240,29 @@ export async function setVotes(
   }
 
   await prisma.$transaction(transactions);
+}
+
+export function parseVotesCsv(content: string): SetVotes {
+  const raw = csvParser(content, {
+    columns: true,
+    trim: true,
+    skip_empty_lines: true,
+  });
+  const actions: any = {};
+  // transform to vote actions
+  raw.forEach((item: any) => {
+    if (!item.query || !item.query.length)
+      throw new Error("Invalid CSV format");
+    if (!actions[item.query]) {
+      actions[item.query] = {};
+    }
+    if (item.docid?.length) {
+      item.rating = parseInt(item.rating);
+      item.rating = Number.isNaN(item.rating) ? 0 : item.rating;
+      actions[item.query][item.docid] = isNaN(item.rating)
+        ? 0
+        : parseInt(item.rating);
+    }
+  });
+  return actions;
 }

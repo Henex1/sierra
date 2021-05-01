@@ -1,21 +1,31 @@
+import _ from "lodash";
 import React from "react";
 import { Grid, Typography, Box, makeStyles } from "@material-ui/core";
 import { Pagination } from "@material-ui/lab";
 import { useRouter } from "next/router";
 
+import { apiRequest } from "../../lib/api";
 import Filters from "../../components/lab/Filters";
 import SearchPhraseList from "../../components/lab/SearchPhraseList";
 import ResultList from "../../components/lab/ResultList";
 import ActionButtons from "../../components/lab/ActionButtons";
 import { getProject } from "../../lib/projects";
-import { getActiveSearchConfiguration } from "../../lib/searchconfigurations";
+import {
+  getActiveSearchConfiguration,
+  formatSearchConfiguration,
+  ExposedSearchConfiguration,
+} from "../../lib/searchconfigurations";
 import {
   getLatestExecution,
+  countSearchPhrases,
   getSearchPhrases,
-  SearchPhraseExecutionInfo,
 } from "../../lib/execution";
 import { MockSearchPhrase, ShowOptions, SortOptions } from "../../lib/lab";
-import { authenticatedPage, requireNumberParam } from "../../lib/pageHelpers";
+import {
+  authenticatedPage,
+  requireNumberParam,
+  optionalNumberQuery,
+} from "../../lib/pageHelpers";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
@@ -29,51 +39,54 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const pageSize = 20;
+
 export const getServerSideProps = authenticatedPage(async (context) => {
   const projectId = requireNumberParam(context, "projectId");
   const project = await getProject(context.user, projectId);
   if (!project) {
     return { notFound: true };
   }
+  const page = optionalNumberQuery(context, "page", 1) - 1;
   const sc = await getActiveSearchConfiguration(project);
   const execution = sc ? await getLatestExecution(sc) : null;
-  const searchPhrases = execution ? await getSearchPhrases(execution) : [];
-  const opts = {
+  const searchPhrasesTotal = execution
+    ? await countSearchPhrases(execution)
+    : 0;
+  const searchPhrases = execution
+    ? await getSearchPhrases(execution, {
+        skip: pageSize * page,
+        take: pageSize,
+      })
+    : [];
+  const filters = {
     show: (context.query.show as string) || "all",
     sort: (context.query.sort as string) || "search-phrase-asc",
-    page: parseInt(context.query.page as string) || 1,
   };
   const mockObjects = searchPhrases.map((phrase) => {
-    const randomValue = phrase.phrase
-      .split("")
-      .map((c) => c.charCodeAt(0))
-      .reduce((a, b) => a + b);
-    const s = ((randomValue * 79) % 1000) / 10;
-    const r = Math.floor((randomValue * 97) % 250);
     return {
       id: phrase.id,
       phrase: phrase.phrase,
       score: {
-        sierra: s,
-        "ndc@5": s,
-        "ap@5": s,
-        "p@5": s,
+        sierra: phrase.combinedScore * 100,
+        ..._.mapValues(phrase.allScores as object, (s) => s * 100),
       },
-      results: r,
+      results: phrase.totalResults,
     };
   });
-  const { page, ...filters } = opts;
   return {
     props: {
+      searchConfiguration: sc ? formatSearchConfiguration(sc) : null,
       searchPhrases: mockObjects,
-      searchPhrasesTotal: 1001,
+      searchPhrasesTotal,
       filters,
-      page,
+      page: page + 1,
     },
   };
 });
 
 type Props = {
+  searchConfiguration: ExposedSearchConfiguration | null;
   searchPhrases: MockSearchPhrase[];
   searchPhrasesTotal: number;
   filters: {
@@ -84,6 +97,7 @@ type Props = {
 };
 
 export default function Lab({
+  searchConfiguration,
   searchPhrases,
   searchPhrasesTotal,
   ...props
@@ -146,11 +160,12 @@ export default function Lab({
     setSearchPhrase(null);
   };
 
-  const handleRun = () => {
+  const handleRun = async () => {
     setIsTestRunning(true);
-    setTimeout(() => {
-      setIsTestRunning(false);
-    }, 1500);
+    await apiRequest("/api/searchconfigurations/execute", {
+      id: searchConfiguration!.id,
+    });
+    location.reload();
   };
 
   const handleConfigurationsChange = (configs: {}) => {
@@ -163,7 +178,9 @@ export default function Lab({
       <Grid container justify="space-between">
         <Grid item>
           <Box mb={1}>
-            <Typography>Showing 18 search phrases..</Typography>
+            <Typography>
+              Showing {searchPhrases.length} search phrases..
+            </Typography>
             <Box pt={1}>
               <Typography variant="body2" color="textSecondary">
                 Latency Percentiles (ms):
@@ -202,7 +219,7 @@ export default function Lab({
       <Box mt={4} display="flex" justifyContent="center">
         <Pagination
           page={page}
-          count={Math.ceil(searchPhrasesTotal / 10)}
+          count={Math.ceil(searchPhrasesTotal / pageSize)}
           onChange={(e: React.ChangeEvent<unknown>, value: number) =>
             setPage(value)
           }
@@ -210,6 +227,7 @@ export default function Lab({
       </Box>
       <ActionButtons
         configurations={configurations}
+        canRun={searchConfiguration !== null}
         isRunning={isTestRunning}
         onRun={handleRun}
         onConfigurationsChange={handleConfigurationsChange}

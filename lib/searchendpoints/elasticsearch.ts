@@ -9,7 +9,7 @@ type ElasticsearchInfo = z.infer<typeof ElasticsearchInfoSchema>;
 export async function handleElasticsearchQuery(
   searchEndpoint: SearchEndpoint,
   query: string
-): Promise<unknown> {
+): Promise<object> {
   const { endpoint } = searchEndpoint.info as ElasticsearchInfo;
   const response = await fetch(endpoint, {
     method: "POST",
