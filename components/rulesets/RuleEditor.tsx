@@ -2,7 +2,7 @@ import * as React from "react";
 import Grid from "@material-ui/core/Grid";
 import { Field } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
-import { TextField, Select } from "mui-rff";
+import { TextField, Select, Autocomplete } from "mui-rff";
 import Box from "@material-ui/core/Box";
 import SelectMUI from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
@@ -52,6 +52,7 @@ type InstructionFieldProps = {
   value: RuleInstruction;
   onDelete: () => void;
   disabled?: boolean;
+  facetFilterFields: any;
 };
 
 const useSynonymFieldStyles = makeStyles((theme) => ({
@@ -221,6 +222,39 @@ function FilterField({ name, value, disabled }: InstructionFieldProps) {
   );
 }
 
+function FacetFilterField({ name, value, disabled, facetFilterFields }: InstructionFieldProps) {
+  const fields = Object.keys(facetFilterFields.fields);
+  // @ts-ignore
+  const fieldValues = value.field ? Object.keys(facetFilterFields.fields[value.field]) : null;
+  return (
+    <>
+      <Grid item xs={2}>
+        <Select name={`${name}.include`} disabled={disabled} required>
+          <MenuItem value={true as any}>MUST</MenuItem>
+          <MenuItem value={false as any}>MUST NOT</MenuItem>
+        </Select>
+      </Grid>
+      <Grid item xs={3}>
+        <Autocomplete
+          label=""
+          name={`${name}.field`}
+          required
+          options={fields}
+        />
+      </Grid>
+      <Grid item xs={3}>
+        <Autocomplete
+          label=""
+          disabled={!fieldValues}
+          name={`${name}.value`}
+          required
+          options={fieldValues || []}
+        />
+      </Grid>
+    </>
+  );
+}
+
 function DeleteField({ name, disabled }: InstructionFieldProps) {
   return (
     <Grid item xs>
@@ -260,6 +294,8 @@ function InstructionField(props: InstructionFieldProps) {
       <DownBoostField {...props} disabled={isDisabled} />
     ) : instructionsType === "filter" ? (
       <FilterField {...props} disabled={isDisabled} />
+    ) : instructionsType === "facetFilter" ? (
+      <FacetFilterField {...props} disabled={isDisabled} />
     ) : instructionsType === "delete" ? (
       <DeleteField {...props} disabled={isDisabled} />
     ) : (
@@ -305,6 +341,7 @@ function InstructionField(props: InstructionFieldProps) {
                   <MenuItem value="upBoost">UP BOOST</MenuItem>
                   <MenuItem value="downBoost">DOWN BOOST</MenuItem>
                   <MenuItem value="filter">FILTER</MenuItem>
+                  <MenuItem value="facetFilter">FACET FILTER</MenuItem>
                   <MenuItem value="delete">DELETE</MenuItem>
                 </SelectMUI>
               );
@@ -360,9 +397,10 @@ const useRuleEditorStyles = makeStyles((theme) => ({
 export type RuleEditorProps = {
   name: string;
   onDelete: () => void;
+  facetFilterFields: object;
 };
 
-export default function RuleEditor({ name, onDelete }: RuleEditorProps) {
+export default function RuleEditor({ name, onDelete, facetFilterFields }: RuleEditorProps) {
   const classes = useRuleEditorStyles();
 
   return (
@@ -419,6 +457,7 @@ export default function RuleEditor({ name, onDelete }: RuleEditorProps) {
                 name={name}
                 value={fields.value[index]}
                 onDelete={() => fields.remove(index)}
+                facetFilterFields={facetFilterFields}
               />
             ))}
             <Box mt={2} mb={2}>
