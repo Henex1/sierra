@@ -30,6 +30,16 @@ export const filterInstructionSchema = z.object({
 
 export type FilterInstruction = z.infer<typeof filterInstructionSchema>;
 
+export const facetFilterInstructionSchema = z.object({
+  type: z.literal("facetFilter"),
+  include: z.boolean(),
+  field: z.string(),
+  value: z.string(),
+  enabled: z.boolean(),
+});
+
+export type FacetFilterInstruction = z.infer<typeof facetFilterInstructionSchema>;
+
 export const deleteInstructionSchema = z.object({
   type: z.literal("delete"),
   term: z.string(),
@@ -39,6 +49,7 @@ export const deleteInstructionSchema = z.object({
 export type DeleteInstruction = z.infer<typeof deleteInstructionSchema>;
 
 export const ruleInstructionSchema = z.union([
+  facetFilterInstructionSchema,
   synonymInstructionSchema,
   upDownInstructionSchema,
   filterInstructionSchema,
