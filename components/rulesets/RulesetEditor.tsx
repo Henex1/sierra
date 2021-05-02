@@ -254,9 +254,10 @@ function RulesList({
 
 export type RulesetEditorProps = FormProps<RulesetVersionValue> & {
   name: ExposedRuleset["name"];
+  facetFilterFields: object;
 };
 
-export default function RulesetEditor({ name, ...rest }: RulesetEditorProps) {
+export default function RulesetEditor({ name, facetFilterFields, ...rest }: RulesetEditorProps) {
   const [activeRuleset, setActiveRuleset] = React.useState(-1);
   // Note: storing a function in useState requires setState(() => myFunction),
   // which is why you see setState(() => () => foo), below.
@@ -314,6 +315,7 @@ export default function RulesetEditor({ name, ...rest }: RulesetEditorProps) {
                   <form onSubmit={handleSubmit}>
                     <RuleEditor
                       name={`rules[${activeRuleset}]`}
+                      facetFilterFields={facetFilterFields}
                       onDelete={() => {
                         form.mutators.remove("rules", activeRuleset);
                         setActiveRuleset(activeRuleset - 1);

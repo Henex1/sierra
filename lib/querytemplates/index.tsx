@@ -1,6 +1,8 @@
+import _ from "lodash";
+
 import prisma, { Prisma, QueryTemplate, User } from "../prisma";
 import { userCanAccessProject } from "../projects";
-import _ from "lodash";
+import { handleQuery } from "../searchendpoints";
 
 const selectKeys = {
   id: true,
@@ -39,7 +41,10 @@ const createQueryTemplateKeys = {
   query: true,
 };
 
-type CreateQueryTemplateType = Pick<QueryTemplate, keyof typeof createQueryTemplateKeys>;
+type CreateQueryTemplateType = Pick<
+  QueryTemplate,
+  keyof typeof createQueryTemplateKeys
+>;
 
 export async function createQueryTemplate(
   input: CreateQueryTemplateType

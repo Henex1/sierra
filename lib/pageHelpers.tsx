@@ -64,6 +64,33 @@ export function requireNumberParam<P extends ParsedUrlQuery>(
   return num;
 }
 
+export function requireNumberQuery<P extends ParsedUrlQuery>(
+  context: GetServerSidePropsContext<P>,
+  name: string
+): number {
+  const str = context.query?.[name];
+  if (Array.isArray(str)) {
+    throw new Error(`Query ${name} is an array; expected single item`);
+  }
+  const num = str ? parseInt(str as string, 10) : NaN;
+  if (isNaN(num)) {
+    throw new Error(`Query ${name} is not a number`);
+  }
+  return num;
+}
+
+export function optionalNumberQuery<P extends ParsedUrlQuery>(
+  context: GetServerSidePropsContext<P>,
+  name: string,
+  def: number
+): number {
+  try {
+    return requireNumberQuery(context, name);
+  } catch (err) {
+    return def;
+  }
+}
+
 // Returns the active Org for the current User, and fails if they don't have
 // one.
 export async function requireActiveOrg(

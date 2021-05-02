@@ -57,7 +57,7 @@ export function SessionProvider({ children }: ProviderProps) {
     setVal(mkSession(nextLoading, nextSession));
   }, [nextLoading, nextSession]);
 
-  return <Context.Provider value={context} children={children} />;
+  return <Context.Provider value={context}>{children}</Context.Provider>;
 }
 
 export function useSession(): SessionContext {
@@ -105,10 +105,9 @@ export function ActiveProjectProvider({ children }: ProviderProps) {
   const [project, setProject] = React.useState<ExposedProject | null>(null);
 
   return (
-    <ActiveProjectContext.Provider
-      value={{ project, setProject }}
-      children={children}
-    />
+    <ActiveProjectContext.Provider value={{ project, setProject }}>
+      {children}
+    </ActiveProjectContext.Provider>
   );
 }
 

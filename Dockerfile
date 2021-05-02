@@ -9,14 +9,17 @@ ENV DATABASE_URL=postgresql://postgres:example@postgres:5432/postgres?schema=pub
 
 # Install dependencies
 WORKDIR /app
-# COPY ./ ./
 COPY package.json yarn.lock ./
 RUN yarn --frozen-lockfile
 
 # Build
 COPY . ./
 RUN yarn --frozen-lockfile
-RUN yarn build
+ENV NODE_ENV production
+# This tsc command isn't strictly necessary for the build, but yarn build will
+# only show one single error and tsc will show all of them, and is faster than
+# yarn build.
+RUN yarn prisma generate && yarn tsc -b . && yarn build
 
 
 FROM node:15.14.0-alpine

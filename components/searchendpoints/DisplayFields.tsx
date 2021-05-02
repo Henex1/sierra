@@ -5,28 +5,28 @@ import Grid from "@material-ui/core/Grid";
 import Chip from "@material-ui/core/Chip";
 import TextField from "@material-ui/core/TextField";
 
-export type DisplayFieldsProps =  {
-  displayFields: any
+export type DisplayFieldsProps = {
+  displayFields: any;
 };
 
 const useStyles = makeStyles((theme) => ({
   tagsInputRoot: {
     display: "flex",
-    flexWrap: "wrap"
+    flexWrap: "wrap",
   },
   tagsInput: {
-    maxWidth: "250px"
-  }
+    maxWidth: "250px",
+  },
 }));
 
 export default function DisplayFields({ displayFields }: DisplayFieldsProps) {
   const classes = useStyles();
-  const [error, setError] = useState('');
-  const [inputValue, setInputValue] = useState('');
-  const supportedPrefixes = ['image', 'url', 'title'];
+  const [error, setError] = useState("");
+  const [inputValue, setInputValue] = useState("");
+  const supportedPrefixes = ["image", "url", "title"];
 
   const handleDeleteDisplayFields = (index: number) => {
-    displayFields.input.value.splice(index, 1)
+    displayFields.input.value.splice(index, 1);
     displayFields.input.onChange({
       target: {
         type: "input",
@@ -38,7 +38,7 @@ export default function DisplayFields({ displayFields }: DisplayFieldsProps) {
   const handleOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = event.target.value;
     setInputValue(inputValue);
-  }
+  };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
@@ -52,23 +52,23 @@ export default function DisplayFields({ displayFields }: DisplayFieldsProps) {
         if (supportedPrefixes.includes(prefix)) {
           displayFields.input.value.forEach((value: String) => {
             if (value.indexOf(prefix) !== -1) {
-              validDisplayField = false
+              validDisplayField = false;
             }
-          })
+          });
           if (validDisplayField) {
             setNewValue(inputValue);
           } else {
-            setError('Display fields with that prefix already exists')
+            setError("Display fields with that prefix already exists");
           }
         } else {
-          setError('Display fields prefix is not valid')
+          setError("Display fields prefix is not valid");
         }
       } else {
         setNewValue(inputValue);
       }
       event.preventDefault();
     }
-  }
+  };
 
   const setNewValue = (inputValue: String) => {
     displayFields.input.onChange({
@@ -77,8 +77,8 @@ export default function DisplayFields({ displayFields }: DisplayFieldsProps) {
         value: [...displayFields.input.value, inputValue],
       },
     });
-    setError('');
-    setInputValue('');
+    setError("");
+    setInputValue("");
   };
 
   return (
@@ -87,29 +87,31 @@ export default function DisplayFields({ displayFields }: DisplayFieldsProps) {
         <TextField
           fullWidth
           label="Display Fields"
-          variant="outlined"
+          variant="filled"
           error={!!error}
           helperText={error}
           value={inputValue}
           InputProps={{
-            startAdornment: displayFields.input.value && displayFields.input.value.map((item: string, index: number) => (
-              <Chip
-                style={{ marginRight: "8px", marginTop: "8px"}}
-                key={index}
-                tabIndex={-1}
-                label={item}
-                onDelete={() => handleDeleteDisplayFields(index)}
-              />
-            )),
+            startAdornment:
+              displayFields.input.value &&
+              displayFields.input.value.map((item: string, index: number) => (
+                <Chip
+                  style={{ marginRight: "8px", marginTop: "8px" }}
+                  key={index}
+                  tabIndex={-1}
+                  label={item}
+                  onDelete={() => handleDeleteDisplayFields(index)}
+                />
+              )),
             classes: {
               root: classes.tagsInputRoot,
-              input: classes.tagsInput
-            }
+              input: classes.tagsInput,
+            },
           }}
           onKeyDown={handleKeyDown}
           onChange={handleOnChange}
         />
       </Grid>
     </Grid>
-  )
+  );
 }
