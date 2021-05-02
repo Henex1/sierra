@@ -371,15 +371,12 @@ export default function RuleEditor({ name, onDelete }: RuleEditorProps) {
               {({ input }) => {
                 return (
                   <RegexInput
-                    pattern={input.value}
+                    value={input.value}
                     searchType={searchType}
-                    width={"100%"}
-                    height={35}
                     setSearchType={setSearchType}
                     isCaseSensitive={isCaseSensitive}
                     handleCaseSensitive={handleCaseSensitive}
-                    onPatternChange={() => {}}
-                    onPatternBeforeChange={(editor, data, value) =>
+                    onChange={(value) =>
                       input.onChange(value)
                     }
                   />

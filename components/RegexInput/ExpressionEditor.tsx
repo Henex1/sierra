@@ -41,14 +41,28 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     width: "100%",
   },
-  disableColoring: {
-    "& span[role='presentation'] .exp-error": {
-      borderBottom: "none",
+  disableColoring: {  
+    "& .ace_cursor": {
+      marginLeft: "0px !important",
     },
-    "& span[role='presentation'] *": {
-      color: "#000 !important",
-      backgroundColor: "#eee",
+    "& .ace_placeholder": {
+      color: "#555 !important",
+      marginLeft: -2,
+      fontSize: 16,
     },
+    "& span": {
+        color: "#000 !important"
+    }
+  },
+  container: {
+    width: "100%",
+    display: "table",
+    fontFamily: "monaco, Consolas, 'Lucida Console', monospace",
+    "& > *": {
+      display: "table-cell",
+      verticalAlign: 'top',
+    },
+    marginBottom: 2
   },
   enableColoring: {},
 }));
@@ -56,25 +70,19 @@ const useStyles = makeStyles((theme) => ({
 const searchTypes = ["Contained", "Starts With", "Ends With"];
 
 type ExpressionEditorFieldProps = {
-  pattern: string;
-  onPatternChange: () => void;
-  onPatternBeforeChange: (editor: object, data: object, value: string) => void;
   handleCaseSensitive: () => void;
   isCaseSensitive: boolean;
-  width: number | string;
-  height: number | string;
   searchType: string;
   setSearchType: (text: string) => void;
+  value: string;
+  onChange: (value: string, event: React.ChangeEvent) => void;
 };
 
 export default function ExpressionEditor({
-  pattern,
-  onPatternChange,
-  onPatternBeforeChange,
-  width,
+  value,
+  onChange,
   handleCaseSensitive,
   isCaseSensitive,
-  height,
   searchType,
   setSearchType,
 }: ExpressionEditorFieldProps) {
@@ -119,9 +127,9 @@ export default function ExpressionEditor({
 
   function isRegexDetected(): boolean {
     return (
-      pattern.trim().length > 2 &&
-      pattern[0] === "/" &&
-      pattern[pattern.length - 1] == "/"
+      value.trim().length > 2 &&
+      value[0] === "/" &&
+      value[value.length - 1] == "/"
     );
   }
 
@@ -132,17 +140,13 @@ export default function ExpressionEditor({
           <div className={classes.label}>Expression</div>
           <div className={classes.inputContainer}>
             <div
-              className={`regexr regexr-expression ${
-                isRegexDetected() ? "" : classes.disableColoring
+              className={`${classes.container} ${
+                isRegexDetected()
+                  ? classes.enableColoring
+                  : classes.disableColoring
               }`}
             >
-              <PatternEditor
-                height={height}
-                width={width}
-                value={pattern}
-                onChange={onPatternChange}
-                onBeforeChange={onPatternBeforeChange}
-              />
+              <PatternEditor value={value} onChange={onChange} />
             </div>
           </div>
         </div>
@@ -224,4 +228,3 @@ export default function ExpressionEditor({
     </div>
   );
 }
-
