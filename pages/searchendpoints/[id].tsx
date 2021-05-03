@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useRouter } from "next/router";
 
-import { Grid, Typography } from "@material-ui/core";
+import { Container, Typography, Divider, Box } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
 import Form from "../../components/searchendpoints/Form";
@@ -70,18 +70,17 @@ export default function EditSearchEndpoint({ searchEndpoint }: Props) {
         <Link href="/searchendpoints">Search Endpoints</Link>
         <Typography>{searchEndpoint.name}</Typography>
       </BreadcrumbsButtons>
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Typography variant="h4">Update search endpoint:</Typography>
-        </Grid>
-        <Grid item xs={6}>
-          <Form
-            onSubmit={onSubmit}
-            onDelete={onDelete}
-            initialValues={searchEndpoint}
-          />
-        </Grid>
-      </Grid>
+      <Container maxWidth="sm">
+        <Typography variant="h4">Update Search Endpoint</Typography>
+        <Box mt={2} mb={4}>
+          <Divider />
+        </Box>
+        <Form
+          onSubmit={onSubmit}
+          onDelete={onDelete}
+          initialValues={searchEndpoint}
+        />
+      </Container>
     </div>
   );
 }

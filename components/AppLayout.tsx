@@ -11,7 +11,7 @@ import List from "@material-ui/core/List";
 import Toolbar from "@material-ui/core/Toolbar";
 import Divider from "@material-ui/core/Divider";
 
-import {useActiveProject, useSession} from "./Session";
+import { useActiveProject, useSession } from "./Session";
 import Link from "./common/Link";
 import AppTopBar from "./AppTopBar/AppTopBar";
 import { mainListItems } from "./AppNavigation";
@@ -20,7 +20,7 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import AssignmentIcon from "@material-ui/icons/Assignment";
 import ListItemText from "@material-ui/core/ListItemText";
-import {ExposedProject} from "../lib/projects";
+import { ExposedProject } from "../lib/projects";
 
 function Copyright() {
   return (
@@ -100,26 +100,30 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <Toolbar />
               <List>{mainListItems}</List>
               <Divider />
-              {!!session?.projects?.length &&
+              {!!session?.projects?.length && (
                 <List>
                   <ListSubheader inset>Recent projects</ListSubheader>
-                  {
-                    session.projects.slice(0, 3).map((project: ExposedProject) => (
-                      <ListItem key={project.id} button onClick={() => setProject(project ?? null)}>
+                  {session.projects
+                    .slice(0, 3)
+                    .map((project: ExposedProject) => (
+                      <ListItem
+                        key={project.id}
+                        button
+                        onClick={() => setProject(project ?? null)}
+                      >
                         <ListItemIcon>
                           <AssignmentIcon />
                         </ListItemIcon>
                         <ListItemText primary={project.name} />
                       </ListItem>
-                    ))
-                  }
+                    ))}
                 </List>
-              }
+              )}
             </Drawer>
           )}
           <Container maxWidth="lg" className={classes.container}>
             {children}
-            <Box pt={4}>
+            <Box py={4}>
               <Copyright />
             </Box>
           </Container>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import classnames from "classnames";
 
 import { makeStyles } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
@@ -13,9 +14,22 @@ const useStyles = makeStyles((theme) => ({
   tagsInputRoot: {
     display: "flex",
     flexWrap: "wrap",
+    alignItems: "baseline",
+  },
+  tagsInputRootFilled: {
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1.5),
   },
   tagsInput: {
     maxWidth: "250px",
+  },
+  tagsInputAdornedStart: {
+    "& $input": {
+      paddingLeft: 0,
+    },
+  },
+  inputChip: {
+    margin: theme.spacing(1, 1, 0, 0),
   },
 }));
 
@@ -81,22 +95,38 @@ export default function DisplayFields({ displayFields }: DisplayFieldsProps) {
     setInputValue("");
   };
 
+  const isEmpty =
+    !displayFields.input.value || !displayFields.input.value.length;
+  const MuiRequiredLabel = (
+    <>
+      Display Fields
+      <span
+        aria-hidden="true"
+        className="MuiFormLabel-asterisk MuiInputLabel-asterisk"
+      >
+        &thinsp;*
+      </span>
+    </>
+  );
+
   return (
     <Grid container spacing={3}>
       <Grid item xs={12}>
         <TextField
+          required={isEmpty}
           fullWidth
-          label="Display Fields"
-          variant="filled"
+          label={isEmpty ? "Display Fields" : MuiRequiredLabel}
+          variant="outlined"
+          size="small"
           error={!!error}
-          helperText={error}
+          helperText={error || "Press enter to add display fields"}
           value={inputValue}
           InputProps={{
             startAdornment:
               displayFields.input.value &&
               displayFields.input.value.map((item: string, index: number) => (
                 <Chip
-                  style={{ marginRight: "8px", marginTop: "8px" }}
+                  className={classes.inputChip}
                   key={index}
                   tabIndex={-1}
                   label={item}
@@ -104,8 +134,12 @@ export default function DisplayFields({ displayFields }: DisplayFieldsProps) {
                 />
               )),
             classes: {
-              root: classes.tagsInputRoot,
+              root: classnames(
+                classes.tagsInputRoot,
+                !isEmpty && classes.tagsInputRootFilled
+              ),
               input: classes.tagsInput,
+              adornedStart: classes.tagsInputAdornedStart,
             },
           }}
           onKeyDown={handleKeyDown}
