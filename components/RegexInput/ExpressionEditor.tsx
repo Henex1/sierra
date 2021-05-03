@@ -1,10 +1,12 @@
 import React from "react";
 import PatternEditor from "./PatternEditor";
-import { makeStyles } from "@material-ui/core";
+import { makeStyles, Typography } from "@material-ui/core";
 import IconButton from "@material-ui/core/IconButton";
 import CaseSensitiveIcon from "./CaseSensitiveIcon";
+import StartsWithIcon from "./StartsWithIcon";
+import EndsWithIcon from "./EndsWithIcon";
+import ContainedIcon from "./ContainedIcon";
 import Tooltip from "@material-ui/core/Tooltip";
-import Button from "@material-ui/core/Button";
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
 import Paper from "@material-ui/core/Paper";
 import Grow from "@material-ui/core/Grow";
@@ -20,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
     borderTopLeftRadius: 5,
     borderTopRightRadius: 5,
     borderBottom: "1px solid grey",
-    padding: "6px 12px 2px 8px",
+    padding: "6px 6px 2px 8px",
     width: "100%",
     flex: 1,
   },
@@ -41,7 +43,7 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     width: "100%",
   },
-  disableColoring: {  
+  disableColoring: {
     "& .ace_cursor": {
       marginLeft: "0px !important",
     },
@@ -51,8 +53,8 @@ const useStyles = makeStyles((theme) => ({
       fontSize: 16,
     },
     "& span": {
-        color: "#000 !important"
-    }
+      color: "#000 !important",
+    },
   },
   container: {
     width: "100%",
@@ -60,14 +62,27 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: "monaco, Consolas, 'Lucida Console', monospace",
     "& > *": {
       display: "table-cell",
-      verticalAlign: 'top',
+      verticalAlign: "top",
     },
-    marginBottom: 2
+    marginBottom: 2,
+  },
+  iconButton: {
+    padding: 0,
+    margin: 0,
   },
   enableColoring: {},
 }));
 
-const searchTypes = ["Contained", "Starts With", "Ends With"];
+type SearchTypeProps = {
+  text: string;
+  icon: JSX.Element;
+};
+
+const searchTypes: Array<SearchTypeProps> = [
+  { text: "Contained", icon: <ContainedIcon htmlColor="#333" /> },
+  { text: "Starts With", icon: <StartsWithIcon htmlColor="#333" /> },
+  { text: "Ends With", icon: <EndsWithIcon htmlColor="#333" /> },
+];
 
 type ExpressionEditorFieldProps = {
   handleCaseSensitive: () => void;
@@ -125,6 +140,10 @@ export default function ExpressionEditor({
     }
   }
 
+  function getIcon(type: string) {
+    return searchTypes.filter((item) => item.text === type)[0].icon;
+  }
+
   function isRegexDetected(): boolean {
     return (
       value.trim().length > 2 &&
@@ -154,16 +173,16 @@ export default function ExpressionEditor({
           {!isRegexDetected() && (
             <React.Fragment>
               <Tooltip title="Expression type">
-                <Button
+                <IconButton
+                  className={classes.iconButton}
                   size="small"
                   ref={anchorRef}
                   aria-controls={open ? "search-type" : undefined}
                   aria-haspopup="true"
                   onClick={handleToggle}
-                  className={classes.button}
                 >
-                  {searchType}
-                </Button>
+                  {getIcon(searchType)}
+                </IconButton>
               </Tooltip>
               <Popper
                 open={open}
@@ -187,16 +206,22 @@ export default function ExpressionEditor({
                           id="menu-list-grow"
                           onKeyDown={handleListKeyDown}
                         >
-                          {searchTypes.map((type) => {
+                          {searchTypes.map(({ text, icon }, index) => {
                             return (
                               <MenuItem
-                                key={type}
+                                key={index}
                                 onClick={(event) =>
-                                  handleSearchType(event, type)
+                                  handleSearchType(event, text)
                                 }
-                                selected={searchType === type}
+                                selected={searchType === text}
                               >
-                                {type}
+                                {icon}
+                                <Typography
+                                  variant="body2"
+                                  style={{ marginLeft: 5 }}
+                                >
+                                  {text}
+                                </Typography>
                               </MenuItem>
                             );
                           })}
@@ -213,7 +238,7 @@ export default function ExpressionEditor({
               title={isCaseSensitive ? "Case sensitive" : "Case insensitive"}
             >
               <IconButton
-                style={{ paddingBottom: 0 }}
+                className={classes.iconButton}
                 size="small"
                 onClick={handleCaseSensitive}
               >
