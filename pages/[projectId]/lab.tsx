@@ -28,6 +28,7 @@ import {
 } from "../../lib/pageHelpers";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
+import NoExistingExcution from "components/lab/NoExistingExcution";
 
 const useStyles = makeStyles((theme) => ({
   listContainer: {
@@ -172,59 +173,66 @@ export default function Lab({
     // TODO
     setConfigurations(configs);
   };
+  console.log(`configurations`, configurations);
 
   return (
     <div>
-      <Grid container justify="space-between">
-        <Grid item>
-          <Box mb={1}>
-            <Typography>
-              Showing {searchPhrases.length} search phrases..
-            </Typography>
-            <Box pt={1}>
-              <Typography variant="body2" color="textSecondary">
-                Latency Percentiles (ms):
-                <br />
-                Mean <b>90</b>, 95th percentile <b>320</b>, 99th percentile{" "}
-                <b>2204</b>
-              </Typography>
-            </Box>
-          </Box>
-        </Grid>
-        <Grid item>
-          <Filters filters={filters} onFilterChange={handleFilterChange} />
-        </Grid>
-      </Grid>
-      <Grid container className={classes.listContainer}>
-        <Grid
-          item
-          sm={searchPhrase ? 3 : true}
-          className={searchPhrase ? classes.listBorder : undefined}
-        >
-          <SearchPhraseList
-            searchPhrases={searchPhrases}
-            activePhrase={searchPhrase}
-            setActivePhrase={setSearchPhrase}
-          />
-        </Grid>
-        {searchPhrase && (
-          <Grid item md={9}>
-            <ResultList
-              searchPhrase={searchPhrase}
-              onClose={handleModalClose}
-            />
+      {configurations && !_.isEmpty(configurations) ? (
+        <div>
+          <Grid container justify="space-between">
+            <Grid item>
+              <Box mb={1}>
+                <Typography>
+                  Showing {searchPhrases.length} search phrases..
+                </Typography>
+                <Box pt={1}>
+                  <Typography variant="body2" color="textSecondary">
+                    Latency Percentiles (ms):
+                    <br />
+                    Mean <b>90</b>, 95th percentile <b>320</b>, 99th percentile{" "}
+                    <b>2204</b>
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+            <Grid item>
+              <Filters filters={filters} onFilterChange={handleFilterChange} />
+            </Grid>
           </Grid>
-        )}
-      </Grid>
-      <Box mt={4} display="flex" justifyContent="center">
-        <Pagination
-          page={page}
-          count={Math.ceil(searchPhrasesTotal / pageSize)}
-          onChange={(e: React.ChangeEvent<unknown>, value: number) =>
-            setPage(value)
-          }
-        />
-      </Box>
+          <Grid container className={classes.listContainer}>
+            <Grid
+              item
+              sm={searchPhrase ? 3 : true}
+              className={searchPhrase ? classes.listBorder : undefined}
+            >
+              <SearchPhraseList
+                searchPhrases={searchPhrases}
+                activePhrase={searchPhrase}
+                setActivePhrase={setSearchPhrase}
+              />
+            </Grid>
+            {searchPhrase && (
+              <Grid item md={9}>
+                <ResultList
+                  searchPhrase={searchPhrase}
+                  onClose={handleModalClose}
+                />
+              </Grid>
+            )}
+          </Grid>
+          <Box mt={4} display="flex" justifyContent="center">
+            <Pagination
+              page={page}
+              count={Math.ceil(searchPhrasesTotal / pageSize)}
+              onChange={(e: React.ChangeEvent<unknown>, value: number) =>
+                setPage(value)
+              }
+            />
+          </Box>
+        </div>
+      ) : (
+        <NoExistingExcution />
+      )}
       <ActionButtons
         configurations={configurations}
         canRun={searchConfiguration !== null}
