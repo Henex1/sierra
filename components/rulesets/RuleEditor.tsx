@@ -25,6 +25,7 @@ import ArrowRightAltIcon from "@material-ui/icons/ArrowRightAlt";
 import SyncAltIcon from "@material-ui/icons/SyncAlt";
 import CheckCircleOutlinedIcon from "@material-ui/icons/CheckCircleOutlined";
 import PauseCircleOutlinedIcon from "@material-ui/icons/PauseCircleOutlineOutlined";
+import RegexInput from "../RegexInput";
 
 import {
   RuleInstruction,
@@ -388,12 +389,6 @@ function InstructionField(props: InstructionFieldProps) {
   );
 }
 
-const useRuleEditorStyles = makeStyles((theme) => ({
-  input: {
-    paddingRight: theme.spacing(2),
-  },
-}));
-
 export type RuleEditorProps = {
   name: string;
   onDelete: () => void;
@@ -401,21 +396,31 @@ export type RuleEditorProps = {
 };
 
 export default function RuleEditor({ name, onDelete, facetFilterFields }: RuleEditorProps) {
-  const classes = useRuleEditorStyles();
+  const [isCaseSensitive, setIsCaseSensitive] = React.useState<boolean>(false);
+  const [searchType, setSearchType] = React.useState<string>("Contained");
+  const handleCaseSensitive = () => setIsCaseSensitive((state) => !state);
 
   return (
     <React.Fragment key={name}>
       <Box pb={2}>
         <Grid container alignItems="center">
           <Grid item xs>
-            <TextField
-              name={`${name}.expression`}
-              label="Expression"
-              variant="filled"
-              classes={{
-                root: classes.input,
+            <Field name={`${name}.expression`}>
+              {({ input }) => {
+                return (
+                  <RegexInput
+                    value={input.value}
+                    searchType={searchType}
+                    setSearchType={setSearchType}
+                    isCaseSensitive={isCaseSensitive}
+                    handleCaseSensitive={handleCaseSensitive}
+                    onChange={(value) =>
+                      input.onChange(value)
+                    }
+                  />
+                );
               }}
-            />
+            </Field>
           </Grid>
           <Grid item>
             <Field name={`${name}.enabled`}>
