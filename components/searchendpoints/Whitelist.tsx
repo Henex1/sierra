@@ -71,7 +71,8 @@ export default function Whitelist({ whitelistProps }: WhitelistProps) {
         <TextField
           fullWidth
           label="IP Whitelist"
-          variant="filled"
+          variant="outlined"
+          size="small"
           error={!!error}
           helperText={error}
           value={ipAddressValue}

@@ -1,17 +1,18 @@
 import * as React from "react";
 import { useRouter } from "next/router";
-import { useTable, Column } from "react-table";
 
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
-import MaUTable from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
+import IconButton from "@material-ui/core/IconButton";
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
+import CardMedia from "@material-ui/core/CardMedia";
+import CardContent from "@material-ui/core/CardContent";
+import CardActions from "@material-ui/core/CardActions";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 import AddIcon from "@material-ui/icons/Add";
+import EditIcon from "@material-ui/icons/Edit";
 
 import { authenticatedPage } from "../../lib/pageHelpers";
 import {
@@ -22,6 +23,7 @@ import {
 import { useActiveProject } from "../../components/Session";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
+import { searchEndpointTypes } from "../../components/searchendpoints/Form";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const searchEndpoints = await listSearchEndpoints(context);
@@ -32,9 +34,33 @@ type Props = {
   searchEndpoints: ExposedSearchEndpoint[];
 };
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   wrapper: {
     height: "90%",
+  },
+  card: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "stretch",
+    minHeight: "100%",
+  },
+  cardMedia: {
+    flex: "none",
+    height: 30,
+    backgroundPositionX: theme.spacing(2),
+    backgroundSize: "contain",
+  },
+  cardContent: {
+    flex: 1,
+    height: "100%",
+    paddingBottom: 0,
+  },
+  cardActions: {
+    flex: "none",
+    paddingTop: 0,
+  },
+  editButton: {
+    marginLeft: "auto",
   },
 }));
 
@@ -46,34 +72,6 @@ export default function SearchEndpoints({ searchEndpoints }: Props) {
   const handleAddNewSearchEndpoint = () => {
     router.push("/searchendpoints/create");
   };
-
-  const columns: Column<ExposedSearchEndpoint>[] = React.useMemo(
-    () => [
-      {
-        Header: "Name",
-        Cell: ({ row }) => (
-          <Link href={`/searchendpoints/${row.original.id}`}>
-            {row.original.name}
-          </Link>
-        ),
-        accessor: "name",
-      },
-      {
-        Header: "Type",
-        accessor: "type",
-      },
-    ],
-    []
-  );
-
-  const tableInstance = useTable({ columns, data: searchEndpoints });
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-  } = tableInstance;
 
   return (
     <div className={classes.wrapper}>
@@ -107,33 +105,38 @@ export default function SearchEndpoints({ searchEndpoints }: Props) {
               </Button>
             </Grid>
             <Grid item xs={12}>
-              <MaUTable {...getTableProps()}>
-                <TableHead>
-                  {headerGroups.map((headerGroup) => (
-                    <TableRow {...headerGroup.getHeaderGroupProps()}>
-                      {headerGroup.headers.map((column) => (
-                        <TableCell {...column.getHeaderProps()}>
-                          {column.render("Header")}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableHead>
-                <TableBody {...getTableBodyProps()}>
-                  {rows.map((row) => {
-                    prepareRow(row);
-                    return (
-                      <TableRow {...row.getRowProps()}>
-                        {row.cells.map((cell) => (
-                          <TableCell {...cell.getCellProps()}>
-                            {cell.render("Cell")}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </MaUTable>
+              <Grid container spacing={2} alignItems="stretch">
+                {searchEndpoints.map((item) => {
+                  const found = searchEndpointTypes.find(
+                    (o) => o.value === item.type
+                  );
+                  return (
+                    <Grid key={item.id} item xs={3}>
+                      <Card className={classes.card}>
+                        <CardHeader title={item.name} />
+                        <CardMedia
+                          className={classes.cardMedia}
+                          image={found?.imageSrc}
+                          title={found?.label}
+                        />
+                        <CardContent className={classes.cardContent}>
+                          <Typography>{item.description}</Typography>
+                        </CardContent>
+                        <CardActions className={classes.cardActions}>
+                          <Link
+                            href={`/searchendpoints/${item.id}`}
+                            className={classes.editButton}
+                          >
+                            <IconButton aria-label="Edit">
+                              <EditIcon />
+                            </IconButton>
+                          </Link>
+                        </CardActions>
+                      </Card>
+                    </Grid>
+                  );
+                })}
+              </Grid>
             </Grid>
           </>
         )}

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useRouter } from "next/router";
 
-import { Grid, Typography } from "@material-ui/core";
+import { Typography, Container, Box, Divider } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
 import { ExposedSearchEndpoint } from "../../lib/searchendpoints";
@@ -37,14 +37,13 @@ export default function CreateSearchEndpoint() {
         <Link href="/searchendpoints">Search Endpoints</Link>
         <Typography>New Search Endpoint</Typography>
       </BreadcrumbsButtons>
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Typography variant="h4">Create new search endpoint:</Typography>
-        </Grid>
-        <Grid item xs={6}>
-          <Form onSubmit={onSubmit} />
-        </Grid>
-      </Grid>
+      <Container maxWidth="sm">
+        <Typography variant="h4">Create Search Endpoint</Typography>
+        <Box mt={2} mb={4}>
+          <Divider />
+        </Box>
+        <Form onSubmit={onSubmit} />
+      </Container>
     </div>
   );
 }
