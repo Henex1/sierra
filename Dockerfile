@@ -1,32 +1,36 @@
+FROM node:15.14.0 AS deps
+
+#### Install dependencies
+WORKDIR /app
+COPY package.json yarn.lock ./
+RUN yarn --frozen-lockfile
+
+#### Install dependencies again
+COPY . ./
+RUN yarn --frozen-lockfile && yarn prisma generate
+
 FROM node:15.14.0 AS builder
+#### Build
 ENV DATABASE_URL=postgresql://postgres:example@postgres:5432/postgres?schema=public \
     NEXTAUTH_URL=http://localhost:3000/api/auth \
     ALLOW_REGISTRATION_FROM=bigdataboutique.com \
     QUERY_EXPANDER_URL=http://localhost:8080 \
     GOOGLE_ID=unset_google_id \
-    GOOGLE_SECRET=unset_google_secret
+    GOOGLE_SECRET=unset_google_secret \
+    NODE_ENV=production
 
-
-# Install dependencies
 WORKDIR /app
-COPY package.json yarn.lock ./
-RUN yarn --frozen-lockfile
+COPY --from=deps /app ./
 
-# Build
-COPY . ./
-RUN yarn --frozen-lockfile
-ENV NODE_ENV production
 # This tsc command isn't strictly necessary for the build, but yarn build will
 # only show one single error and tsc will show all of them, and is faster than
 # yarn build.
-RUN yarn prisma generate && yarn tsc -b . && yarn build
+RUN yarn tsc -b . && yarn build
 
 
 FROM node:15.14.0-alpine
-# Release
+#### Release/minify
 WORKDIR /app
-
-ENV NODE_ENV production
 
 COPY --from=builder /app/next.config.js ./
 COPY --from=builder /app/package.json ./package.json
