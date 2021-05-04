@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme) => ({
   inputParentContainer: {
     display: "flex",
     flexDirection: "column",
-    backgroundColor: "#eee",
+    backgroundColor: "#EEE",
     borderTopLeftRadius: 5,
     borderTopRightRadius: 5,
     borderBottom: "1px solid grey",
@@ -64,56 +64,95 @@ const useStyles = makeStyles((theme) => ({
       display: "table-cell",
       verticalAlign: "top",
     },
+    "& .ace_hidden-cursors .ace_cursor": {
+      display: "none !important",
+    },
     marginBottom: 2,
   },
   iconButton: {
     padding: 0,
     margin: 0,
   },
+  expressionTypePopper: {
+    zIndex: 10,
+  },
   enableColoring: {},
 }));
 
 type SearchTypeProps = {
+  value: string;
   text: string;
   icon: JSX.Element;
 };
 
 const searchTypes: Array<SearchTypeProps> = [
-  { text: "Contained", icon: <ContainedIcon htmlColor="#333" /> },
-  { text: "Starts With", icon: <StartsWithIcon htmlColor="#333" /> },
-  { text: "Ends With", icon: <EndsWithIcon htmlColor="#333" /> },
+  {
+    value: "contained",
+    text: "Contained",
+    icon: <ContainedIcon htmlColor="#333" />,
+  },
+  {
+    value: "starts_with",
+    text: "Starts With",
+    icon: <StartsWithIcon htmlColor="#333" />,
+  },
+  {
+    value: "ends_with",
+    text: "Ends With",
+    icon: <EndsWithIcon htmlColor="#333" />,
+  },
+  {
+    value: "regex",
+    text: "Regex",
+    icon: <EndsWithIcon htmlColor="#333" />,
+  },
 ];
 
-type ExpressionEditorFieldProps = {
-  handleCaseSensitive: () => void;
+type RulesType = {
+  expression: string;
+  expressionType: string;
   isCaseSensitive: boolean;
-  searchType: string;
-  setSearchType: (text: string) => void;
+  instructions: Array<any>;
+  enabled: boolean;
+};
+
+type RegexInputFieldProps = {
+  setRulesvalue: (key: string, value: string | boolean) => void;
   value: string;
+  rule: RulesType;
+  activeRuleset: number;
   onChange: (value: string, event: React.ChangeEvent) => void;
 };
 
-export default function ExpressionEditor({
+export default function RegexInput({
   value,
   onChange,
-  handleCaseSensitive,
-  isCaseSensitive,
-  searchType,
-  setSearchType,
-}: ExpressionEditorFieldProps) {
+  activeRuleset,
+  rule,
+  setRulesvalue,
+}: RegexInputFieldProps) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
   const handleSearchType = (
     event: React.MouseEvent<HTMLElement>,
     value: string
   ) => {
-    setSearchType(value);
+    setRulesvalue(`rules[${activeRuleset}].expressionType`, value);
     handleClose(event);
   };
+
+  function toggleCaseSensitivity() {
+    setRulesvalue(
+      `rules[${activeRuleset}].isCaseSensitive`,
+      !rule.isCaseSensitive
+    );
+  }
+
   const anchorRef = React.useRef<HTMLButtonElement>(null);
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
+
   const handleClose = (event: React.MouseEvent<EventTarget>) => {
     if (
       anchorRef.current &&
@@ -141,16 +180,24 @@ export default function ExpressionEditor({
   }
 
   function getIcon(type: string) {
-    return searchTypes.filter((item) => item.text === type)[0].icon;
+    return searchTypes.filter((item) => item.value === type)[0].icon;
   }
 
   function isRegexDetected(): boolean {
     return (
       value.trim().length > 2 &&
       value[0] === "/" &&
-      value[value.length - 1] == "/"
+      value[value.length - 1] === "/"
     );
   }
+
+  React.useEffect(() => {
+    if (isRegexDetected()) {
+      setRulesvalue(`rules[${activeRuleset}].expressionType`, "regex");
+    } else {
+      setRulesvalue(`rules[${activeRuleset}].expressionType`, "contained");
+    }
+  }, [value]);
 
   return (
     <div className={classes.inputParentContainer}>
@@ -181,7 +228,7 @@ export default function ExpressionEditor({
                   aria-haspopup="true"
                   onClick={handleToggle}
                 >
-                  {getIcon(searchType)}
+                  {getIcon(rule.expressionType)}
                 </IconButton>
               </Tooltip>
               <Popper
@@ -190,6 +237,7 @@ export default function ExpressionEditor({
                 role={undefined}
                 transition
                 disablePortal
+                className={classes.expressionTypePopper}
               >
                 {({ TransitionProps, placement }) => (
                   <Grow
@@ -206,25 +254,27 @@ export default function ExpressionEditor({
                           id="menu-list-grow"
                           onKeyDown={handleListKeyDown}
                         >
-                          {searchTypes.map(({ text, icon }, index) => {
-                            return (
-                              <MenuItem
-                                key={index}
-                                onClick={(event) =>
-                                  handleSearchType(event, text)
-                                }
-                                selected={searchType === text}
-                              >
-                                {icon}
-                                <Typography
-                                  variant="body2"
-                                  style={{ marginLeft: 5 }}
+                          {searchTypes
+                            .filter(({ value }) => value !== "regex")
+                            .map(({ value, text, icon }, index) => {
+                              return (
+                                <MenuItem
+                                  key={index}
+                                  onClick={(event) =>
+                                    handleSearchType(event, value)
+                                  }
+                                  selected={rule.expressionType === value}
                                 >
-                                  {text}
-                                </Typography>
-                              </MenuItem>
-                            );
-                          })}
+                                  {icon}
+                                  <Typography
+                                    variant="body2"
+                                    style={{ marginLeft: 5 }}
+                                  >
+                                    {text}
+                                  </Typography>
+                                </MenuItem>
+                              );
+                            })}
                         </MenuList>
                       </ClickAwayListener>
                     </Paper>
@@ -235,15 +285,17 @@ export default function ExpressionEditor({
           )}
           {!isRegexDetected() && (
             <Tooltip
-              title={isCaseSensitive ? "Case sensitive" : "Case insensitive"}
+              title={
+                rule.isCaseSensitive ? "Case sensitive" : "Case insensitive"
+              }
             >
               <IconButton
                 className={classes.iconButton}
                 size="small"
-                onClick={handleCaseSensitive}
+                onClick={toggleCaseSensitivity}
               >
                 <CaseSensitiveIcon
-                  htmlColor={isCaseSensitive ? "#333" : "#BBB"}
+                  htmlColor={rule.isCaseSensitive ? "#333" : "#BBB"}
                 />
               </IconButton>
             </Tooltip>

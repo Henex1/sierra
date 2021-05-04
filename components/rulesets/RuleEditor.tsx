@@ -223,7 +223,12 @@ function FilterField({ name, value, disabled }: InstructionFieldProps) {
   );
 }
 
-function FacetFilterField({ name, value, disabled, facetFilterFields }: InstructionFieldProps) {
+function FacetFilterField({
+  name,
+  value,
+  disabled,
+  facetFilterFields,
+}: InstructionFieldProps) {
   const fields = Object.keys(facetFilterFields.fields);
   // @ts-ignore
   const fieldValues = value.field ? Object.keys(facetFilterFields.fields[value.field]) : null;
@@ -389,17 +394,33 @@ function InstructionField(props: InstructionFieldProps) {
   );
 }
 
+export type RuleType = {
+  [key: number]: {
+    expression: string;
+    expressionType: string;
+    isCaseSensitive: boolean;
+    instructions: Array<any>;
+    enabled: boolean;
+  };
+};
+
 export type RuleEditorProps = {
   name: string;
   onDelete: () => void;
   facetFilterFields: object;
+  rules: RuleType;
+  setRulesvalue: () => (key: string, value: string | boolean) => void;
+  activeRuleset: number;
 };
 
-export default function RuleEditor({ name, onDelete, facetFilterFields }: RuleEditorProps) {
-  const [isCaseSensitive, setIsCaseSensitive] = React.useState<boolean>(false);
-  const [searchType, setSearchType] = React.useState<string>("Contained");
-  const handleCaseSensitive = () => setIsCaseSensitive((state) => !state);
-
+export default function RuleEditor({
+  name,
+  onDelete,
+  facetFilterFields,
+  rules,
+  setRulesvalue,
+  activeRuleset,
+}: RuleEditorProps) {
   return (
     <React.Fragment key={name}>
       <Box pb={2}>
@@ -410,13 +431,10 @@ export default function RuleEditor({ name, onDelete, facetFilterFields }: RuleEd
                 return (
                   <RegexInput
                     value={input.value}
-                    searchType={searchType}
-                    setSearchType={setSearchType}
-                    isCaseSensitive={isCaseSensitive}
-                    handleCaseSensitive={handleCaseSensitive}
-                    onChange={(value) =>
-                      input.onChange(value)
-                    }
+                    rule={rules[activeRuleset]}
+                    activeRuleset={activeRuleset}
+                    setRulesvalue={setRulesvalue}
+                    onChange={(value) => input.onChange(value)}
                   />
                 );
               }}

@@ -141,9 +141,12 @@ function RulesList({
   const renderFilteredRules = (
     fields: FieldArrayRenderProps<Rule, any>["fields"]
   ) => {
-    const rulesToDisplay = fields.value.filter(
-      (field: Rule) => field.expression.indexOf(filter) !== -1
-    );
+    let rulesToDisplay = fields.value;
+    if (filter) {
+      rulesToDisplay = fields.value.filter(
+        (field: Rule) => field.expression.indexOf(filter) !== -1
+      );
+    }
     return rulesToDisplay.length === 0 ? (
       <ListItem alignItems="center">
         <ListItemText
@@ -257,7 +260,11 @@ export type RulesetEditorProps = FormProps<RulesetVersionValue> & {
   facetFilterFields: object;
 };
 
-export default function RulesetEditor({ name, facetFilterFields, ...rest }: RulesetEditorProps) {
+export default function RulesetEditor({
+  name,
+  facetFilterFields,
+  ...rest
+}: RulesetEditorProps) {
   const [activeRuleset, setActiveRuleset] = React.useState(-1);
   // Note: storing a function in useState requires setState(() => myFunction),
   // which is why you see setState(() => () => foo), below.
@@ -268,15 +275,35 @@ export default function RulesetEditor({ name, facetFilterFields, ...rest }: Rule
   return (
     <Form
       {...rest}
-      mutators={{ ...arrayMutators }}
+      mutators={{
+        ...arrayMutators,
+        setRulesValue: ([args], state, tools) => {
+          const [key, value] = args;
+          tools.changeValue(state, key, (oldState) => value);
+        },
+      }}
       render={({ handleSubmit, submitting, values, dirty, form }) => {
+        // we can remove this lines if our sample data is correct
+        values.rules.length &&
+          values.rules.forEach((item, index) => {
+            if (!item.expressionType)
+              values.rules[index].expressionType = "contained";
+            if (!item.isCaseSensitive)
+              values.rules[index].isCaseSensitive = false;
+          });
+
         function handleAddRule(expression: string) {
           form.mutators.push("rules", {
             enabled: true,
+            isCaseSensitive: false,
+            expressionType: "contained",
             expression,
             instructions: [],
           });
           setActiveRuleset(values.rules.length);
+        }
+        function setRulesValue(key: string, value: string | boolean) {
+          form.mutators.setRulesValue([key, value]);
         }
         return (
           <>
@@ -315,6 +342,10 @@ export default function RulesetEditor({ name, facetFilterFields, ...rest }: Rule
                   <form onSubmit={handleSubmit}>
                     <RuleEditor
                       name={`rules[${activeRuleset}]`}
+                      rules={values.rules}
+                      activeRuleset={activeRuleset}
+                      // @ts-ignore
+                      setRulesvalue={setRulesValue}
                       facetFilterFields={facetFilterFields}
                       onDelete={() => {
                         form.mutators.remove("rules", activeRuleset);
