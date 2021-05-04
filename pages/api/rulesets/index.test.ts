@@ -37,7 +37,7 @@ describe("api/rulesets", () => {
       rulesetId: 42,
       parentId: null,
       value: {
-        rules: [{ expression: "notebook", instructions: [], enabled: true }],
+        rules: [{ expression: "notebook", expressionType: "contained", isCaseSensitive: false,  instructions: [], enabled: true }],
       },
     };
     const { version } = await getApiRoute(
