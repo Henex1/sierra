@@ -1,5 +1,6 @@
 import * as React from "react";
 import arrayMutators from "final-form-arrays";
+import { FormApi } from "final-form";
 import { Form, FormProps } from "react-final-form";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import {
@@ -283,15 +284,6 @@ export default function RulesetEditor({
         },
       }}
       render={({ handleSubmit, submitting, values, dirty, form }) => {
-        // we can remove this lines if our sample data is correct
-        values.rules.length &&
-          values.rules.forEach((item, index) => {
-            if (!item.expressionType)
-              values.rules[index].expressionType = "contained";
-            if (!item.isCaseSensitive)
-              values.rules[index].isCaseSensitive = false;
-          });
-
         function handleAddRule(expression: string) {
           form.mutators.push("rules", {
             enabled: true,
@@ -301,9 +293,6 @@ export default function RulesetEditor({
             instructions: [],
           });
           setActiveRuleset(values.rules.length);
-        }
-        function setRulesValue(key: string, value: string | boolean) {
-          form.mutators.setRulesValue([key, value]);
         }
         return (
           <>
@@ -345,7 +334,7 @@ export default function RulesetEditor({
                       rules={values.rules}
                       activeRuleset={activeRuleset}
                       // @ts-ignore
-                      setRulesvalue={setRulesValue}
+                      form={form}
                       facetFilterFields={facetFilterFields}
                       onDelete={() => {
                         form.mutators.remove("rules", activeRuleset);

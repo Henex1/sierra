@@ -117,7 +117,7 @@ type RulesType = {
 };
 
 type RegexInputFieldProps = {
-  setRulesvalue: (key: string, value: string | boolean) => void;
+  setRulesValue: (key: string, value: string | boolean) => void;
   value: string;
   rule: RulesType;
   activeRuleset: number;
@@ -129,7 +129,7 @@ export default function RegexInput({
   onChange,
   activeRuleset,
   rule,
-  setRulesvalue,
+  setRulesValue,
 }: RegexInputFieldProps) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
@@ -137,12 +137,12 @@ export default function RegexInput({
     event: React.MouseEvent<HTMLElement>,
     value: string
   ) => {
-    setRulesvalue(`rules[${activeRuleset}].expressionType`, value);
+    setRulesValue(`rules[${activeRuleset}].expressionType`, value);
     handleClose(event);
   };
 
   function toggleCaseSensitivity() {
-    setRulesvalue(
+    setRulesValue(
       `rules[${activeRuleset}].isCaseSensitive`,
       !rule.isCaseSensitive
     );
@@ -190,14 +190,6 @@ export default function RegexInput({
       value[value.length - 1] === "/"
     );
   }
-
-  React.useEffect(() => {
-    if (isRegexDetected()) {
-      setRulesvalue(`rules[${activeRuleset}].expressionType`, "regex");
-    } else {
-      setRulesvalue(`rules[${activeRuleset}].expressionType`, "contained");
-    }
-  }, [value]);
 
   return (
     <div className={classes.inputParentContainer}>

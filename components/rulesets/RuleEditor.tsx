@@ -26,6 +26,7 @@ import SyncAltIcon from "@material-ui/icons/SyncAlt";
 import CheckCircleOutlinedIcon from "@material-ui/icons/CheckCircleOutlined";
 import PauseCircleOutlinedIcon from "@material-ui/icons/PauseCircleOutlineOutlined";
 import RegexInput from "../RegexInput";
+import { FormApi } from "final-form";
 
 import {
   RuleInstruction,
@@ -409,18 +410,22 @@ export type RuleEditorProps = {
   onDelete: () => void;
   facetFilterFields: object;
   rules: RuleType;
-  setRulesvalue: () => (key: string, value: string | boolean) => void;
+  form: FormApi;
   activeRuleset: number;
 };
 
 export default function RuleEditor({
   name,
   onDelete,
+  form,
   facetFilterFields,
   rules,
-  setRulesvalue,
   activeRuleset,
 }: RuleEditorProps) {
+  const setRulesValue = (key: string, value: string | boolean) => {
+    form.mutators.setRulesValue([key, value]);
+  };
+
   return (
     <React.Fragment key={name}>
       <Box pb={2}>
@@ -433,8 +438,18 @@ export default function RuleEditor({
                     value={input.value}
                     rule={rules[activeRuleset]}
                     activeRuleset={activeRuleset}
-                    setRulesvalue={setRulesvalue}
-                    onChange={(value) => input.onChange(value)}
+                    setRulesValue={setRulesValue}
+                    onChange={(value) => {
+                      const isRegEx =
+                        value.trim().length > 2 &&
+                        value[0] === "/" &&
+                        value[value.length - 1] === "/";
+                      const name = `rules[${activeRuleset}].expressionType`;
+                      isRegEx
+                        ? setRulesValue(name, "regex")
+                        : setRulesValue(name, "contained");
+                      input.onChange(value);
+                    }}
                   />
                 );
               }}
