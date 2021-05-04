@@ -1,5 +1,5 @@
 import _ from "lodash";
-import React from "react";
+import React, { useState } from "react";
 import { Grid, Typography, Box, makeStyles } from "@material-ui/core";
 import { Pagination } from "@material-ui/lab";
 import { useRouter } from "next/router";
@@ -116,6 +116,7 @@ export default function Lab({
   const [page, setPage] = React.useState(props.page);
   const [configurations, setConfigurations] = React.useState({});
   const [isTestRunning, setIsTestRunning] = React.useState(false);
+  const [isFirstQueryExcute, setIsFirstQueryExcute] = useState(false);
 
   React.useEffect(() => {
     if (searchPhrase) {
@@ -167,17 +168,17 @@ export default function Lab({
       id: searchConfiguration!.id,
     });
     location.reload();
+    setIsFirstQueryExcute(true);
   };
 
   const handleConfigurationsChange = (configs: {}) => {
     // TODO
     setConfigurations(configs);
   };
-  console.log(`configurations`, configurations);
 
   return (
     <div>
-      {configurations && !_.isEmpty(configurations) ? (
+      {!!searchConfiguration && isFirstQueryExcute ? (
         <div>
           <Grid container justify="space-between">
             <Grid item>
@@ -231,7 +232,10 @@ export default function Lab({
           </Box>
         </div>
       ) : (
-        <NoExistingExcution />
+        <NoExistingExcution
+          isSearchConfig={!!searchConfiguration}
+          isRunQuery={isFirstQueryExcute}
+        />
       )}
       <ActionButtons
         configurations={configurations}
