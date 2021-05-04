@@ -18,25 +18,33 @@ services:
 before_script:
   - echo "$CI_BUILD_TOKEN" | docker login -u gitlab-ci-token --password-stdin $STAGING_REGISTRY
   - docker pull -q $LATEST_IMAGE || true
-  - docker pull -q $BUILDER_IMAGE || true
+  - docker pull -q $DEPS_IMAGE || true
 
 
 stages:
-  - build
+  - deps
   - test
+  - build
   - dockerize
+
+deps:
+  stage: deps
+  script:
+    - docker build --cache-from $DEPS_IMAGE --cache-from $LATEST_IMAGE --tag $DEPS_IMAGE --target deps .
+    - docker push -q $DEPS_IMAGE
+
 
 build:
   stage: build
   script:
-    - docker build --cache-from $BUILDER_IMAGE --cache-from $LATEST_IMAGE --tag $BUILDER_IMAGE --target builder .
+    - docker build --cache-from $BUILDER_IMAGE --cache-from $DEPS_IMAGE --cache-from $LATEST_IMAGE --tag $BUILDER_IMAGE .
     - docker push -q $BUILDER_IMAGE
 
 
 test:
   stage: test
   image: 
-    name: $BUILDER_IMAGE
+    name: $DEPS_IMAGE
     entrypoint: ["/usr/bin/env"]
   before_script: []
   services:
@@ -54,9 +62,12 @@ test:
 dockerize:
   stage: dockerize
   script:
+    - docker pull -q $BUILDER_IMAGE || true
     - RELEASE_IMAGE=$CI_REGISTRY_IMAGE:`date '+%Y-%m-%d-%H%M'`-${CI_COMMIT_SHA:0:9}
-    - docker build --cache-from $BUILDER_IMAGE --tag $LATEST_IMAGE --tag $RELEASE_IMAGE .
+    - docker tag $BUILDER_IMAGE  $LATEST_IMAGE
+    - docker tag $BUILDER_IMAGE  $RELEASE_IMAGE
     - docker push -q $LATEST_IMAGE
     - docker push -q $RELEASE_IMAGE
-  # only:
-  #   - master
+    - apk add --update curl && curl -XPOST -H "Content-type:application/json" --data "{\"text\":\"$CI_PROJECT_NAME $RELEASE_IMAGE is ready!\"}" "https://hooks.slack.com/services/$SLACK_HOOK"
+  only:
+    - master

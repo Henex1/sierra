@@ -6,6 +6,9 @@ import { makeStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import MenuItem from "@material-ui/core/MenuItem";
 import Grid from "@material-ui/core/Grid";
+import Box from "@material-ui/core/Box";
+import Divider from "@material-ui/core/Divider";
+import Typography from "@material-ui/core/Typography";
 import SaveIcon from "@material-ui/icons/Save";
 import DeleteIcon from "@material-ui/icons/Delete";
 
@@ -13,6 +16,39 @@ import { ExposedSearchEndpoint } from "../../lib/searchendpoints";
 
 import Whitelist from "./Whitelist";
 import DisplayFields from "./DisplayFields";
+
+export const searchEndpointTypes = [
+  {
+    label: "Elasticsearch",
+    value: "ELASTICSEARCH",
+    imageSrc: "/images/elasticsearch.png",
+    enabled: true,
+  },
+  {
+    label: "OpenSearch",
+    value: "OPEN_SEARCH",
+    imageSrc: "/images/opensearch.png",
+    enabled: true,
+  },
+  {
+    label: "Solr",
+    value: "SOLR",
+    imageSrc: "/images/solr.png",
+    enabled: true,
+  },
+  {
+    label: "Vespa",
+    value: "VESPA",
+    imageSrc: "/images/vespa.png",
+    enabled: false,
+  },
+  {
+    label: "RediSearch",
+    value: "REDIS_SEARCH",
+    imageSrc: "/images/redisearch.png",
+    enabled: false,
+  },
+];
 
 export type FormProps = BaseFormProps<ExposedSearchEndpoint> & {
   formId?: string;
@@ -53,14 +89,17 @@ export default function SearchEndpointForm({
                 label="Name"
                 name="name"
                 required={true}
-                variant="filled"
+                variant="outlined"
+                size="small"
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
+                multiline
                 label="Description"
                 name="description"
-                variant="filled"
+                variant="outlined"
+                size="small"
               />
             </Grid>
             <Grid item xs={12}>
@@ -68,44 +107,22 @@ export default function SearchEndpointForm({
                 label="Type"
                 name="type"
                 required={true}
-                variant="filled"
+                variant="outlined"
                 readOnly={!isNew}
               >
-                <MenuItem value="ELASTICSEARCH">
-                  <img
-                    className={classes.menuItemLogo}
-                    src="/images/elasticsearch.png"
-                    alt="Elasticsearch logo"
-                  />
-                </MenuItem>
-                <MenuItem value="OPEN_SEARCH">
-                  <img
-                    className={classes.menuItemLogo}
-                    src="/images/opensearch.png"
-                    alt="OpenSearch logo"
-                  />
-                </MenuItem>
-                <MenuItem value="SOLR">
-                  <img
-                    className={classes.menuItemLogo}
-                    src="/images/solr.png"
-                    alt="Solr logo"
-                  />
-                </MenuItem>
-                <MenuItem value="VESPA" disabled>
-                  <img
-                    className={classes.menuItemLogo}
-                    src="/images/vespa.png"
-                    alt="Vespa logo"
-                  />
-                </MenuItem>
-                <MenuItem value="REDIS_SEARCH" disabled>
-                  <img
-                    className={classes.menuItemLogo}
-                    src="/images/redisearch.png"
-                    alt="RediSearch logo"
-                  />
-                </MenuItem>
+                {searchEndpointTypes.map((item) => (
+                  <MenuItem
+                    key={item.value}
+                    value={item.value}
+                    disabled={!item.enabled}
+                  >
+                    <img
+                      className={classes.menuItemLogo}
+                      src={item.imageSrc}
+                      alt={item.label}
+                    />
+                  </MenuItem>
+                ))}
               </Select>
             </Grid>
             {values.type && (
@@ -119,7 +136,8 @@ export default function SearchEndpointForm({
                   }
                   name="info.endpoint"
                   required={true}
-                  variant="filled"
+                  variant="outlined"
+                  size="small"
                 />
               </Grid>
             )}
@@ -130,10 +148,19 @@ export default function SearchEndpointForm({
                   label="Index name"
                   name="info.index"
                   required={true}
-                  variant="filled"
+                  variant="outlined"
+                  size="small"
                 />
               </Grid>
             )}
+            <Grid item xs={12}>
+              <Box mt={1} mb={2}>
+                <Divider />
+              </Box>
+              <Typography variant="subtitle2" color="textSecondary">
+                Security options
+              </Typography>
+            </Grid>
             {(values.type === "ELASTICSEARCH" ||
               values.type === "OPEN_SEARCH") && (
               <>
@@ -141,15 +168,17 @@ export default function SearchEndpointForm({
                   <TextField
                     label="Username"
                     name="info.username"
-                    variant="filled"
+                    variant="outlined"
+                    size="small"
                   />
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
                     label="Password"
                     name="info.password"
-                    variant="filled"
+                    variant="outlined"
                     type="password"
+                    size="small"
                   />
                 </Grid>
               </>
@@ -160,11 +189,20 @@ export default function SearchEndpointForm({
               </Field>
             </Grid>
             <Grid item xs={12}>
+              <Box mt={1} mb={2}>
+                <Divider />
+              </Box>
+              <Typography variant="subtitle2" color="textSecondary">
+                Display options
+              </Typography>
+            </Grid>
+            <Grid item xs={12}>
               <TextField
                 label="Result ID"
                 name="resultId"
                 required={true}
-                variant="filled"
+                variant="outlined"
+                size="small"
               />
             </Grid>
             <Grid item xs={12}>
@@ -180,7 +218,7 @@ export default function SearchEndpointForm({
                   disabled={submitting}
                   variant="contained"
                   color="primary"
-                  startIcon={<SaveIcon />}
+                  startIcon={isNew ? undefined : <SaveIcon />}
                 >
                   {isNew ? "Create" : "Update"}
                 </Button>
