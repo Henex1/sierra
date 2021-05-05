@@ -332,7 +332,7 @@ export default function RulesetEditor({
                     <RuleEditor
                       name={`rules[${activeRuleset}]`}
                       rules={values.rules}
-                      activeRuleset={activeRuleset}                      
+                      activeRuleset={activeRuleset}
                       form={form}
                       facetFilterFields={facetFilterFields}
                       onDelete={() => {
