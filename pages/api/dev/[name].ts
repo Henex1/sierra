@@ -15,6 +15,8 @@ const mockRuleset: RulesetVersionValue = {
   rules: [
     {
       expression: "notebook",
+      expressionType: 'contained',
+      isCaseSensitive: false,
       instructions: [
         { type: "synonym", directed: false, weight: 1, term: "laptop", enabled: true },
         { type: "synonym", directed: true, weight: 1, term: "netbook", enabled: true },
@@ -31,6 +33,8 @@ const mockRuleset: RulesetVersionValue = {
     },
     {
       expression: "cheap iphone",
+      expressionType: 'contained',
+      isCaseSensitive: false,
       instructions: [
         { type: "delete", term: "cheap", enabled: true },
       ],

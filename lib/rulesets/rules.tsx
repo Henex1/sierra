@@ -38,7 +38,9 @@ export const facetFilterInstructionSchema = z.object({
   enabled: z.boolean(),
 });
 
-export type FacetFilterInstruction = z.infer<typeof facetFilterInstructionSchema>;
+export type FacetFilterInstruction = z.infer<
+  typeof facetFilterInstructionSchema
+>;
 
 export const deleteInstructionSchema = z.object({
   type: z.literal("delete"),
@@ -60,6 +62,8 @@ export type RuleInstruction = z.infer<typeof ruleInstructionSchema>;
 
 export const ruleSchema = z.object({
   expression: z.string(),
+  expressionType: z.string(),
+  isCaseSensitive: z.boolean(),
   instructions: z.array(ruleInstructionSchema),
   enabled: z.boolean(),
 });

@@ -1,5 +1,6 @@
 import * as React from "react";
 import arrayMutators from "final-form-arrays";
+import { FormApi } from "final-form";
 import { Form, FormProps } from "react-final-form";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import {
@@ -141,9 +142,12 @@ function RulesList({
   const renderFilteredRules = (
     fields: FieldArrayRenderProps<Rule, any>["fields"]
   ) => {
-    const rulesToDisplay = fields.value.filter(
-      (field: Rule) => field.expression.indexOf(filter) !== -1
-    );
+    let rulesToDisplay = fields.value;
+    if (filter) {
+      rulesToDisplay = fields.value.filter(
+        (field: Rule) => field.expression.indexOf(filter) !== -1
+      );
+    }
     return rulesToDisplay.length === 0 ? (
       <ListItem alignItems="center">
         <ListItemText
@@ -257,7 +261,11 @@ export type RulesetEditorProps = FormProps<RulesetVersionValue> & {
   facetFilterFields: object;
 };
 
-export default function RulesetEditor({ name, facetFilterFields, ...rest }: RulesetEditorProps) {
+export default function RulesetEditor({
+  name,
+  facetFilterFields,
+  ...rest
+}: RulesetEditorProps) {
   const [activeRuleset, setActiveRuleset] = React.useState(-1);
   // Note: storing a function in useState requires setState(() => myFunction),
   // which is why you see setState(() => () => foo), below.
@@ -268,11 +276,19 @@ export default function RulesetEditor({ name, facetFilterFields, ...rest }: Rule
   return (
     <Form
       {...rest}
-      mutators={{ ...arrayMutators }}
+      mutators={{
+        ...arrayMutators,
+        setRulesValue: ([args], state, tools) => {
+          const [key, value] = args;
+          tools.changeValue(state, key, (oldState) => value);
+        },
+      }}
       render={({ handleSubmit, submitting, values, dirty, form }) => {
         function handleAddRule(expression: string) {
           form.mutators.push("rules", {
             enabled: true,
+            isCaseSensitive: false,
+            expressionType: "contained",
             expression,
             instructions: [],
           });
@@ -315,6 +331,9 @@ export default function RulesetEditor({ name, facetFilterFields, ...rest }: Rule
                   <form onSubmit={handleSubmit}>
                     <RuleEditor
                       name={`rules[${activeRuleset}]`}
+                      rules={values.rules}
+                      activeRuleset={activeRuleset}
+                      form={form}
                       facetFilterFields={facetFilterFields}
                       onDelete={() => {
                         form.mutators.remove("rules", activeRuleset);

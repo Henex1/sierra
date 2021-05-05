@@ -26,6 +26,7 @@ import SyncAltIcon from "@material-ui/icons/SyncAlt";
 import CheckCircleOutlinedIcon from "@material-ui/icons/CheckCircleOutlined";
 import PauseCircleOutlinedIcon from "@material-ui/icons/PauseCircleOutlineOutlined";
 import RegexInput from "../RegexInput";
+import { FormApi } from "final-form";
 
 import {
   RuleInstruction,
@@ -223,7 +224,12 @@ function FilterField({ name, value, disabled }: InstructionFieldProps) {
   );
 }
 
-function FacetFilterField({ name, value, disabled, facetFilterFields }: InstructionFieldProps) {
+function FacetFilterField({
+  name,
+  value,
+  disabled,
+  facetFilterFields,
+}: InstructionFieldProps) {
   const fields = Object.keys(facetFilterFields.fields);
   // @ts-ignore
   const fieldValues = value.field ? Object.keys(facetFilterFields.fields[value.field]) : null;
@@ -389,16 +395,36 @@ function InstructionField(props: InstructionFieldProps) {
   );
 }
 
-export type RuleEditorProps = {
+export type RuleType = {
+  [key: number]: {
+    expression: string;
+    expressionType: string;
+    isCaseSensitive: boolean;
+    instructions: Array<any>;
+    enabled: boolean;
+  };
+};
+
+export type RuleEditorProps<T> = {
   name: string;
   onDelete: () => void;
   facetFilterFields: object;
+  rules: RuleType;
+  form: FormApi<T>;
+  activeRuleset: number;
 };
 
-export default function RuleEditor({ name, onDelete, facetFilterFields }: RuleEditorProps) {
-  const [isCaseSensitive, setIsCaseSensitive] = React.useState<boolean>(false);
-  const [searchType, setSearchType] = React.useState<string>("Contained");
-  const handleCaseSensitive = () => setIsCaseSensitive((state) => !state);
+export default function RuleEditor<T>({
+  name,
+  onDelete,
+  form,
+  facetFilterFields,
+  rules,
+  activeRuleset,
+}: RuleEditorProps<T>) {
+  const setRulesValue = (key: string, value: string | boolean) => {
+    form.mutators.setRulesValue([key, value]);
+  };
 
   return (
     <React.Fragment key={name}>
@@ -410,13 +436,20 @@ export default function RuleEditor({ name, onDelete, facetFilterFields }: RuleEd
                 return (
                   <RegexInput
                     value={input.value}
-                    searchType={searchType}
-                    setSearchType={setSearchType}
-                    isCaseSensitive={isCaseSensitive}
-                    handleCaseSensitive={handleCaseSensitive}
-                    onChange={(value) =>
-                      input.onChange(value)
-                    }
+                    rule={rules[activeRuleset]}
+                    activeRuleset={activeRuleset}
+                    setRulesValue={setRulesValue}
+                    onChange={(value) => {
+                      const isRegEx =
+                        value.trim().length > 2 &&
+                        value[0] === "/" &&
+                        value[value.length - 1] === "/";
+                      const name = `rules[${activeRuleset}].expressionType`;
+                      isRegEx
+                        ? setRulesValue(name, "regex")
+                        : setRulesValue(name, "contained");
+                      input.onChange(value);
+                    }}
                   />
                 );
               }}
