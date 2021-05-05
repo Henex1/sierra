@@ -43,6 +43,7 @@ export default function PatternEditor({ value, onChange, inputRef }: Props) {
       }}
       setOptions={{
         tabSize: 2,
+        useWorker: false,
       }}
       editorProps={{ $blockScrolling: true }}
       minLines={1}

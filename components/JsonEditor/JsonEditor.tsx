@@ -47,6 +47,7 @@ export default function JsonEditor({
         enableBasicAutocompletion: true,
         enableLiveAutocompletion: true,
         tabSize: 2,
+        useWorker: false,
       }}
       editorProps={{ $blockScrolling: true }}
       minLines={3}
