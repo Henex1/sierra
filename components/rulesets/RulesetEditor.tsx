@@ -332,8 +332,7 @@ export default function RulesetEditor({
                     <RuleEditor
                       name={`rules[${activeRuleset}]`}
                       rules={values.rules}
-                      activeRuleset={activeRuleset}
-                      // @ts-ignore
+                      activeRuleset={activeRuleset}                      
                       form={form}
                       facetFilterFields={facetFilterFields}
                       onDelete={() => {

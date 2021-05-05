@@ -405,23 +405,23 @@ export type RuleType = {
   };
 };
 
-export type RuleEditorProps = {
+export type RuleEditorProps<T> = {
   name: string;
   onDelete: () => void;
   facetFilterFields: object;
   rules: RuleType;
-  form: FormApi;
+  form: FormApi<T>;
   activeRuleset: number;
 };
 
-export default function RuleEditor({
+export default function RuleEditor<T>({
   name,
   onDelete,
   form,
   facetFilterFields,
   rules,
   activeRuleset,
-}: RuleEditorProps) {
+}: RuleEditorProps<T>) {
   const setRulesValue = (key: string, value: string | boolean) => {
     form.mutators.setRulesValue([key, value]);
   };
