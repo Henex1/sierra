@@ -14,7 +14,7 @@ type Props = {
   inputRef?: React.MutableRefObject<AceEditor>;
 };
 
-export default function JsonEditor({ value, onChange, inputRef }: Props) {
+export default function PatternEditor({ value, onChange, inputRef }: Props) {
   return (
     <AceEditor
       ref={inputRef}
