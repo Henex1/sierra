@@ -116,7 +116,7 @@ export default function Lab({
   const [page, setPage] = React.useState(props.page);
   const [configurations, setConfigurations] = React.useState({});
   const [isTestRunning, setIsTestRunning] = React.useState(false);
-  const [isFirstQueryExcute, setIsFirstQueryExcute] = useState(false);
+  const executionExists = Boolean(searchPhrases.length);
 
   React.useEffect(() => {
     if (searchPhrase) {
@@ -168,7 +168,6 @@ export default function Lab({
       id: searchConfiguration!.id,
     });
     location.reload();
-    setIsFirstQueryExcute(true);
   };
 
   const handleConfigurationsChange = (configs: {}) => {
@@ -178,7 +177,7 @@ export default function Lab({
 
   return (
     <div>
-      {!!searchConfiguration && isFirstQueryExcute ? (
+      {!!searchConfiguration && executionExists ? (
         <div>
           <Grid container justify="space-between">
             <Grid item>
@@ -234,7 +233,7 @@ export default function Lab({
       ) : (
         <NoExistingExcution
           isSearchConfig={!!searchConfiguration}
-          isRunQuery={isFirstQueryExcute}
+          isRunQuery={executionExists}
         />
       )}
       <ActionButtons
