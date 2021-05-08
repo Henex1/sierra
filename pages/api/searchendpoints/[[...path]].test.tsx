@@ -11,7 +11,7 @@ describe("api/searchendpoints", () => {
     whitelist: [],
     resultId: "_id",
     displayFields: [],
-    info: { endpoint: "http://localhost:9200/_search" },
+    info: { endpoint: "http://localhost:9200/", index: "icecat" },
   };
   it("POST /", async () => {
     mockModels("org").action("findMany").with({}).resolvesTo([TEST_ORG]);
@@ -39,7 +39,7 @@ describe("api/searchendpoints", () => {
       .resolvesTo({ id: 42, ...initialInfo });
     const revisedInfo = {
       name: "Updated Endpoint Name",
-      info: { endpoint: "http://eshost:9200/_search" },
+      info: { endpoint: "http://eshost:9200/", index: "icecat" },
     };
     mockModels("searchEndpoint")
       .action("update")

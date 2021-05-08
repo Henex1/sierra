@@ -52,6 +52,7 @@ export async function create(values: ExposedSearchEndpoint) {
   const newSearchEndpoint = {
     ...values,
     whitelist: values.whitelist ? values.whitelist : [],
+    displayFields: values.displayFields ? values.displayFields : [],
     description: values.description ? values.description : "",
   };
   return await apiRequest(`/api/searchendpoints`, newSearchEndpoint);

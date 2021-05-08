@@ -75,7 +75,7 @@ async function handleSeed(
       resultId: "_id",
       displayFields: [],
       type: "ELASTICSEARCH",
-      info: { endpoint: "http://localhost:9200/icecat/_search" },
+      info: { endpoint: "http://localhost:9200/", index: "icecat" },
     },
   });
 
