@@ -80,7 +80,6 @@ export default function SearchPhraseList({
               setActivePhrase(null);
             }
           };
-          const mockQueryTime = Math.round(Math.random() * 1000);
 
           return (
             <ListItem
@@ -102,14 +101,14 @@ export default function SearchPhraseList({
                     <Typography variant="h6" className={classes.phrase}>
                       {item.phrase}
                     </Typography>
-                    <Tooltip title={`Took ${mockQueryTime}ms to query`}>
+                    <Tooltip title={`Took ${item.tookMs}ms to query`}>
                       <Typography
                         component="span"
                         variant="caption"
                         className={classes.took}
                         color="textSecondary"
                       >
-                        {mockQueryTime}ms
+                        {item.tookMs}ms
                       </Typography>
                     </Tooltip>
                   </>

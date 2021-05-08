@@ -1,5 +1,6 @@
 import _ from "lodash";
 import prisma, {
+  Prisma,
   User,
   Project,
   SearchConfiguration,
@@ -17,6 +18,19 @@ export type ExposedSearchConfiguration = Pick<
   keyof typeof scSelect
 >;
 
+export function userCanAccessSearchConfiguration(
+  user: User,
+  rest?: Prisma.SearchConfigurationWhereInput
+): Prisma.SearchConfigurationWhereInput {
+  const result: Prisma.SearchConfigurationWhereInput = {
+    queryTemplate: { project: userCanAccessProject(user) },
+  };
+  if (rest) {
+    result.AND = rest;
+  }
+  return result;
+}
+
 export function formatSearchConfiguration(
   val: SearchConfiguration
 ): ExposedSearchConfiguration {
@@ -30,7 +44,7 @@ export async function getSearchConfiguration(
   // SearchConfiguration isn't actually joined to Project, so we check access
   // on the associated QueryTemplate.
   const sc = await prisma.searchConfiguration.findFirst({
-    where: { queryTemplate: { project: userCanAccessProject(user) }, id },
+    where: userCanAccessSearchConfiguration(user, { id }),
   });
   return sc;
 }

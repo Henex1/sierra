@@ -70,7 +70,7 @@ export default function ResultList({ searchPhrase, onClose }: Props) {
   const { project } = useActiveProject();
 
   const { data, error } = useSWR<MockSearchResult[]>(
-    `/api/lab/searchResult?projectId=${project?.id}&searchPhraseId=${searchPhrase.id}`
+    `/api/lab/searchResult?id=${searchPhrase.id}`
   );
 
   if (!data) {

@@ -8,6 +8,7 @@ export type MockSearchPhrase = {
     "p@5": number;
   };
   results: number;
+  tookMs: number;
 };
 
 export type MockSearchResult = {

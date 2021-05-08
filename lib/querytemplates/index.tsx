@@ -2,7 +2,6 @@ import _ from "lodash";
 
 import prisma, { Prisma, QueryTemplate, User } from "../prisma";
 import { userCanAccessProject } from "../projects";
-import { handleQuery } from "../searchendpoints";
 
 const selectKeys = {
   id: true,

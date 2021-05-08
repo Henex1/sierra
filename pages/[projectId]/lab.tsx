@@ -42,7 +42,18 @@ const useStyles = makeStyles((theme) => ({
 
 const pageSize = 20;
 
-export const getServerSideProps = authenticatedPage(async (context) => {
+type Props = {
+  searchConfiguration: ExposedSearchConfiguration | null;
+  searchPhrases: MockSearchPhrase[];
+  searchPhrasesTotal: number;
+  filters: {
+    show: ShowOptions;
+    sort: SortOptions;
+  };
+  page: number;
+};
+
+export const getServerSideProps = authenticatedPage<Props>(async (context) => {
   const projectId = requireNumberParam(context, "projectId");
   const project = await getProject(context.user, projectId);
   if (!project) {
@@ -61,18 +72,19 @@ export const getServerSideProps = authenticatedPage(async (context) => {
       })
     : [];
   const filters = {
-    show: (context.query.show as string) || "all",
-    sort: (context.query.sort as string) || "search-phrase-asc",
+    show: (context.query.show as ShowOptions) || "all",
+    sort: (context.query.sort as SortOptions) || "search-phrase-asc",
   };
-  const mockObjects = searchPhrases.map((phrase) => {
+  const mockObjects: MockSearchPhrase[] = searchPhrases.map((phrase) => {
     return {
       id: phrase.id,
       phrase: phrase.phrase,
       score: {
         sierra: phrase.combinedScore * 100,
         ..._.mapValues(phrase.allScores as object, (s) => s * 100),
-      },
+      } as any,
       results: phrase.totalResults,
+      tookMs: phrase.tookMs,
     };
   });
   return {
@@ -85,17 +97,6 @@ export const getServerSideProps = authenticatedPage(async (context) => {
     },
   };
 });
-
-type Props = {
-  searchConfiguration: ExposedSearchConfiguration | null;
-  searchPhrases: MockSearchPhrase[];
-  searchPhrasesTotal: number;
-  filters: {
-    show: ShowOptions;
-    sort: SortOptions;
-  };
-  page: number;
-};
 
 export default function Lab({
   searchConfiguration,
@@ -116,7 +117,6 @@ export default function Lab({
   const [page, setPage] = React.useState(props.page);
   const [configurations, setConfigurations] = React.useState({});
   const [isTestRunning, setIsTestRunning] = React.useState(false);
-  const executionExists = Boolean(searchPhrases.length);
 
   React.useEffect(() => {
     if (searchPhrase) {
@@ -175,9 +175,11 @@ export default function Lab({
     setConfigurations(configs);
   };
 
+  const isFirstQueryExcute = searchPhrases.length == 0;
+
   return (
     <div>
-      {!!searchConfiguration && executionExists ? (
+      {!!searchConfiguration && !isFirstQueryExcute ? (
         <div>
           <Grid container justify="space-between">
             <Grid item>
@@ -233,7 +235,7 @@ export default function Lab({
       ) : (
         <NoExistingExcution
           isSearchConfig={!!searchConfiguration}
-          isRunQuery={executionExists}
+          isRunQuery={isFirstQueryExcute}
         />
       )}
       <ActionButtons

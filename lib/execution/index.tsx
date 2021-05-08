@@ -2,6 +2,8 @@ import _ from "lodash";
 
 import prisma, {
   Prisma,
+  User,
+  Project,
   SearchEndpoint,
   SearchConfiguration,
   Execution,
@@ -11,8 +13,14 @@ import prisma, {
   OffsetPagination,
 } from "../prisma";
 import { handleQuery, expandQuery } from "../searchendpoints";
+import { userCanAccessSearchConfiguration } from "../searchconfigurations";
 
 export type { Execution };
+
+export type SearchPhraseExecutionResults = {
+  id: string;
+  explanation: object;
+}[];
 
 const executionSelect = {
   id: true,
@@ -30,7 +38,6 @@ const speSelect = {
   phrase: true,
   totalResults: true,
   results: true,
-  explanation: true,
   combinedScore: true,
   allScores: true,
 };
@@ -48,6 +55,33 @@ export function formatSearchPhraseExecution(
   val: SearchPhraseExecution
 ): ExposedSearchPhraseExecution {
   return _.pick(val, _.keys(speSelect)) as ExposedSearchPhraseExecution;
+}
+
+export async function getExecution(
+  user: User,
+  executionId: number
+): Promise<Execution | null> {
+  const execution = await prisma.execution.findFirst({
+    where: { searchConfiguration: userCanAccessSearchConfiguration(user) },
+  });
+  return execution;
+}
+
+export async function getExecutionProject(
+  execution: Execution
+): Promise<Project> {
+  const project = await prisma.project.findFirst({
+    where: {
+      queryTemplates: {
+        some: {
+          searchConfigurations: {
+            some: { id: execution.searchConfigurationId },
+          },
+        },
+      },
+    },
+  });
+  return project!;
 }
 
 export async function getLatestExecution(
@@ -178,18 +212,23 @@ async function newSearchPhraseExecution(
   tpl: QueryTemplate,
   jp: CombinedJudgementPhrase
 ): Promise<Prisma.SearchPhraseExecutionCreateWithoutExecutionInput> {
-  const query = await expandQuery(
+  const query: any = await expandQuery(
     jp.phrase,
     tpl.query,
     tpl.knobs,
     [],
     undefined
   );
+  query.explain = true;
   const queryResult = await handleQuery<ElasticsearchQueryResponse>(
     endpoint,
     JSON.stringify(query)
   );
-  const results = queryResult?.hits?.hits?.map((h: any) => h._id) ?? [];
+  const results =
+    queryResult?.hits?.hits?.map((h: any) => ({
+      id: h._id,
+      explanation: h._explanation,
+    })) ?? [];
   const allScores = {
     "ndcg@5": Math.random(),
     "ap@5": Math.random(),
@@ -198,10 +237,24 @@ async function newSearchPhraseExecution(
   const combinedScore = Object.values(allScores).reduce((a, b) => a + b) / 3;
   return {
     phrase: jp.phrase,
+    tookMs: queryResult.took,
     totalResults: queryResult.hits?.total?.value ?? 0,
     results,
-    explanation: {},
     combinedScore,
     allScores,
   };
+}
+
+export async function getSearchPhraseExecution(
+  user: User,
+  speId: number
+): Promise<SearchPhraseExecution | null> {
+  return await prisma.searchPhraseExecution.findFirst({
+    where: {
+      execution: {
+        searchConfiguration: userCanAccessSearchConfiguration(user),
+      },
+      id: speId,
+    },
+  });
 }

@@ -282,19 +282,19 @@ model Execution {
 // A SearchPhraseExecution is a single phrase which was executed and scored as
 // part of an Execution.
 model SearchPhraseExecution {
-  id           Int      @id @default(autoincrement())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  executionId  Int
-  phrase       String
-  totalResults Int
-  // The top results, [ document ID, ... ]
-  results      Json
-  // For Elasticsearch, it's the explanation of the query.
-  explanation  Json
-  combinedScore         Float
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  executionId   Int
+  phrase        String
+  totalResults  Int
+  // How long the query took to execute
+  tookMs        Int
+  // The top results, [ { id: documentID, explanation: { ... } }, ... ]
+  results       Json
+  combinedScore Float
   // { [ scorerId: string]: number }
-  allScores             Json
+  allScores     Json
 
   execution Execution @relation(fields: [executionId], references: [id])
 }

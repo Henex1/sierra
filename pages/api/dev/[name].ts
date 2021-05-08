@@ -6,6 +6,7 @@ import * as path from "path";
 import { RulesetVersionValue } from "../../../lib/rulesets/rules";
 import prisma, { Prisma } from "../../../lib/prisma";
 import { setVotes, parseVotesCsv } from "../../../lib/judgements";
+import { createExecution } from "../../../lib/execution";
 import { notAuthorized, notFound } from "../../../lib/errors";
 import { getUser, ValidUserSession } from "../../../lib/authServer";
 import { userCanAccessOrg } from "../../../lib/org";
@@ -122,6 +123,8 @@ async function handleSeed(
       judgements: { create: [{ judgementId: judgement.id, weight: 1.0 }] },
     },
   });
+
+  await createExecution(sc);
 
   return res.status(200).json({ success: true });
 }
