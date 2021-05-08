@@ -1,6 +1,6 @@
 import * as React from "react";
 import Grid from "@material-ui/core/Grid";
-import { Field } from "react-final-form";
+import { Field, FieldRenderProps } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
 import { TextField, Select, Autocomplete } from "mui-rff";
 import Box from "@material-ui/core/Box";
@@ -17,6 +17,7 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Tooltip from "@material-ui/core/Tooltip";
 import Switch from "@material-ui/core/Switch";
 import Slider from "@material-ui/core/Slider";
+import CircularProgress from "@material-ui/core/CircularProgress";
 import { withStyles, makeStyles } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -32,10 +33,14 @@ import {
   RuleInstruction,
   FilterInstruction,
   UpDownInstruction,
+  FacetFilterInstruction,
 } from "../../lib/rulesets/rules";
 import { useEffect } from "react";
 import { parseNumber } from "../common/form";
 import InlineQueryEditor from "../rulesets/InlineQueryEditor";
+import { debounce } from "lodash";
+import { useActiveProject } from "../Session";
+import { apiRequest } from "../../lib/api";
 
 const UpBoostSlider = withStyles({
   root: {
@@ -54,7 +59,7 @@ type InstructionFieldProps = {
   value: RuleInstruction;
   onDelete: () => void;
   disabled?: boolean;
-  facetFilterFields: any;
+  facetFilterFields: string[];
 };
 
 const useSynonymFieldStyles = makeStyles((theme) => ({
@@ -118,7 +123,7 @@ function UpBoostField({ name, value, disabled }: InstructionFieldProps) {
       <Grid item xs={2}>
         <Field
           name={`${name}.weight`}
-          render={(props) => {
+          render={(props: FieldRenderProps<any>) => {
             useEffect(() => {
               if (!props.input.value || props.input.value < 0) {
                 props.input.onChange({
@@ -165,7 +170,7 @@ function DownBoostField({ name, value, disabled }: InstructionFieldProps) {
       <Grid item xs={2}>
         <Field
           name={`${name}.weight`}
-          render={(props) => {
+          render={(props: FieldRenderProps<any>) => {
             useEffect(() => {
               if (!props.input.value || props.input.value > 0) {
                 props.input.onChange({
@@ -230,9 +235,49 @@ function FacetFilterField({
   disabled,
   facetFilterFields,
 }: InstructionFieldProps) {
-  const fields = Object.keys(facetFilterFields.fields);
-  // @ts-ignore
-  const fieldValues = value.field ? Object.keys(facetFilterFields.fields[value.field]) : null;
+  const [open, setOpen] = React.useState(false);
+  const [facetFilterValues, setFacetFilterValues] = React.useState<string[]>(
+    []
+  );
+  const [loading, setLoading] = React.useState(false);
+  const { project } = useActiveProject();
+
+  useEffect(() => {
+    if (value) {
+      const castedValue = value as FacetFilterInstruction;
+      loadAutocomplete(castedValue.field, castedValue.value);
+    }
+  }, []);
+
+  const loadAutocomplete = async (fieldName: string, prefix?: string) => {
+    if (!fieldName) return;
+    setLoading(true);
+    const data = await apiRequest(
+      `/api/searchendpoints/values`,
+      {
+        projectId: project?.id,
+        fieldName,
+        prefix,
+      },
+      { method: "POST" }
+    );
+    if (data?.length) {
+      setFacetFilterValues(data);
+    } else {
+      setFacetFilterValues([]);
+    }
+    setLoading(false);
+  };
+
+  const autocompleteCallback = React.useCallback(
+    debounce(loadAutocomplete, 300),
+    []
+  );
+
+  const onChangeHandle = (field: string, prefix?: string) => {
+    autocompleteCallback(field, prefix);
+  };
+
   return (
     <>
       <Grid item xs={2}>
@@ -246,16 +291,34 @@ function FacetFilterField({
           label=""
           name={`${name}.field`}
           required
-          options={fields}
+          options={facetFilterFields}
+          onChange={(ev) => {
+            onChangeHandle((ev.target as HTMLElement).innerHTML);
+          }}
         />
       </Grid>
       <Grid item xs={3}>
         <Autocomplete
+          freeSolo
+          open={open}
+          onOpen={() => {
+            setOpen(true);
+          }}
+          onClose={() => {
+            setOpen(false);
+          }}
+          loading={loading}
           label=""
-          disabled={!fieldValues}
+          disabled={!(value as FacetFilterInstruction).field}
           name={`${name}.value`}
-          required
-          options={fieldValues || []}
+          options={facetFilterValues || []}
+          textFieldProps={{
+            onChange: (ev) =>
+              onChangeHandle(
+                (value as FacetFilterInstruction).field,
+                ev.target.value
+              ),
+          }}
         />
       </Grid>
     </>
@@ -327,7 +390,7 @@ function InstructionField(props: InstructionFieldProps) {
               value === "upBoost" || value === "downBoost" ? "updown" : value
             }
           >
-            {(props) => {
+            {(props: FieldRenderProps<any>) => {
               return (
                 <SelectMUI
                   name={props.input.name}
@@ -408,7 +471,7 @@ export type RuleType = {
 export type RuleEditorProps<T> = {
   name: string;
   onDelete: () => void;
-  facetFilterFields: object;
+  facetFilterFields: string[];
   rules: RuleType;
   form: FormApi<T>;
   activeRuleset: number;

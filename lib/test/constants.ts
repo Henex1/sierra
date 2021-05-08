@@ -57,7 +57,7 @@ export const TEST_SEARCHENDPOINT: NoTimestamps<SearchEndpoint> = {
   whitelist: [],
   displayFields: [],
   type: "ELASTICSEARCH",
-  info: { endpoint: "http://localhost:9200/icecat/_search" },
+  info: { endpoint: "http://localhost:9200", index: "icecat" },
 };
 
 export const TEST_JUDGEMENT: NoTimestamps<Judgement> = {

@@ -258,7 +258,7 @@ function RulesList({
 
 export type RulesetEditorProps = FormProps<RulesetVersionValue> & {
   name: ExposedRuleset["name"];
-  facetFilterFields: object;
+  facetFilterFields: string[];
 };
 
 export default function RulesetEditor({

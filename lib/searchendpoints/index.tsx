@@ -5,7 +5,11 @@ import { HttpError } from "../apiServer";
 import prisma, { Prisma, User, SearchEndpoint } from "../prisma";
 import { SearchEndpointSchema } from "../schema";
 import { userCanAccessOrg } from "../org";
-import { handleElasticsearchQuery } from "./elasticsearch";
+import {
+  handleElasticsearchQuery,
+  handleElasticsearchGetFields,
+  handleElasticsearchGetValues,
+} from "./elasticsearch";
 import { requireEnv } from "../env";
 
 const QUERY_EXPANDER_URL = requireEnv("QUERY_EXPANDER_URL");
@@ -53,6 +57,9 @@ export async function getSearchEndpoint(
   idStr: string | number
 ): Promise<SearchEndpoint | null> {
   const id = typeof idStr === "number" ? idStr : parseInt(idStr, 10);
+  if (Number.isNaN(id)) {
+    throw new Error(`Param ${id} is not a number`);
+  }
   const ds = await prisma.searchEndpoint.findFirst({
     where: userCanAccessSearchEndpoint(user, { id }),
   });
@@ -144,11 +151,56 @@ export async function updateSearchEndpoint(
   return endpoint;
 }
 
+export type FieldsCapabilitiesFilters = {
+  aggregateable?: boolean;
+  searchable?: boolean;
+  type?: string;
+};
+
+export async function handleGetFields(
+  searchEndpoint: SearchEndpoint,
+  fieldsCapabilitiesFilters?: FieldsCapabilitiesFilters
+): Promise<string[]> {
+  if (
+    searchEndpoint.type === "ELASTICSEARCH" ||
+    searchEndpoint.type === "OPEN_SEARCH"
+  ) {
+    return handleElasticsearchGetFields(
+      searchEndpoint,
+      fieldsCapabilitiesFilters
+    );
+  }
+  return [];
+}
+
+export async function handleGetValues<ResultType = any>(
+  searchEndpoint: SearchEndpoint,
+  fieldName: string,
+  prefix?: string
+): Promise<ResultType> {
+  if (
+    searchEndpoint.type === "ELASTICSEARCH" ||
+    searchEndpoint.type === "OPEN_SEARCH"
+  ) {
+    return (handleElasticsearchGetValues(
+      searchEndpoint,
+      fieldName,
+      prefix
+    ) as any) as ResultType;
+  }
+  throw new Error(
+    `unsupported searchEndpoint type ${JSON.stringify(searchEndpoint.type)}`
+  );
+}
+
 export async function handleQuery<ResultType = any>(
   searchEndpoint: SearchEndpoint,
   query: string
 ): Promise<ResultType> {
-  if (searchEndpoint.type === "ELASTICSEARCH") {
+  if (
+    searchEndpoint.type === "ELASTICSEARCH" ||
+    searchEndpoint.type === "OPEN_SEARCH"
+  ) {
     return (handleElasticsearchQuery(
       searchEndpoint,
       query
