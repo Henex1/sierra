@@ -130,8 +130,9 @@ export default function SearchEndpointForm({
                 <TextField
                   label="Search URL"
                   helperText={
-                    values.type === "ELASTICSEARCH"
-                      ? "This should be endpoint for your search instance without the _search."
+                    values.type === "ELASTICSEARCH" ||
+                    values.type === "OPEN_SEARCH"
+                      ? "This should be endpoint for your search cluster without the index name or _search."
                       : ""
                   }
                   name="info.endpoint"
