@@ -58,29 +58,35 @@ export default function DisplayFields({ displayFields }: DisplayFieldsProps) {
     if (event.key === "Enter") {
       // @ts-ignore
       const inputValue = event.target.value.trim();
-      const prefixIndex = inputValue.indexOf(":");
-      let validDisplayField = true;
+      if (inputValue.length > 0) {
+        const prefixIndex = inputValue.indexOf(":");
+        let validDisplayField = true;
 
-      if (prefixIndex !== -1) {
-        const prefix = inputValue.slice(0, prefixIndex);
-        if (supportedPrefixes.includes(prefix)) {
-          displayFields.input.value.forEach((value: String) => {
-            if (value.indexOf(prefix) !== -1) {
-              validDisplayField = false;
+        if (prefixIndex !== -1) {
+          const prefix = inputValue.slice(0, prefixIndex);
+          if (
+            prefix.length > 0 &&
+            prefixIndex > 2 &&
+            supportedPrefixes.includes(prefix)
+          ) {
+            displayFields.input.value.forEach((value: String) => {
+              if (value.indexOf(prefix) !== -1) {
+                validDisplayField = false;
+              }
+            });
+            if (validDisplayField) {
+              setNewValue(inputValue);
+            } else {
+              setError("Display fields with that prefix already exists");
             }
-          });
-          if (validDisplayField) {
-            setNewValue(inputValue);
           } else {
-            setError("Display fields with that prefix already exists");
+            setError("Display fields prefix is not valid");
           }
         } else {
-          setError("Display fields prefix is not valid");
+          setNewValue(inputValue);
         }
-      } else {
-        setNewValue(inputValue);
+        event.preventDefault();
       }
-      event.preventDefault();
     }
   };
 
