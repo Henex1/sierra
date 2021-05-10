@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "test": "NODE_ENV=test yarn env jest",
+    "test": "jest",
     "postinstall": "patch-package",
     "env": "NODE_ENV=${NODE_ENV:-development} dotenv -c $NODE_ENV --",
     "ts-node": "yarn env ts-node --compiler-options '{\"module\":\"CommonJS\"}' --files",
