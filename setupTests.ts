@@ -14,10 +14,11 @@ import {
 import "@testing-library/jest-dom/extend-expect";
 
 // This explicit mock call necessary so that next-page-tester doesn't try to
-// "isolate" the prisma mocks between the client and the server. If it did
+// "isolate" these modules between the client and the server. If it did
 // that, none of the mocked implementations would be available to the code
 // under test.
 jest.mock("./lib/prisma", () => jest.requireActual("./lib/__mocks__/prisma"));
+jest.mock("./lib/env", () => jest.requireActual("./lib/__mocks__/env"));
 
 loadEnvConfig(path.dirname(__filename), true, {
   info(...args: any[]): void {
