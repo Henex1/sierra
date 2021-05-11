@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useCallback } from "react";
 import arrayMutators from "final-form-arrays";
 import { FormApi } from "final-form";
 import { Form, FormProps } from "react-final-form";
@@ -12,34 +12,38 @@ import {
 import { resetServerContext } from "react-beautiful-dnd";
 import Draggable from "react-draggable";
 
-import Container from "@material-ui/core/Container";
-import Grid from "@material-ui/core/Grid";
-import TextField from "@material-ui/core/TextField";
-import Button from "@material-ui/core/Button";
-import Divider from "@material-ui/core/Divider";
-import Box from "@material-ui/core/Box";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
+import {
+  Container,
+  Grid,
+  TextField,
+  Button,
+  Divider,
+  Box,
+  List,
+  ListItem,
+  ListItemText,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Paper,
+  Typography,
+  makeStyles,
+  PaperProps,
+} from "@material-ui/core";
+
 import AddIcon from "@material-ui/icons/Add";
-import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
-import Paper, { PaperProps } from "@material-ui/core/Paper";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
 import DragIndicatorIcon from "@material-ui/icons/DragIndicator";
 import SettingsIcon from "@material-ui/icons/Settings";
 
-import Link from "../common/Link";
+import Link from "components/common/Link";
+import BreadcrumbsButtons from "components/common/BreadcrumbsButtons";
 import RuleEditor from "./RuleEditor";
-import { ExposedRuleset } from "../../lib/rulesets";
-import { RulesetVersionValue, Rule } from "../../lib/rulesets/rules";
+import { ExposedRuleset } from "lib/rulesets";
+import { RulesetVersionValue, Rule } from "lib/rulesets/rules";
 import RulesetEditorSaveButton from "./RulesetEditorSaveButton";
-import MockRulesetConditionEditor from "./MockRulesetConditionEditor";
-import BreadcrumbsButtons from "../common/BreadcrumbsButtons";
+import RulesetConditionEditor from "./RulesetConditionEditor";
 
 function PaperComponent(props: PaperProps) {
   return (
@@ -222,9 +226,13 @@ function RulesList({
         <Divider />
       </Box>
       <Box>
-        <Button onClick={() => onChangeSelection(-2, false)}>
+        <ListItem
+          button
+          selected={selectedRule === -2}
+          onClick={() => onChangeSelection(-2, false)}
+        >
           <SettingsIcon className={classes.settingsIcon} /> Ruleset Conditions
-        </Button>
+        </ListItem>
       </Box>
       <Box pt={2} pb={1}>
         <Divider />
@@ -326,7 +334,11 @@ export default function RulesetEditor({
               </Grid>
               <Grid item md={8}>
                 {activeRuleset === -1 && <NoRuleset />}
-                {activeRuleset === -2 && <MockRulesetConditionEditor />}
+                {activeRuleset === -2 && (
+                  <form onSubmit={handleSubmit}>
+                    <RulesetConditionEditor name="conditions" />
+                  </form>
+                )}
                 {activeRuleset >= 0 && (
                   <form onSubmit={handleSubmit}>
                     <RuleEditor

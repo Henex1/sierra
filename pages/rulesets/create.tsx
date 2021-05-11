@@ -10,12 +10,20 @@ import { apiRequest } from "../../lib/api";
 import Form from "../../components/rulesets/Form";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
+import { useActiveProject } from "../../components/Session";
 
 export const getServerSideProps = authenticatedPage();
 
 export default function CreateRuleset() {
   const router = useRouter();
+  const { project } = useActiveProject();
+
   async function onSubmit(values: ExposedRuleset) {
+    if (!project) {
+      alert("Missing project");
+      return;
+    }
+    values.projectId = project.id;
     await apiRequest(`/api/rulesets/create`, values);
     router.push("/rulesets");
     // Keep the form stuck as pending

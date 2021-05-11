@@ -123,10 +123,10 @@ function UpBoostField({ name, value, disabled }: InstructionFieldProps) {
       <Grid item xs={2}>
         <Field
           name={`${name}.weight`}
-          render={(props: FieldRenderProps<any>) => {
+          render={({ input }) => {
             useEffect(() => {
-              if (!props.input.value || props.input.value < 0) {
-                props.input.onChange({
+              if (!input || input.value < 0) {
+                input.onChange({
                   target: {
                     type: "select",
                     value: 1,
@@ -137,10 +137,10 @@ function UpBoostField({ name, value, disabled }: InstructionFieldProps) {
             return (
               <UpBoostSlider
                 color="secondary"
-                name={props.input.name}
-                value={props.input.value || 1}
+                name={input?.name}
+                value={input?.value || 1}
                 onChange={(e, newValue) => {
-                  props.input.onChange({
+                  input?.onChange({
                     target: {
                       type: "select",
                       value: newValue,
@@ -170,10 +170,10 @@ function DownBoostField({ name, value, disabled }: InstructionFieldProps) {
       <Grid item xs={2}>
         <Field
           name={`${name}.weight`}
-          render={(props: FieldRenderProps<any>) => {
+          render={({ input }) => {
             useEffect(() => {
-              if (!props.input.value || props.input.value > 0) {
-                props.input.onChange({
+              if (!input || input.value > 0) {
+                input.onChange({
                   target: {
                     type: "select",
                     value: -1,
@@ -183,10 +183,10 @@ function DownBoostField({ name, value, disabled }: InstructionFieldProps) {
             }, []);
             return (
               <DownBoostSlider
-                name={props.input.name}
-                value={props.input.value * -1 || 1}
+                name={input?.name}
+                value={input?.value * -1 || 1}
                 onChange={(e, newValue) => {
-                  props.input.onChange({
+                  input?.onChange({
                     target: {
                       type: "select",
                       value:
@@ -390,32 +390,30 @@ function InstructionField(props: InstructionFieldProps) {
               value === "upBoost" || value === "downBoost" ? "updown" : value
             }
           >
-            {(props: FieldRenderProps<any>) => {
-              return (
-                <SelectMUI
-                  name={props.input.name}
-                  value={
-                    props.input.value === instructionsType
-                      ? props.input.value
-                      : instructionsType
-                  }
-                  onChange={(e) => {
-                    setInstructionsType(e.target.value);
-                    props.input.onChange(e);
-                  }}
-                  required
-                  fullWidth
-                  disabled={isDisabled}
-                >
-                  <MenuItem value="synonym">SYNONYM</MenuItem>
-                  <MenuItem value="upBoost">UP BOOST</MenuItem>
-                  <MenuItem value="downBoost">DOWN BOOST</MenuItem>
-                  <MenuItem value="filter">FILTER</MenuItem>
-                  <MenuItem value="facetFilter">FACET FILTER</MenuItem>
-                  <MenuItem value="delete">DELETE</MenuItem>
-                </SelectMUI>
-              );
-            }}
+            {({ input }) => (
+              <SelectMUI
+                name={input?.name}
+                value={
+                  input?.value === instructionsType
+                    ? input?.value
+                    : instructionsType
+                }
+                onChange={(e) => {
+                  setInstructionsType(e.target.value);
+                  input.onChange(e);
+                }}
+                required
+                fullWidth
+                disabled={isDisabled}
+              >
+                <MenuItem value="synonym">SYNONYM</MenuItem>
+                <MenuItem value="upBoost">UP BOOST</MenuItem>
+                <MenuItem value="downBoost">DOWN BOOST</MenuItem>
+                <MenuItem value="filter">FILTER</MenuItem>
+                <MenuItem value="facetFilter">FACET FILTER</MenuItem>
+                <MenuItem value="delete">DELETE</MenuItem>
+              </SelectMUI>
+            )}
           </Field>
         </Grid>
         {editor}

@@ -1,18 +1,22 @@
 import React from "react";
+import {
+  makeStyles,
+  Typography,
+  IconButton,
+  Tooltip,
+  ClickAwayListener,
+  Paper,
+  Grow,
+  MenuItem,
+  MenuList,
+  Popper,
+} from "@material-ui/core";
+
 import PatternEditor from "./PatternEditor";
-import { makeStyles, Typography } from "@material-ui/core";
-import IconButton from "@material-ui/core/IconButton";
 import CaseSensitiveIcon from "./CaseSensitiveIcon";
 import StartsWithIcon from "./StartsWithIcon";
 import EndsWithIcon from "./EndsWithIcon";
 import ContainedIcon from "./ContainedIcon";
-import Tooltip from "@material-ui/core/Tooltip";
-import ClickAwayListener from "@material-ui/core/ClickAwayListener";
-import Paper from "@material-ui/core/Paper";
-import Grow from "@material-ui/core/Grow";
-import MenuItem from "@material-ui/core/MenuItem";
-import MenuList from "@material-ui/core/MenuList";
-import Popper from "@material-ui/core/Popper";
 
 const useStyles = makeStyles((theme) => ({
   inputParentContainer: {
@@ -180,7 +184,8 @@ export default function RegexInput({
   }
 
   function getIcon(type: string) {
-    return searchTypes.filter((item) => item.value === type)[0].icon;
+    const item = searchTypes.find((item) => item.value === type);
+    return item?.icon || null;
   }
 
   function isRegexDetected(): boolean {

@@ -13,6 +13,7 @@ import { userCanAccessOrg } from "../../../lib/org";
 
 // prettier-ignore
 const mockRuleset: RulesetVersionValue = {
+  conditions: [],
   rules: [
     {
       expression: "notebook",

@@ -70,8 +70,35 @@ export const ruleSchema = z.object({
 
 export type Rule = z.infer<typeof ruleSchema>;
 
+export enum RuleSetConditionType {
+  DateRange = "Date & Time Range",
+  TimeRange = "Time Range",
+  RequestHeader = "Request Header",
+}
+
+const rulesetConditionRangeSchema = z.object({
+  type: z.string(),
+  start: z.string(),
+  end: z.string(),
+});
+export type RulesetConditionRange = z.infer<typeof rulesetConditionRangeSchema>;
+
+const rulesetConditionKeyValueSchema = z.object({
+  type: z.string(),
+  key: z.string(),
+  value: z.string(),
+});
+
+const rulesetConditionSchema = z.union([
+  rulesetConditionRangeSchema,
+  rulesetConditionKeyValueSchema,
+]);
+
+export type RuleSetCondition = z.infer<typeof rulesetConditionSchema>;
+
 export const rulesetVersionValueSchema = z.object({
   rules: z.array(ruleSchema),
+  conditions: z.array(rulesetConditionSchema),
 });
 
 export type RulesetVersionValue = z.infer<typeof rulesetVersionValueSchema>;
