@@ -6,12 +6,12 @@ import prisma, { Prisma, User, SearchEndpoint } from "../prisma";
 import { SearchEndpointSchema } from "../schema";
 import { userCanAccessOrg } from "../org";
 import { ElasticsearchInterface } from "./elasticsearch";
-import { requireEnv } from "../env";
+import { expandQuery, ExpandedQuery } from "./queryexpander";
 
-const QUERY_EXPANDER_URL = requireEnv("QUERY_EXPANDER_URL");
+export { expandQuery };
 
-// This is the list of keys which are included in user requests for SearchEndpoint
-// by default.
+// This is the list of keys which are included in user requests for
+// SearchEndpoint by default.
 const selectKeys = {
   id: true,
   orgId: true,
@@ -175,9 +175,31 @@ export type FieldsCapabilitiesFilters = {
   type?: string;
 };
 
+// ElasticsearchResult is the format we expect all SearchEndpoints to return
+// data in. In the future we may need to replace this interface with something
+// better, particularly something that returns the selected fields in a
+// structured way, as well as the explanation.
+export type ElasticsearchResult = {
+  _id: string;
+  _source: Record<string, string>;
+};
+
+export type QueryResult = {
+  tookMs: number;
+  totalResults: number;
+  results: Array<{
+    id: string;
+    explanation: object;
+  }>;
+};
+
 export interface QueryInterface {
   getFields(filters?: FieldsCapabilitiesFilters): Promise<string[]>;
   getFieldValues(fieldName: string, prefix?: string): Promise<string[]>;
+  getDocumentsByID(ids: string[]): Promise<ElasticsearchResult[]>;
+  executeQuery(query: ExpandedQuery): Promise<QueryResult>;
+  // Issue a raw query to the _search endpoint in elasticsearch. This method is
+  // only used for the testbed, and should be removed.
   handleQueryDEPRECATED<ResultType = any>(query: string): Promise<ResultType>;
 }
 
@@ -191,39 +213,5 @@ export function getQueryInterface(
     return new ElasticsearchInterface(searchEndpoint);
   } else {
     throw new Error(`unimplemented SearchEndpoint ${searchEndpoint.type}`);
-  }
-}
-
-export async function expandQuery(
-  query: string,
-  template: string,
-  knobs: any,
-  rules: any[],
-  ltrModelName: string | undefined
-): Promise<object> {
-  try {
-    const config: any = {};
-    Object.entries(knobs).forEach(([k, v]) => {
-      config[k] = v;
-    });
-    config.rules = rules;
-    config.ltr_model = ltrModelName;
-    const body = JSON.stringify({
-      template: JSON.parse(template),
-      config,
-    });
-    const response = await fetch(
-      `${QUERY_EXPANDER_URL}/query/expand?q=${encodeURI(query)}`,
-      {
-        method: "POST",
-        body,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return await response.json();
-  } catch (e) {
-    throw new Error(`Failed to expand query ${e}`);
   }
 }

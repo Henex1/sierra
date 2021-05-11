@@ -183,52 +183,14 @@ export async function createExecution(
   return execution;
 }
 
-type ElasticsearchHit = {
-  _id: string;
-  _index: string;
-  _score: number;
-  _source: object;
-  _type: "_doc";
-};
-
-type ElasticsearchQueryResponse = {
-  took: number;
-  timed_out: boolean;
-  _shards: {
-    total: number;
-    successful: number;
-    skipped: number;
-    failed: number;
-  };
-  hits: {
-    total: { value: number; relation: "eq" };
-    max_score: number;
-    hits: ElasticsearchHit[];
-  };
-};
-
 async function newSearchPhraseExecution(
   endpoint: SearchEndpoint,
   tpl: QueryTemplate,
   jp: CombinedJudgementPhrase
 ): Promise<Prisma.SearchPhraseExecutionCreateWithoutExecutionInput> {
   const iface = getQueryInterface(endpoint);
-  const query: any = await expandQuery(
-    jp.phrase,
-    tpl.query,
-    tpl.knobs,
-    [],
-    undefined
-  );
-  query.explain = true;
-  const queryResult = await iface.handleQueryDEPRECATED<ElasticsearchQueryResponse>(
-    JSON.stringify(query)
-  );
-  const results =
-    queryResult?.hits?.hits?.map((h: any) => ({
-      id: h._id,
-      explanation: h._explanation,
-    })) ?? [];
+  const query = await expandQuery(endpoint, tpl, [], undefined, jp.phrase);
+  const queryResult = await iface.executeQuery(query);
   const allScores = {
     "ndcg@5": Math.random(),
     "ap@5": Math.random(),
@@ -237,9 +199,9 @@ async function newSearchPhraseExecution(
   const combinedScore = Object.values(allScores).reduce((a, b) => a + b) / 3;
   return {
     phrase: jp.phrase,
-    tookMs: queryResult.took,
-    totalResults: queryResult.hits?.total?.value ?? 0,
-    results,
+    tookMs: queryResult.tookMs,
+    totalResults: queryResult.totalResults,
+    results: queryResult.results,
     combinedScore,
     allScores,
   };

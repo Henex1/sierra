@@ -3,7 +3,38 @@ import fetch, { RequestInit } from "node-fetch";
 
 import { SearchEndpoint } from "../prisma";
 import { ElasticsearchInfoSchema } from "../schema";
-import { FieldsCapabilitiesFilters, QueryInterface } from "./index";
+import { ExpandedQuery } from "./queryexpander";
+import {
+  FieldsCapabilitiesFilters,
+  QueryInterface,
+  ElasticsearchResult,
+  QueryResult,
+} from "./index";
+
+type ElasticsearchHit = {
+  _id: string;
+  _index: string;
+  _score: number;
+  _source: object;
+  _type: "_doc";
+  _explanation: object;
+};
+
+type ElasticsearchQueryResponse = {
+  took: number;
+  timed_out: boolean;
+  _shards: {
+    total: number;
+    successful: number;
+    skipped: number;
+    failed: number;
+  };
+  hits: {
+    total: { value: number; relation: "eq" };
+    max_score: number;
+    hits: ElasticsearchHit[];
+  };
+};
 
 type ElasticsearchInfo = z.infer<typeof ElasticsearchInfoSchema>;
 
@@ -108,6 +139,33 @@ export class ElasticsearchInterface implements QueryInterface {
       values = response.aggregations.values.buckets.map((b: any) => b.key);
     }
     return values;
+  }
+
+  async getDocumentsByID(ids: string[]): Promise<ElasticsearchResult[]> {
+    const response = await this.rawQuery(
+      "_search",
+      JSON.stringify({
+        query: { terms: { _id: ids } },
+        size: ids.length,
+      })
+    );
+    return response.hits.hits;
+  }
+
+  async executeQuery(query: ExpandedQuery): Promise<QueryResult> {
+    const response = await this.rawQuery<ElasticsearchQueryResponse>(
+      "_search?explain=true",
+      JSON.stringify(query)
+    );
+    const results = response.hits?.hits?.map((h) => ({
+      id: h._id,
+      explanation: h._explanation,
+    }));
+    return {
+      tookMs: response.took,
+      totalResults: response.hits?.total?.value ?? 0,
+      results,
+    };
   }
 
   handleQueryDEPRECATED<ResultType>(query: string): Promise<ResultType> {

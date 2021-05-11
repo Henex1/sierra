@@ -69,17 +69,8 @@ export default apiHandler(
     const speResults = spe.results as SearchPhraseExecutionResults;
 
     const iface = getQueryInterface(se);
-    const docs = await iface.handleQueryDEPRECATED(
-      JSON.stringify({
-        query: {
-          terms: {
-            _id: speResults.map((h) => h.id),
-          },
-        },
-      })
-    );
-
-    const byId = _.keyBy(docs.hits.hits, "_id");
+    const docs = await iface.getDocumentsByID(speResults.map((h) => h.id));
+    const byId = _.keyBy(docs, "_id");
     const results = speResults.map((r, i) => ({
       id: r.id,
       title: byId[r.id]?._source?.name ?? "Unavailable",
