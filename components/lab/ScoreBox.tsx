@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Avatar, Tooltip, colors, makeStyles } from "@material-ui/core";
 import { scaleLinear } from "d3-scale";
 
@@ -29,7 +30,11 @@ export default function ScoreBox({ score }: Props) {
           background: colorScale(score),
         }}
       >
-        {Number.isInteger(score) ? score : score.toFixed(1)}
+        {score === undefined
+          ? "--"
+          : Number.isInteger(score)
+          ? score
+          : score.toFixed(1)}
       </Avatar>
     </Tooltip>
   );

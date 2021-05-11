@@ -14,6 +14,7 @@ import prisma, {
 } from "../prisma";
 import { getQueryInterface, expandQuery } from "../searchendpoints";
 import { userCanAccessSearchConfiguration } from "../searchconfigurations";
+import * as scorers from "../scorers/algorithms";
 
 export type { Execution };
 
@@ -67,21 +68,13 @@ export async function getExecution(
   return execution;
 }
 
-export async function getExecutionProject(
+export async function getExecutionSearchConfiguration(
   execution: Execution
-): Promise<Project> {
-  const project = await prisma.project.findFirst({
-    where: {
-      queryTemplates: {
-        some: {
-          searchConfigurations: {
-            some: { id: execution.searchConfigurationId },
-          },
-        },
-      },
-    },
+): Promise<SearchConfiguration> {
+  const sc = await prisma.searchConfiguration.findFirst({
+    where: { id: execution.searchConfigurationId },
   });
-  return project!;
+  return sc!;
 }
 
 export async function getLatestExecution(
@@ -143,6 +136,40 @@ export async function getCombinedJudgements(
   }));
 }
 
+export async function getCombinedJudgementForPhrase(
+  config: SearchConfiguration,
+  phrase: string,
+  documentIds?: string[]
+): Promise<CombinedJudgementPhrase> {
+  const results: Array<{
+    documentId: string;
+    score: number;
+  }> = await prisma.$queryRaw`
+    SELECT V."documentId", SUM(JSP."weight" * V."score") / SUM(JSP."weight") AS "score"
+    FROM "JudgementSearchConfiguration" AS JSP
+    INNER JOIN "JudgementPhrase" AS JP
+    ON JP."judgementId" = JSP."judgementId"
+    INNER JOIN "Vote" AS V
+    ON V."judgementPhraseId" = JP."id"
+    WHERE JSP."searchConfigurationId" = ${config.id}
+    AND JP."phrase" = ${phrase}
+    ${
+      documentIds
+        ? Prisma.sql`AND V."documentId" IN (${Prisma.join(documentIds)})`
+        : Prisma.empty
+    }
+    GROUP BY V."documentId"
+    ORDER BY V."documentId"
+  `;
+  if (results.length === 0) {
+    return { phrase, results: [] };
+  }
+  return {
+    phrase,
+    results: results.map(({ documentId, score }) => [documentId, score]),
+  };
+}
+
 function mean(input: number[]): number {
   return input.reduce((a, b) => a + b) / input.length;
 }
@@ -192,11 +219,12 @@ async function newSearchPhraseExecution(
   const query = await expandQuery(endpoint, tpl, [], undefined, jp.phrase);
   const queryResult = await iface.executeQuery(query);
   const allScores = {
-    "ndcg@5": Math.random(),
-    "ap@5": Math.random(),
-    "p@5": Math.random(),
+    "ap@5": scorers.ap(
+      queryResult.results.slice(0, 5).map((r) => r.id),
+      jp.results
+    ),
   };
-  const combinedScore = Object.values(allScores).reduce((a, b) => a + b) / 3;
+  const combinedScore = mean(Object.values(allScores));
   return {
     phrase: jp.phrase,
     tookMs: queryResult.tookMs,
