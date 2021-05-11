@@ -3,8 +3,8 @@ import Container from "@material-ui/core/Container";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 
-import { authenticatedPage, requireNumberParam } from "../../lib/pageHelpers";
-import { apiRequest } from "../../lib/api";
+import { authenticatedPage, requireNumberParam } from "lib/pageHelpers";
+import { apiRequest } from "lib/api";
 import {
   userCanAccessRuleset,
   formatRuleset,
@@ -80,6 +80,8 @@ export default function EditRuleset({
   const router = useRouter();
 
   async function onSubmit(value: RulesetVersionValue) {
+    if (!value.conditions) value.conditions = [];
+    if (!value.rules) value.rules = [];
     await apiRequest(`/api/rulesets/createVersion`, {
       value,
       rulesetId: ruleset.id,

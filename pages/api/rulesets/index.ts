@@ -15,7 +15,6 @@ import {
   apiHandler,
   requireMethod,
   requireUser,
-  requireOnlyOrg,
   requireBody,
 } from "../../../lib/apiServer";
 

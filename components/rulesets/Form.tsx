@@ -1,10 +1,9 @@
-import { FormApi, SubmissionErrors } from "final-form";
+import React from "react";
 import { Form, FormProps as BaseFormProps } from "react-final-form";
 import { TextField, Select } from "mui-rff";
 import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
 
-import { parseNonnegativeInt } from "../common/form";
 import { ExposedRuleset } from "../../lib/rulesets";
 
 export type FormProps = BaseFormProps<ExposedRuleset> & {
