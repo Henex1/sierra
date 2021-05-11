@@ -3,7 +3,7 @@ import * as z from "zod";
 import { notFound } from "../../../lib/errors";
 import {
   getSearchEndpoint,
-  handleGetFields,
+  getQueryInterface,
 } from "../../../lib/searchendpoints";
 import {
   apiHandler,
@@ -27,6 +27,7 @@ export default apiHandler(async function getFields(
   if (!searchEndpoint) {
     return notFound(res);
   }
-  const result = await handleGetFields(searchEndpoint);
+  const iface = getQueryInterface(searchEndpoint);
+  const result = await iface.getFields();
   return res.status(200).json(result);
 });

@@ -7,7 +7,7 @@ import { getUser } from "../../../lib/authServer";
 import { userCanAccessOrg } from "../../../lib/org";
 import { userCanAccessProject } from "../../../lib/projects";
 import {
-  handleQuery,
+  getQueryInterface,
   expandQuery,
   userCanAccessSearchEndpoint,
 } from "../../../lib/searchendpoints";
@@ -78,15 +78,13 @@ export default async function executeQuery(
   }
 
   const query = await expandQuery(
-    input.data.query,
-    queryTemplate.query,
-    queryTemplate.knobs,
+    searchEndpoint,
+    queryTemplate,
     rules,
-    input.data.ltrModelName
+    input.data.ltrModelName,
+    input.data.query
   );
-  if (!query) {
-    return res.status(500).json({ error: "Can't expand query" });
-  }
-  const result = await handleQuery(searchEndpoint, JSON.stringify(query));
+  const iface = getQueryInterface(searchEndpoint);
+  const result = await iface.handleQueryDEPRECATED(JSON.stringify(query));
   return res.status(200).json({ result });
 }

@@ -6,8 +6,8 @@ import { notAuthorized } from "../../../lib/errors";
 import { getUser } from "../../../lib/authServer";
 import {
   userCanAccessSearchEndpoint,
-  handleGetValues,
   getSearchEndpoint,
+  getQueryInterface,
 } from "../../../lib/searchendpoints";
 import { getProject } from "../../../lib/projects";
 import {
@@ -41,6 +41,7 @@ export default apiHandler(async function getValues(
   if (!searchEndpoint) {
     return notAuthorized(res);
   }
-  const result = await handleGetValues(searchEndpoint, fieldName, prefix);
+  const iface = getQueryInterface(searchEndpoint);
+  const result = await iface.getFieldValues(fieldName, prefix);
   return res.status(200).json(result);
 });

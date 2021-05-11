@@ -1,9 +1,40 @@
 import * as z from "zod";
-import fetch from "node-fetch";
+import fetch, { RequestInit } from "node-fetch";
 
 import { SearchEndpoint } from "../prisma";
 import { ElasticsearchInfoSchema } from "../schema";
-import { FieldsCapabilitiesFilters } from "./index";
+import { ExpandedQuery } from "./queryexpander";
+import {
+  FieldsCapabilitiesFilters,
+  QueryInterface,
+  ElasticsearchResult,
+  QueryResult,
+} from "./index";
+
+type ElasticsearchHit = {
+  _id: string;
+  _index: string;
+  _score: number;
+  _source: object;
+  _type: "_doc";
+  _explanation: object;
+};
+
+type ElasticsearchQueryResponse = {
+  took: number;
+  timed_out: boolean;
+  _shards: {
+    total: number;
+    successful: number;
+    skipped: number;
+    failed: number;
+  };
+  hits: {
+    total: { value: number; relation: "eq" };
+    max_score: number;
+    hits: ElasticsearchHit[];
+  };
+};
 
 type ElasticsearchInfo = z.infer<typeof ElasticsearchInfoSchema>;
 
@@ -25,116 +56,119 @@ function getHeaders(credentials?: Credentials): Record<string, string> {
   return headers;
 }
 
-export async function handleElasticsearchQuery(
-  searchEndpoint: SearchEndpoint,
-  query: string
-): Promise<object> {
-  const {
-    endpoint,
-    index,
-    username,
-    password,
-  } = searchEndpoint.info as ElasticsearchInfo;
-  const credentials = username && password ? { username, password } : undefined;
-  const response = await fetch(buildApiPath(endpoint, index, "_search"), {
-    method: "POST",
-    body: query,
-    headers: getHeaders(credentials),
-  });
-  const result = await response.json();
-  return result;
-}
+export class ElasticsearchInterface implements QueryInterface {
+  constructor(public searchEndpoint: SearchEndpoint) {}
 
-export async function handleElasticsearchGetFields(
-  searchEndpoint: SearchEndpoint,
-  filters?: FieldsCapabilitiesFilters
-): Promise<string[]> {
-  const {
-    endpoint,
-    index,
-    username,
-    password,
-  } = searchEndpoint.info as ElasticsearchInfo;
-  const response = await fetch(
-    buildApiPath(endpoint, index, "_field_caps?fields=*"),
-    {
-      method: "GET",
-      headers: getHeaders(
-        username && password ? { username, password } : undefined
-      ),
-    }
-  );
-  const result = await response.json();
-  if (!result?.fields?.length) {
-    return [];
+  private async rawQuery<ResultType = any>(
+    api: string,
+    body: string | undefined,
+    extra: RequestInit = {}
+  ): Promise<ResultType> {
+    const { endpoint, index, username, password } = this.searchEndpoint
+      .info as ElasticsearchInfo;
+    const credentials =
+      username && password ? { username, password } : undefined;
+    const response = await fetch(`${endpoint}${index}/${api}`, {
+      method: "POST",
+      body,
+      headers: getHeaders(credentials),
+      ...extra,
+    });
+    const result = await response.json();
+    return result;
   }
-  const fields: string[] = [];
-  Object.entries(result.fields).forEach(([fieldName, fieldValues]) => {
-    const details = fieldValues as any;
-    let canPush = true;
-    if (!filters) {
-      fields.push(fieldName);
-      return;
-    }
-    const fieldCapabilities: any =
-      (details && details[Object.keys(details)[0]]) || {};
-    if (filters.aggregateable) {
-      if (fieldCapabilities.aggregateable) {
-        canPush = false;
-      }
-    }
-    if (canPush && filters.searchable) {
-      if (!fieldCapabilities || !(fieldCapabilities as any).searchable) {
-        canPush = false;
-      }
-    }
-    if (canPush && filters.type) {
-      if (
-        !fieldCapabilities ||
-        (fieldCapabilities as any).type != filters.type
-      ) {
-        canPush = false;
-      }
-    }
-    if (canPush) {
-      fields.push(fieldName);
-    }
-  });
-  return fields;
-}
 
-export async function handleElasticsearchGetValues(
-  searchEndpoint: SearchEndpoint,
-  fieldName: string,
-  prefix?: string
-): Promise<object> {
-  const query = JSON.stringify({
-    size: 0,
-    aggs: {
-      values: {
-        terms: {
-          field: fieldName,
-          size: 10,
-          include: prefix ? `${prefix}.+` : undefined,
+  async getFields(filters?: FieldsCapabilitiesFilters): Promise<string[]> {
+    const result = await this.rawQuery("_field_caps?fields=*", undefined, {
+      method: "GET",
+    });
+    if (!result?.fields?.length) {
+      return [];
+    }
+    const fields: string[] = [];
+    Object.entries(result.fields).forEach(([fieldName, fieldValues]) => {
+      const details = fieldValues as any;
+      let canPush = true;
+      if (!filters) {
+        fields.push(fieldName);
+        return;
+      }
+      const fieldCapabilities: any =
+        (details && details[Object.keys(details)[0]]) || {};
+      if (filters.aggregateable) {
+        if (fieldCapabilities.aggregateable) {
+          canPush = false;
+        }
+      }
+      if (canPush && filters.searchable) {
+        if (!fieldCapabilities || !(fieldCapabilities as any).searchable) {
+          canPush = false;
+        }
+      }
+      if (canPush && filters.type) {
+        if (
+          !fieldCapabilities ||
+          (fieldCapabilities as any).type != filters.type
+        ) {
+          canPush = false;
+        }
+      }
+      if (canPush) {
+        fields.push(fieldName);
+      }
+    });
+    return fields;
+  }
+
+  async getFieldValues(fieldName: string, prefix?: string): Promise<string[]> {
+    const query = JSON.stringify({
+      size: 0,
+      aggs: {
+        values: {
+          terms: {
+            field: fieldName,
+            size: 10,
+            include: prefix ? `${prefix}.+` : undefined,
+          },
         },
       },
-    },
-  });
-  const response = (await handleElasticsearchQuery(
-    searchEndpoint,
-    query
-  )) as any;
-  let values = [];
-  if (response?.aggregations?.values?.buckets?.length) {
-    values = response.aggregations.values.buckets.map((b: any) => b.key);
+    });
+    const response = await this.rawQuery("_search", query);
+    let values = [];
+    if (response?.aggregations?.values?.buckets?.length) {
+      values = response.aggregations.values.buckets.map((b: any) => b.key);
+    }
+    return values;
   }
-  return values;
-}
 
-function buildApiPath(
-  endpoint: string,
-  indexName: string,
-  api: string
-): string {
-  return `${endpoint}${endpoint.endsWith("/") ? "" : "/"}${indexName}/${api}`;
+  async getDocumentsByID(ids: string[]): Promise<ElasticsearchResult[]> {
+    const response = await this.rawQuery(
+      "_search",
+      JSON.stringify({
+        query: { terms: { _id: ids } },
+        size: ids.length,
+      })
+    );
+    return response.hits.hits;
+  }
+
+  async executeQuery(query: ExpandedQuery): Promise<QueryResult> {
+    const response = await this.rawQuery<ElasticsearchQueryResponse>(
+      "_search?explain=true",
+      JSON.stringify(query)
+    );
+    const results = response.hits?.hits?.map((h) => ({
+      id: h._id,
+      explanation: h._explanation,
+    }));
+    return {
+      tookMs: response.took,
+      totalResults: response.hits?.total?.value ?? 0,
+      results,
+    };
+  }
+
+  handleQueryDEPRECATED<ResultType>(query: string): Promise<ResultType> {
+    return this.rawQuery<ResultType>("_search", query);
+  }
 }

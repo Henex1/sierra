@@ -15,7 +15,10 @@ import {
   getSearchPhraseExecution,
   getExecutionProject,
 } from "../../../lib/execution";
-import { getSearchEndpoint, handleQuery } from "../../../lib/searchendpoints";
+import {
+  getSearchEndpoint,
+  getQueryInterface,
+} from "../../../lib/searchendpoints";
 import explanationSample from "./explanationSample.json";
 
 function mockExplanation(explanation: any) {
@@ -65,18 +68,9 @@ export default apiHandler(
     }
     const speResults = spe.results as SearchPhraseExecutionResults;
 
-    const docs = await handleQuery(
-      se,
-      JSON.stringify({
-        query: {
-          terms: {
-            _id: speResults.map((h) => h.id),
-          },
-        },
-      })
-    );
-
-    const byId = _.keyBy(docs.hits.hits, "_id");
+    const iface = getQueryInterface(se);
+    const docs = await iface.getDocumentsByID(speResults.map((h) => h.id));
+    const byId = _.keyBy(docs, "_id");
     const results = speResults.map((r, i) => ({
       id: r.id,
       title: byId[r.id]?._source?.name ?? "Unavailable",

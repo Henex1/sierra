@@ -6,7 +6,7 @@ import { notAuthorized } from "../../../lib/errors";
 import { getUser } from "../../../lib/authServer";
 import {
   userCanAccessSearchEndpoint,
-  handleQuery,
+  getQueryInterface,
 } from "../../../lib/searchendpoints";
 
 const querySchema = z.object({
@@ -36,6 +36,7 @@ export default async function query(
   if (!searchEndpoint) {
     return notAuthorized(res);
   }
-  const result = await handleQuery(searchEndpoint, query);
+  const iface = getQueryInterface(searchEndpoint);
+  const result = await iface.handleQueryDEPRECATED(query);
   return res.status(200).json(result);
 }

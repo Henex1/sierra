@@ -5,17 +5,13 @@ import { HttpError } from "../apiServer";
 import prisma, { Prisma, User, SearchEndpoint } from "../prisma";
 import { SearchEndpointSchema } from "../schema";
 import { userCanAccessOrg } from "../org";
-import {
-  handleElasticsearchQuery,
-  handleElasticsearchGetFields,
-  handleElasticsearchGetValues,
-} from "./elasticsearch";
-import { requireEnv } from "../env";
+import { ElasticsearchInterface } from "./elasticsearch";
+import { expandQuery, ExpandedQuery } from "./queryexpander";
 
-const QUERY_EXPANDER_URL = requireEnv("QUERY_EXPANDER_URL");
+export { expandQuery };
 
-// This is the list of keys which are included in user requests for SearchEndpoint
-// by default.
+// This is the list of keys which are included in user requests for
+// SearchEndpoint by default.
 const selectKeys = {
   id: true,
   orgId: true,
@@ -81,6 +77,22 @@ export async function listSearchEndpoints({
   return searchEndpoints;
 }
 
+const cleanSearchEndpointSchema = SearchEndpointSchema.pick({
+  type: true,
+  info: true,
+}).nonstrict();
+type CleanSearchEndpoint = z.infer<typeof cleanSearchEndpointSchema>;
+function cleanSearchEndpoint(input: CleanSearchEndpoint) {
+  switch (input.type) {
+    case "ELASTICSEARCH":
+    case "OPEN_SEARCH":
+      if (!input.info.endpoint.endsWith("/")) {
+        input.info.endpoint += "/";
+      }
+      break;
+  }
+}
+
 export const createSearchEndpointSchema = SearchEndpointSchema.omit({
   id: true,
   createdAt: true,
@@ -99,6 +111,7 @@ export async function createSearchEndpoint(
   if (!isValidOrg) {
     return Promise.reject(new HttpError(400, { error: "invalid org" }));
   }
+  cleanSearchEndpoint(input);
 
   const ds = await prisma.searchEndpoint.create({
     data: input,
@@ -139,13 +152,18 @@ export async function updateSearchEndpoint(
     }
   }
 
-  const ds = await getSearchEndpoint(user, input.id);
-  if (!ds) {
+  const se = await getSearchEndpoint(user, input.id);
+  if (!se) {
     return Promise.reject(new HttpError(404, { error: "not found" }));
   }
 
+  if ("info" in input || "type" in input) {
+    input = { type: se.type, info: se.info, ...input } as UpdateSearchEndpoint;
+    cleanSearchEndpoint(input as any);
+  }
+
   const endpoint = await prisma.searchEndpoint.update({
-    where: { id: ds.id },
+    where: { id: se.id },
     data: input,
   });
   return endpoint;
@@ -157,90 +175,43 @@ export type FieldsCapabilitiesFilters = {
   type?: string;
 };
 
-export async function handleGetFields(
-  searchEndpoint: SearchEndpoint,
-  fieldsCapabilitiesFilters?: FieldsCapabilitiesFilters
-): Promise<string[]> {
+// ElasticsearchResult is the format we expect all SearchEndpoints to return
+// data in. In the future we may need to replace this interface with something
+// better, particularly something that returns the selected fields in a
+// structured way, as well as the explanation.
+export type ElasticsearchResult = {
+  _id: string;
+  _source: Record<string, string>;
+};
+
+export type QueryResult = {
+  tookMs: number;
+  totalResults: number;
+  results: Array<{
+    id: string;
+    explanation: object;
+  }>;
+};
+
+export interface QueryInterface {
+  getFields(filters?: FieldsCapabilitiesFilters): Promise<string[]>;
+  getFieldValues(fieldName: string, prefix?: string): Promise<string[]>;
+  getDocumentsByID(ids: string[]): Promise<ElasticsearchResult[]>;
+  executeQuery(query: ExpandedQuery): Promise<QueryResult>;
+  // Issue a raw query to the _search endpoint in elasticsearch. This method is
+  // only used for the testbed, and should be removed.
+  handleQueryDEPRECATED<ResultType = any>(query: string): Promise<ResultType>;
+}
+
+export function getQueryInterface(
+  searchEndpoint: SearchEndpoint
+): QueryInterface {
   if (
     searchEndpoint.type === "ELASTICSEARCH" ||
     searchEndpoint.type === "OPEN_SEARCH"
   ) {
-    return handleElasticsearchGetFields(
-      searchEndpoint,
-      fieldsCapabilitiesFilters
-    );
-  }
-  return [];
-}
-
-export async function handleGetValues<ResultType = any>(
-  searchEndpoint: SearchEndpoint,
-  fieldName: string,
-  prefix?: string
-): Promise<ResultType> {
-  if (
-    searchEndpoint.type === "ELASTICSEARCH" ||
-    searchEndpoint.type === "OPEN_SEARCH"
-  ) {
-    return (handleElasticsearchGetValues(
-      searchEndpoint,
-      fieldName,
-      prefix
-    ) as any) as ResultType;
-  }
-  throw new Error(
-    `unsupported searchEndpoint type ${JSON.stringify(searchEndpoint.type)}`
-  );
-}
-
-export async function handleQuery<ResultType = any>(
-  searchEndpoint: SearchEndpoint,
-  query: string
-): Promise<ResultType> {
-  if (
-    searchEndpoint.type === "ELASTICSEARCH" ||
-    searchEndpoint.type === "OPEN_SEARCH"
-  ) {
-    return (handleElasticsearchQuery(
-      searchEndpoint,
-      query
-    ) as any) as ResultType;
-  }
-  throw new Error(
-    `unsupported searchEndpoint type ${JSON.stringify(searchEndpoint.type)}`
-  );
-}
-
-export async function expandQuery(
-  query: string,
-  template: string,
-  knobs: any,
-  rules: any[],
-  ltrModelName: string | undefined
-): Promise<object> {
-  try {
-    const config: any = {};
-    Object.entries(knobs).forEach(([k, v]) => {
-      config[k] = v;
-    });
-    config.rules = rules;
-    config.ltr_model = ltrModelName;
-    const body = JSON.stringify({
-      template: JSON.parse(template),
-      config,
-    });
-    const response = await fetch(
-      `${QUERY_EXPANDER_URL}/query/expand?q=${encodeURI(query)}`,
-      {
-        method: "POST",
-        body,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return await response.json();
-  } catch (e) {
-    throw new Error(`Failed to expand query ${e}`);
+    return new ElasticsearchInterface(searchEndpoint);
+  } else {
+    throw new Error(`unimplemented SearchEndpoint ${searchEndpoint.type}`);
   }
 }
