@@ -12,7 +12,7 @@ import prisma, {
   QueryTemplate,
   OffsetPagination,
 } from "../prisma";
-import { handleQuery, expandQuery } from "../searchendpoints";
+import { getQueryInterface, expandQuery } from "../searchendpoints";
 import { userCanAccessSearchConfiguration } from "../searchconfigurations";
 
 export type { Execution };
@@ -212,6 +212,7 @@ async function newSearchPhraseExecution(
   tpl: QueryTemplate,
   jp: CombinedJudgementPhrase
 ): Promise<Prisma.SearchPhraseExecutionCreateWithoutExecutionInput> {
+  const iface = getQueryInterface(endpoint);
   const query: any = await expandQuery(
     jp.phrase,
     tpl.query,
@@ -220,8 +221,7 @@ async function newSearchPhraseExecution(
     undefined
   );
   query.explain = true;
-  const queryResult = await handleQuery<ElasticsearchQueryResponse>(
-    endpoint,
+  const queryResult = await iface.handleQueryDEPRECATED<ElasticsearchQueryResponse>(
     JSON.stringify(query)
   );
   const results =

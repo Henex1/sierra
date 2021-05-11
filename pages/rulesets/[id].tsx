@@ -18,8 +18,7 @@ import { RulesetVersionValue } from "../../lib/rulesets/rules";
 import RulesetEditor from "../../components/rulesets/RulesetEditor";
 import {
   getSearchEndpoint,
-  handleGetFields,
-  handleGetValues,
+  getQueryInterface,
 } from "../../lib/searchendpoints";
 import { getProject } from "../../lib/projects";
 import getFields from "../api/searchendpoints/fields";
@@ -53,12 +52,13 @@ export const getServerSideProps = authenticatedPage(async (context) => {
   if (!searchEndpoint) {
     return { notFound: true };
   }
+  const iface = getQueryInterface(searchEndpoint);
 
   return {
     props: {
       ruleset: formatRuleset(ruleset),
       version: formatRulesetVersion(version),
-      facetFilterFields: await handleGetFields(searchEndpoint, {
+      facetFilterFields: await iface.getFields({
         aggregateable: true,
         type: "keyword",
       }),

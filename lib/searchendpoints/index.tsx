@@ -6,6 +6,7 @@ import prisma, { Prisma, User, SearchEndpoint } from "../prisma";
 import { SearchEndpointSchema } from "../schema";
 import { userCanAccessOrg } from "../org";
 import {
+  ElasticsearchInterface,
   handleElasticsearchQuery,
   handleElasticsearchGetFields,
   handleElasticsearchGetValues,
@@ -157,58 +158,23 @@ export type FieldsCapabilitiesFilters = {
   type?: string;
 };
 
-export async function handleGetFields(
-  searchEndpoint: SearchEndpoint,
-  fieldsCapabilitiesFilters?: FieldsCapabilitiesFilters
-): Promise<string[]> {
-  if (
-    searchEndpoint.type === "ELASTICSEARCH" ||
-    searchEndpoint.type === "OPEN_SEARCH"
-  ) {
-    return handleElasticsearchGetFields(
-      searchEndpoint,
-      fieldsCapabilitiesFilters
-    );
-  }
-  return [];
+export interface QueryInterface {
+  getFields(filters?: FieldsCapabilitiesFilters): Promise<string[]>;
+  getFieldValues(fieldName: string, prefix?: string): Promise<string[]>;
+  handleQueryDEPRECATED<ResultType = any>(query: string): Promise<ResultType>;
 }
 
-export async function handleGetValues<ResultType = any>(
-  searchEndpoint: SearchEndpoint,
-  fieldName: string,
-  prefix?: string
-): Promise<ResultType> {
+export function getQueryInterface(
+  searchEndpoint: SearchEndpoint
+): QueryInterface {
   if (
     searchEndpoint.type === "ELASTICSEARCH" ||
     searchEndpoint.type === "OPEN_SEARCH"
   ) {
-    return (handleElasticsearchGetValues(
-      searchEndpoint,
-      fieldName,
-      prefix
-    ) as any) as ResultType;
+    return new ElasticsearchInterface(searchEndpoint);
+  } else {
+    throw new Error(`unimplemented SearchEndpoint ${searchEndpoint.type}`);
   }
-  throw new Error(
-    `unsupported searchEndpoint type ${JSON.stringify(searchEndpoint.type)}`
-  );
-}
-
-export async function handleQuery<ResultType = any>(
-  searchEndpoint: SearchEndpoint,
-  query: string
-): Promise<ResultType> {
-  if (
-    searchEndpoint.type === "ELASTICSEARCH" ||
-    searchEndpoint.type === "OPEN_SEARCH"
-  ) {
-    return (handleElasticsearchQuery(
-      searchEndpoint,
-      query
-    ) as any) as ResultType;
-  }
-  throw new Error(
-    `unsupported searchEndpoint type ${JSON.stringify(searchEndpoint.type)}`
-  );
 }
 
 export async function expandQuery(

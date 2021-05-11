@@ -15,7 +15,10 @@ import {
   getSearchPhraseExecution,
   getExecutionProject,
 } from "../../../lib/execution";
-import { getSearchEndpoint, handleQuery } from "../../../lib/searchendpoints";
+import {
+  getSearchEndpoint,
+  getQueryInterface,
+} from "../../../lib/searchendpoints";
 import explanationSample from "./explanationSample.json";
 
 function mockExplanation(explanation: any) {
@@ -65,8 +68,8 @@ export default apiHandler(
     }
     const speResults = spe.results as SearchPhraseExecutionResults;
 
-    const docs = await handleQuery(
-      se,
+    const iface = getQueryInterface(se);
+    const docs = await iface.handleQueryDEPRECATED(
       JSON.stringify({
         query: {
           terms: {

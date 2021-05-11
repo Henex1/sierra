@@ -3,7 +3,7 @@ import fetch from "node-fetch";
 
 import { SearchEndpoint } from "../prisma";
 import { ElasticsearchInfoSchema } from "../schema";
-import { FieldsCapabilitiesFilters } from "./index";
+import { FieldsCapabilitiesFilters, QueryInterface } from "./index";
 
 type ElasticsearchInfo = z.infer<typeof ElasticsearchInfoSchema>;
 
@@ -25,10 +25,26 @@ function getHeaders(credentials?: Credentials): Record<string, string> {
   return headers;
 }
 
-export async function handleElasticsearchQuery(
+export class ElasticsearchInterface implements QueryInterface {
+  constructor(public searchEndpoint: SearchEndpoint) {}
+
+  getFields(filters?: FieldsCapabilitiesFilters): Promise<string[]> {
+    return handleElasticsearchGetFields(this.searchEndpoint, filters);
+  }
+
+  getFieldValues(fieldName: string, prefix?: string): Promise<string[]> {
+    return handleElasticsearchGetValues(this.searchEndpoint, fieldName, prefix);
+  }
+
+  handleQueryDEPRECATED<ResultType>(query: string): Promise<ResultType> {
+    return handleElasticsearchQuery<ResultType>(this.searchEndpoint, query);
+  }
+}
+
+export async function handleElasticsearchQuery<ResultType = any>(
   searchEndpoint: SearchEndpoint,
   query: string
-): Promise<object> {
+): Promise<ResultType> {
   const {
     endpoint,
     index,
@@ -107,7 +123,7 @@ export async function handleElasticsearchGetValues(
   searchEndpoint: SearchEndpoint,
   fieldName: string,
   prefix?: string
-): Promise<object> {
+): Promise<string[]> {
   const query = JSON.stringify({
     size: 0,
     aggs: {
