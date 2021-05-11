@@ -58,3 +58,20 @@ export async function getActiveSearchConfiguration(
   });
   return sc;
 }
+
+export async function getSearchConfigurationProject(
+  config: SearchConfiguration
+): Promise<Project> {
+  const project = await prisma.project.findFirst({
+    where: {
+      queryTemplates: {
+        some: {
+          searchConfigurations: {
+            some: { id: config.id },
+          },
+        },
+      },
+    },
+  });
+  return project!;
+}
