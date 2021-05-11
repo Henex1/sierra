@@ -5,12 +5,7 @@ import { HttpError } from "../apiServer";
 import prisma, { Prisma, User, SearchEndpoint } from "../prisma";
 import { SearchEndpointSchema } from "../schema";
 import { userCanAccessOrg } from "../org";
-import {
-  ElasticsearchInterface,
-  handleElasticsearchQuery,
-  handleElasticsearchGetFields,
-  handleElasticsearchGetValues,
-} from "./elasticsearch";
+import { ElasticsearchInterface } from "./elasticsearch";
 import { requireEnv } from "../env";
 
 const QUERY_EXPANDER_URL = requireEnv("QUERY_EXPANDER_URL");
@@ -82,6 +77,22 @@ export async function listSearchEndpoints({
   return searchEndpoints;
 }
 
+const cleanSearchEndpointSchema = SearchEndpointSchema.pick({
+  type: true,
+  info: true,
+}).nonstrict();
+type CleanSearchEndpoint = z.infer<typeof cleanSearchEndpointSchema>;
+function cleanSearchEndpoint(input: CleanSearchEndpoint) {
+  switch (input.type) {
+    case "ELASTICSEARCH":
+    case "OPEN_SEARCH":
+      if (!input.info.endpoint.endsWith("/")) {
+        input.info.endpoint += "/";
+      }
+      break;
+  }
+}
+
 export const createSearchEndpointSchema = SearchEndpointSchema.omit({
   id: true,
   createdAt: true,
@@ -100,6 +111,7 @@ export async function createSearchEndpoint(
   if (!isValidOrg) {
     return Promise.reject(new HttpError(400, { error: "invalid org" }));
   }
+  cleanSearchEndpoint(input);
 
   const ds = await prisma.searchEndpoint.create({
     data: input,
@@ -140,13 +152,18 @@ export async function updateSearchEndpoint(
     }
   }
 
-  const ds = await getSearchEndpoint(user, input.id);
-  if (!ds) {
+  const se = await getSearchEndpoint(user, input.id);
+  if (!se) {
     return Promise.reject(new HttpError(404, { error: "not found" }));
   }
 
+  if ("info" in input || "type" in input) {
+    input = { type: se.type, info: se.info, ...input } as UpdateSearchEndpoint;
+    cleanSearchEndpoint(input as any);
+  }
+
   const endpoint = await prisma.searchEndpoint.update({
-    where: { id: ds.id },
+    where: { id: se.id },
     data: input,
   });
   return endpoint;
