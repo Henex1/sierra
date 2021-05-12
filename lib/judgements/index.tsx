@@ -9,7 +9,9 @@ import prisma, {
   Project,
   Judgement,
   JudgementPhrase,
+  JudgementSearchConfiguration,
   Vote,
+  SearchConfiguration,
 } from "../prisma";
 import { userCanAccessProject } from "../projects";
 
@@ -70,6 +72,19 @@ export async function getJudgement(
     where: userCanAccessJudgement(user, { id }),
   });
   return judgement;
+}
+
+export async function getJudgementForSearchConfiguration(
+  sc: SearchConfiguration
+): Promise<JudgementSearchConfiguration | null> {
+  const judgementSearchConfiguration = await prisma.judgementSearchConfiguration.findFirst(
+    {
+      where: {
+        searchConfigurationId: sc.id,
+      },
+    }
+  );
+  return judgementSearchConfiguration;
 }
 
 export async function listJudgements(project: Project): Promise<Judgement[]> {

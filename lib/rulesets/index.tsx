@@ -7,6 +7,7 @@ import prisma, {
   User,
   Ruleset,
   RulesetVersion,
+  SearchConfiguration,
 } from "../prisma";
 import { userCanAccessProject } from "../projects";
 import { rulesetVersionValueSchema } from "./rules";
@@ -108,4 +109,21 @@ export async function createRulesetVersion(
     data: { ...input, rulesetId: ruleset.id },
   });
   return version;
+}
+
+export async function getRulesetsForSearchConfiguration(
+  searchConfiguration: SearchConfiguration
+): Promise<RulesetVersion[]> {
+  const sc = await prisma.searchConfiguration.findFirst({
+    where: {
+      id: searchConfiguration.id,
+    },
+    select: {
+      rulesets: true,
+    },
+  });
+  if (!sc) {
+    return [];
+  }
+  return sc.rulesets;
 }

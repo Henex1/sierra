@@ -1,72 +1,33 @@
 import * as React from "react";
-import Container from "@material-ui/core/Container";
-import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
+import { Typography } from "@material-ui/core";
 
+import { getRulesetEditorProps } from "../api/rulesets/[id]";
 import { authenticatedPage, requireNumberParam } from "lib/pageHelpers";
 import { apiRequest } from "lib/api";
-import {
-  userCanAccessRuleset,
-  formatRuleset,
-  formatRulesetVersion,
-  getRuleset,
-  getLatestRulesetVersion,
-  ExposedRuleset,
-  ExposedRulesetVersion,
-} from "../../lib/rulesets";
+import { ExposedRuleset, ExposedRulesetVersion } from "../../lib/rulesets";
 import { RulesetVersionValue } from "../../lib/rulesets/rules";
+import Link from "../../components/common/Link";
+import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 import RulesetEditor from "../../components/rulesets/RulesetEditor";
-import {
-  getSearchEndpoint,
-  getQueryInterface,
-} from "../../lib/searchendpoints";
-import { getProject } from "../../lib/projects";
-import getFields from "../api/searchendpoints/fields";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const id = requireNumberParam(context, "id");
-  const ruleset = await getRuleset(context.user, id);
-  if (!ruleset) {
-    return { notFound: true };
-  }
-  let version = await getLatestRulesetVersion(ruleset);
-  if (!version) {
-    // Create a fake initial version
-    version = {
-      id: null as any,
-      rulesetId: ruleset.id,
-      parentId: null,
-      value: { rules: [] },
-      createdAt: new Date(),
-      updatedAt: new Date(),
+  const props = await getRulesetEditorProps(id, context.user);
+  if (props.notFound) {
+    return {
+      notFound: true,
     };
   }
-  const project = await getProject(context.user, ruleset.projectId);
-  if (!project) {
-    return { notFound: true };
-  }
-  const searchEndpoint = await getSearchEndpoint(
-    context.user,
-    project.searchEndpointId as number
-  );
-  if (!searchEndpoint) {
-    return { notFound: true };
-  }
-  const iface = getQueryInterface(searchEndpoint);
 
   return {
     props: {
-      ruleset: formatRuleset(ruleset),
-      version: formatRulesetVersion(version),
-      facetFilterFields: await iface.getFields({
-        aggregateable: true,
-        type: "keyword",
-      }),
+      ...props,
     },
   };
 });
 
-type Props = {
+export type Props = {
   ruleset: ExposedRuleset;
   version: ExposedRulesetVersion;
   facetFilterFields: string[];
@@ -92,11 +53,17 @@ export default function EditRuleset({
   }
 
   return (
-    <RulesetEditor
-      name={ruleset.name}
-      onSubmit={onSubmit}
-      initialValues={version.value as RulesetVersionValue}
-      facetFilterFields={facetFilterFields}
-    />
+    <>
+      <BreadcrumbsButtons>
+        <Link href="/">Home</Link>
+        <Link href="/rulesets">Rulesets</Link>
+        <Typography>{ruleset.name}</Typography>
+      </BreadcrumbsButtons>
+      <RulesetEditor
+        onSubmit={onSubmit}
+        initialValues={version.value as RulesetVersionValue}
+        facetFilterFields={facetFilterFields}
+      />
+    </>
   );
 }

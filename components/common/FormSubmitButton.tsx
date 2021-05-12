@@ -19,15 +19,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export type RulesetEditorSaveButtonProps = {
-  dirty: boolean;
-};
-
-export default function RulesetEditorSaveButton({
-  dirty,
-}: RulesetEditorSaveButtonProps) {
+export default function FormSubmitButton() {
   const classes = useStyles();
-  const { submitting } = useFormState();
+  const { submitting, dirty } = useFormState();
 
   return (
     <Box pb={2}>

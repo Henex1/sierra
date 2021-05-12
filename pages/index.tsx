@@ -4,6 +4,7 @@ import Avatar from "@material-ui/core/Avatar";
 import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
 import Typography from "@material-ui/core/Typography";
+import Portal from "@material-ui/core/Portal";
 import { makeStyles } from "@material-ui/core/styles";
 
 import ProjectList, {
@@ -11,6 +12,8 @@ import ProjectList, {
 } from "../components/dashboard/ProjectList";
 import TeamList from "../components/dashboard/TeamList";
 import { useSession } from "../components/Session";
+import { LayoutContext } from "../components/AppLayout";
+import MenuDrawer from "../components/dashboard/MenuDrawer";
 import { authenticatedPage } from "../lib/pageHelpers";
 import { userCanAccessProject } from "../lib/projects";
 import prisma from "../lib/prisma";
@@ -120,6 +123,13 @@ export default function Home({ projects }: Props) {
 
   return (
     <div className={classes.root} data-testid="home-root">
+      <LayoutContext.Consumer>
+        {({ sidebarRef }) => (
+          <Portal container={sidebarRef.current}>
+            <MenuDrawer />
+          </Portal>
+        )}
+      </LayoutContext.Consumer>
       <Grid container alignItems="center">
         <Grid item>
           <Avatar

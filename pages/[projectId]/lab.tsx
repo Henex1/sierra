@@ -26,8 +26,20 @@ import {
   requireNumberParam,
   optionalNumberQuery,
 } from "../../lib/pageHelpers";
-import Link from "../../components/common/Link";
-import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
+import {
+  userCanAccessRuleset,
+  formatRuleset,
+  ExposedRuleset,
+  formatRulesetVersion,
+  ExposedRulesetVersion,
+  getRulesetsForSearchConfiguration,
+} from "../../lib/rulesets";
+import {
+  getQueryTemplate,
+  ExposedQueryTemplate,
+  formatQueryTemplate,
+} from "../../lib/querytemplates";
+import prisma, { QueryTemplate } from "../../lib/prisma";
 import NoExistingExcution from "components/lab/NoExistingExcution";
 
 const useStyles = makeStyles((theme) => ({
@@ -43,9 +55,15 @@ const useStyles = makeStyles((theme) => ({
 const pageSize = 20;
 
 type Props = {
-  searchConfiguration: ExposedSearchConfiguration | null;
+  searchConfiguration:
+    | (ExposedSearchConfiguration & {
+        queryTemplate: ExposedQueryTemplate;
+        rulesets: ExposedRulesetVersion[];
+      })
+    | null;
   searchPhrases: MockSearchPhrase[];
   searchPhrasesTotal: number;
+  rulesets: ExposedRuleset[];
   filters: {
     show: ShowOptions;
     sort: SortOptions;
@@ -87,11 +105,28 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
       tookMs: phrase.tookMs,
     };
   });
+  const rulesets = await prisma.ruleset.findMany({
+    where: userCanAccessRuleset(context.user),
+  });
+  const queryTemplate = sc
+    ? await getQueryTemplate(context.user, sc.queryTemplateId)
+    : null;
+  const searchConfiguration = sc
+    ? {
+        ...formatSearchConfiguration(sc),
+        rulesets: (await getRulesetsForSearchConfiguration(sc)).map(
+          formatRulesetVersion
+        ),
+        queryTemplate: formatQueryTemplate(queryTemplate as QueryTemplate),
+      }
+    : null;
+
   return {
     props: {
-      searchConfiguration: sc ? formatSearchConfiguration(sc) : null,
+      searchConfiguration,
       searchPhrases: mockObjects,
       searchPhrasesTotal,
+      rulesets: rulesets.map(formatRuleset),
       filters,
       page: page + 1,
     },
@@ -102,6 +137,7 @@ export default function Lab({
   searchConfiguration,
   searchPhrases,
   searchPhrasesTotal,
+  rulesets,
   ...props
 }: Props) {
   const classes = useStyles();
@@ -115,7 +151,6 @@ export default function Lab({
     sort: props.filters.sort,
   });
   const [page, setPage] = React.useState(props.page);
-  const [configurations, setConfigurations] = React.useState({});
   const [isTestRunning, setIsTestRunning] = React.useState(false);
 
   React.useEffect(() => {
@@ -172,7 +207,6 @@ export default function Lab({
 
   const handleConfigurationsChange = (configs: {}) => {
     // TODO
-    setConfigurations(configs);
   };
 
   const isFirstQueryExcute = searchPhrases.length == 0;
@@ -239,7 +273,8 @@ export default function Lab({
         />
       )}
       <ActionButtons
-        configurations={configurations}
+        searchConfiguration={searchConfiguration}
+        rulesets={rulesets}
         canRun={searchConfiguration !== null}
         isRunning={isTestRunning}
         onRun={handleRun}

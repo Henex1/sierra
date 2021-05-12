@@ -1,26 +1,14 @@
 import React from "react";
-import { useRouter } from "next/router";
+import {
+  Box,
+  Typography,
+  Container,
+  CssBaseline,
+  makeStyles,
+} from "@material-ui/core";
 
-import { makeStyles } from "@material-ui/core/styles";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import Box from "@material-ui/core/Box";
-import Typography from "@material-ui/core/Typography";
-import Container from "@material-ui/core/Container";
-import Drawer from "@material-ui/core/Drawer";
-import List from "@material-ui/core/List";
-import Toolbar from "@material-ui/core/Toolbar";
-import Divider from "@material-ui/core/Divider";
-
-import { useActiveProject, useSession } from "./Session";
 import Link from "./common/Link";
 import AppTopBar from "./AppTopBar/AppTopBar";
-import { mainListItems } from "./AppNavigation";
-import ListSubheader from "@material-ui/core/ListSubheader";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import AssignmentIcon from "@material-ui/icons/Assignment";
-import ListItemText from "@material-ui/core/ListItemText";
-import { ExposedProject } from "../lib/projects";
 
 function Copyright() {
   return (
@@ -34,6 +22,10 @@ function Copyright() {
     </Typography>
   );
 }
+
+export const LayoutContext = React.createContext({
+  sidebarRef: React.createRef<HTMLDivElement | null>(),
+});
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -59,13 +51,6 @@ const useStyles = makeStyles((theme) => ({
     paddingTop: theme.spacing(4),
     paddingBottom: theme.spacing(4),
   },
-  drawer: {
-    width: 240,
-    flexShrink: 0,
-  },
-  drawerPaper: {
-    width: 240,
-  },
 }));
 
 type AppLayoutProps = {
@@ -74,61 +59,26 @@ type AppLayoutProps = {
 
 export default function AppLayout({ children }: AppLayoutProps) {
   const classes = useStyles();
-  const router = useRouter();
-  const { session } = useSession();
-  const { setProject } = useActiveProject();
-
-  // array of pages/pathname which includes navigation drawer
-  const showDrawer = ["/"].includes(router.pathname);
+  const sidebarRef = React.useRef<HTMLDivElement | null>(null);
 
   return (
-    <div className={classes.root}>
-      <CssBaseline />
-      <AppTopBar />
-      <main className={classes.main}>
-        <div className={classes.appBarSpacer} />
-        <div className={classes.content}>
-          {showDrawer && (
-            <Drawer
-              variant="permanent"
-              className={classes.drawer}
-              classes={{
-                paper: classes.drawerPaper,
-              }}
-              anchor="left"
-            >
-              <Toolbar />
-              <List>{mainListItems}</List>
-              <Divider />
-              {!!session?.projects?.length && (
-                <List>
-                  <ListSubheader inset>Recent projects</ListSubheader>
-                  {session.projects
-                    .slice(0, 3)
-                    .map((project: ExposedProject) => (
-                      <ListItem
-                        key={project.id}
-                        button
-                        onClick={() => setProject(project ?? null)}
-                      >
-                        <ListItemIcon>
-                          <AssignmentIcon />
-                        </ListItemIcon>
-                        <ListItemText primary={project.name} />
-                      </ListItem>
-                    ))}
-                </List>
-              )}
-            </Drawer>
-          )}
-          <Container maxWidth="lg" className={classes.container}>
-            {children}
-            <Box py={4}>
-              <Copyright />
-            </Box>
-          </Container>
-        </div>
-      </main>
-    </div>
+    <LayoutContext.Provider value={{ sidebarRef }}>
+      <div className={classes.root}>
+        <CssBaseline />
+        <AppTopBar />
+        <main className={classes.main}>
+          <div className={classes.appBarSpacer} />
+          <div className={classes.content}>
+            <div ref={sidebarRef}></div>
+            <Container maxWidth="lg" className={classes.container}>
+              {children}
+              <Box py={4}>
+                <Copyright />
+              </Box>
+            </Container>
+          </div>
+        </main>
+      </div>
+    </LayoutContext.Provider>
   );
 }

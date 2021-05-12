@@ -4,15 +4,22 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText, {
   ListItemTextProps,
 } from "@material-ui/core/ListItemText";
+import { makeStyles } from "@material-ui/core/styles";
 import DashboardIcon from "@material-ui/icons/Dashboard";
 import StorageIcon from "@material-ui/icons/Storage";
 import PeopleIcon from "@material-ui/icons/People";
 import LayersIcon from "@material-ui/icons/Layers";
 import BlurLinearIcon from "@material-ui/icons/BlurLinear";
 import AccountTreeIcon from "@material-ui/icons/AccountTree";
-import GavelIcon from '@material-ui/icons/Gavel';
+import GavelIcon from "@material-ui/icons/Gavel";
 
 import Link, { LinkProps } from "./common/Link";
+
+const useStyles = makeStyles((theme) => ({
+  link: {
+    color: theme.palette.text.primary,
+  },
+}));
 
 type NavigationItemProps = {
   href: LinkProps["href"];
@@ -20,16 +27,20 @@ type NavigationItemProps = {
   text: ListItemTextProps;
 };
 
-const NavigationItem: React.FC<NavigationItemProps> = ({
+const NavigationItem = ({
   icon,
   text,
   ...rest
-}) => (
-  <ListItem button {...rest} component={Link}>
-    <ListItemIcon children={icon} />
-    <ListItemText {...text} />
-  </ListItem>
-);
+}: React.PropsWithChildren<NavigationItemProps>) => {
+  const classes = useStyles();
+
+  return (
+    <ListItem button {...rest} className={classes.link} component={Link}>
+      <ListItemIcon>{icon}</ListItemIcon>
+      <ListItemText {...text} />
+    </ListItem>
+  );
+};
 
 export const mainListItems = (
   <div>

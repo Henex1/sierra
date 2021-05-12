@@ -1,6 +1,5 @@
-import React, { useCallback } from "react";
+import React from "react";
 import arrayMutators from "final-form-arrays";
-import { FormApi } from "final-form";
 import { Form, FormProps } from "react-final-form";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import {
@@ -11,9 +10,7 @@ import {
 } from "react-beautiful-dnd";
 import { resetServerContext } from "react-beautiful-dnd";
 import Draggable from "react-draggable";
-
 import {
-  Container,
   Grid,
   TextField,
   Button,
@@ -37,13 +34,10 @@ import AddIcon from "@material-ui/icons/Add";
 import DragIndicatorIcon from "@material-ui/icons/DragIndicator";
 import SettingsIcon from "@material-ui/icons/Settings";
 
-import Link from "components/common/Link";
-import BreadcrumbsButtons from "components/common/BreadcrumbsButtons";
 import RuleEditor from "./RuleEditor";
-import { ExposedRuleset } from "lib/rulesets";
 import { RulesetVersionValue, Rule } from "lib/rulesets/rules";
-import RulesetEditorSaveButton from "./RulesetEditorSaveButton";
 import RulesetConditionEditor from "./RulesetConditionEditor";
+import FormSubmitButton from "../common/FormSubmitButton";
 
 function PaperComponent(props: PaperProps) {
   return (
@@ -94,11 +88,12 @@ function DiscardChangesDialog({
   );
 }
 
-function NoRuleset() {
+function NoRuleset({ compact }: { compact?: boolean }) {
   return (
-    <Container maxWidth="md">
-      Select a rule on the left to get started.
-    </Container>
+    <div>
+      Select or create a new rule {compact ? "above" : "on the left"} to get
+      started.
+    </div>
   );
 }
 
@@ -129,10 +124,18 @@ function RulesList({
   const classes = useRulesListStyles();
   const [filter, setFilter] = React.useState("");
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    onAddRule(filter);
+  function handleAddRule(ruleName: string) {
+    onAddRule(ruleName);
+    setFilter("");
   }
+
+  function handleKeyPress(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" || e.keyCode === 13) {
+      e.preventDefault();
+      handleAddRule(filter);
+    }
+  }
+
   const makeOnDragEndFunction = (
     fields: FieldArrayRenderProps<Rule, any>["fields"]
   ) => (result: DropResult) => {
@@ -198,7 +201,7 @@ function RulesList({
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <>
       <Grid container spacing={1} alignItems="center">
         <Grid item xs>
           <TextField
@@ -208,15 +211,17 @@ function RulesList({
             value={filter}
             type="search"
             onChange={(e) => setFilter(e.target.value)}
+            onKeyPress={handleKeyPress}
             size="small"
           />
         </Grid>
         <Grid item>
           <Button
-            type="submit"
+            type="button"
             variant="outlined"
             startIcon={<AddIcon />}
             size="medium"
+            onClick={() => handleAddRule(filter)}
           >
             New
           </Button>
@@ -231,7 +236,8 @@ function RulesList({
           selected={selectedRule === -2}
           onClick={() => onChangeSelection(-2, false)}
         >
-          <SettingsIcon className={classes.settingsIcon} /> Ruleset Conditions
+          <SettingsIcon className={classes.settingsIcon} />{" "}
+          <Typography>Ruleset Conditions</Typography>
         </ListItem>
       </Box>
       <Box pt={2} pb={1}>
@@ -260,18 +266,20 @@ function RulesList({
           )}
         </FieldArray>
       </List>
-    </form>
+    </>
   );
 }
 
 export type RulesetEditorProps = FormProps<RulesetVersionValue> & {
-  name: ExposedRuleset["name"];
   facetFilterFields: string[];
+  formId?: string;
+  compact?: boolean;
 };
 
 export default function RulesetEditor({
-  name,
   facetFilterFields,
+  formId,
+  compact,
   ...rest
 }: RulesetEditorProps) {
   const [activeRuleset, setActiveRuleset] = React.useState(-1);
@@ -280,6 +288,10 @@ export default function RulesetEditor({
   const [pendingAction, setPendingAction] = React.useState(
     null as null | (() => () => void)
   );
+
+  React.useEffect(() => {
+    setActiveRuleset(-1);
+  }, [rest.initialValues]);
 
   return (
     <Form
@@ -303,14 +315,9 @@ export default function RulesetEditor({
           setActiveRuleset(values.rules.length);
         }
         return (
-          <>
-            <BreadcrumbsButtons>
-              <Link href="/">Home</Link>
-              <Link href="/rulesets">Rulesets</Link>
-              <Typography>{name}</Typography>
-            </BreadcrumbsButtons>
+          <form id={formId} onSubmit={handleSubmit}>
             <Grid container spacing={4}>
-              <Grid item md={3}>
+              <Grid item md={compact ? 12 : 4}>
                 <RulesList
                   rules={values.rules}
                   selectedRule={activeRuleset}
@@ -328,31 +335,25 @@ export default function RulesetEditor({
                       : handleAddRule
                   }
                 />
-                <form onSubmit={handleSubmit}>
-                  <RulesetEditorSaveButton dirty={dirty} />
-                </form>
+                {!formId && <FormSubmitButton />}
               </Grid>
-              <Grid item md={8}>
-                {activeRuleset === -1 && <NoRuleset />}
+              <Grid item md={compact ? 12 : 8}>
+                {activeRuleset === -1 && <NoRuleset compact={compact} />}
                 {activeRuleset === -2 && (
-                  <form onSubmit={handleSubmit}>
-                    <RulesetConditionEditor name="conditions" />
-                  </form>
+                  <RulesetConditionEditor name="conditions" />
                 )}
                 {activeRuleset >= 0 && (
-                  <form onSubmit={handleSubmit}>
-                    <RuleEditor
-                      name={`rules[${activeRuleset}]`}
-                      rules={values.rules}
-                      activeRuleset={activeRuleset}
-                      form={form}
-                      facetFilterFields={facetFilterFields}
-                      onDelete={() => {
-                        form.mutators.remove("rules", activeRuleset);
-                        setActiveRuleset(activeRuleset - 1);
-                      }}
-                    />
-                  </form>
+                  <RuleEditor
+                    name={`rules[${activeRuleset}]`}
+                    rules={values.rules}
+                    activeRuleset={activeRuleset}
+                    form={form}
+                    facetFilterFields={facetFilterFields}
+                    onDelete={() => {
+                      form.mutators.remove("rules", activeRuleset);
+                      setActiveRuleset(activeRuleset - 1);
+                    }}
+                  />
                 )}
               </Grid>
               <DiscardChangesDialog
@@ -365,7 +366,7 @@ export default function RulesetEditor({
                 }}
               />
             </Grid>
-          </>
+          </form>
         );
       }}
     />
