@@ -57,8 +57,9 @@ export default function UserMenu({ user, org }: Props) {
             title={`${org.name}`}
             src={org.image || undefined}
             variant="rounded"
-            children={org.image ? undefined : org.name.substring(0, 1)}
-          />
+          >
+            {org.image ? undefined : org.name.substring(0, 1)}
+          </Avatar>
           <Avatar
             className={classes.avatar}
             alt={user.name}

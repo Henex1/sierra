@@ -1,13 +1,8 @@
 import _ from "lodash";
-import prisma, {
-  Prisma,
-  User,
-  Project,
-  SearchConfiguration,
-  JudgementSearchConfiguration,
-} from "../prisma";
+import * as z from "zod";
+
+import prisma, { Prisma, User, Project, SearchConfiguration } from "../prisma";
 import { userCanAccessProject } from "../projects";
-import { ExposedQueryTemplate } from "../querytemplates";
 
 const scSelect = {
   id: true,
@@ -55,6 +50,49 @@ export async function getActiveSearchConfiguration(
   const sc = await prisma.searchConfiguration.findFirst({
     where: { queryTemplate: { projectId: project.id } },
     orderBy: [{ updatedAt: "desc" }],
+  });
+  return sc;
+}
+
+export const updateSearchConfigurationSchema = z.object({
+  queryTemplateId: z.number(),
+  rulesetIds: z.array(z.number()).optional(),
+});
+
+export type UpdateSearchConfiguration = Omit<
+  z.infer<typeof updateSearchConfigurationSchema>,
+  "rulesetIds"
+> & {
+  judgementIds?: number[];
+  rulesetVersionIds?: number[];
+};
+
+export async function updateSearchConfiguration(
+  input: UpdateSearchConfiguration
+): Promise<SearchConfiguration> {
+  const sc = await prisma.searchConfiguration.create({
+    data: {
+      queryTemplate: {
+        connect: {
+          id: input.queryTemplateId,
+        },
+      },
+      judgements: input.judgementIds
+        ? {
+            create: input.judgementIds.map((id) => ({
+              judgementId: id,
+              weight: 1.0,
+            })),
+          }
+        : undefined,
+      rulesets: input.rulesetVersionIds
+        ? {
+            connect: input.rulesetVersionIds.map((id) => ({
+              id,
+            })),
+          }
+        : undefined,
+    },
   });
   return sc;
 }

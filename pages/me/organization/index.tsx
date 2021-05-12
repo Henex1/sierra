@@ -3,8 +3,8 @@ import * as React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
-import EditIcon from '@material-ui/icons/Edit';
-import BusinessIcon from '@material-ui/icons/Business';
+import EditIcon from "@material-ui/icons/Edit";
+import BusinessIcon from "@material-ui/icons/Business";
 
 import { authenticatedPage } from "../../../lib/pageHelpers";
 import { ExposedOrg, listOrgs, formatOrg } from "../../../lib/org";
@@ -25,13 +25,12 @@ type Props = {
 const useStyles = makeStyles((theme) => ({
   header: {
     display: "flex",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   editButton: {
-    marginRight: theme.spacing(3)
-  }
+    marginRight: theme.spacing(3),
+  },
 }));
-
 
 export default function Index({ orgs }: Props) {
   const classes = useStyles();
@@ -56,28 +55,31 @@ export default function Index({ orgs }: Props) {
             >
               Edit details
             </LinkButton>
-            {orgs?.length > 1 &&
+            {orgs?.length > 1 && (
               <LinkButton
                 variant="outlined"
-                startIcon={<BusinessIcon/>}
+                startIcon={<BusinessIcon />}
                 size="medium"
                 href="organizations"
               >
                 Show more available organizations
               </LinkButton>
-            }
+            )}
           </div>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="overline">Name</Typography>
           <Typography variant="h5">{activeOrg?.name}</Typography>
         </Grid>
-        <Grid item xs={12} style={{display: "flex", alignItems: "center"}}>
+        <Grid item xs={12} style={{ display: "flex", alignItems: "center" }}>
           <div>
             <Typography variant="overline">Image</Typography>
             <Typography variant="h5">{activeOrg?.image}</Typography>
           </div>
-          <img src={activeOrg?.image ? activeOrg.image: ""} alt="Organization image"/>
+          <img
+            src={activeOrg?.image ? activeOrg.image : ""}
+            alt="Organization image"
+          />
         </Grid>
       </Grid>
     </div>

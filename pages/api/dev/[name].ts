@@ -98,7 +98,7 @@ async function handleSeed(
   const votes = parseVotesCsv(fs.readFileSync(seedJudgementFile, "utf-8"));
   await setVotes(judgement, votes);
 
-  await prisma.ruleset.create({
+  const ruleset = await prisma.ruleset.create({
     data: {
       projectId: project.id,
       name: "Dev Ruleset",
@@ -120,8 +120,17 @@ async function handleSeed(
 
   const sc = await prisma.searchConfiguration.create({
     data: {
-      queryTemplateId: queryTemplate.id,
+      queryTemplate: {
+        connect: {
+          id: queryTemplate.id,
+        },
+      },
       judgements: { create: [{ judgementId: judgement.id, weight: 1.0 }] },
+      rulesets: {
+        connect: {
+          id: ruleset.id,
+        },
+      },
     },
   });
 

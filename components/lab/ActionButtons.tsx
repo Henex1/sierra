@@ -1,22 +1,40 @@
 import React from "react";
-import { Fab, Drawer, CircularProgress, colors } from "@material-ui/core";
+import {
+  Fab,
+  Portal,
+  CircularProgress,
+  colors,
+  makeStyles,
+  Theme,
+} from "@material-ui/core";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import SettingsIcon from "@material-ui/icons/Settings";
 import CreateIcon from "@material-ui/icons/Create";
-
-import { makeStyles } from "@material-ui/core/styles";
 import classnames from "classnames";
 
-const useStyles = makeStyles((theme) => ({
+import { ExposedQueryTemplate } from "../../lib/querytemplates";
+import { ExposedRuleset, ExposedRulesetVersion } from "../../lib/rulesets";
+import { ExposedSearchConfiguration } from "../../lib/searchconfigurations";
+import { LayoutContext } from "../AppLayout";
+import ConfigurationDrawer from "./ConfigurationDrawer";
+
+const useStyles = makeStyles<Theme, { width: number }>((theme) => ({
   fabContainer: {
     position: "fixed",
-    right: 50,
     bottom: 30,
+  },
+  containerRight: {
+    right: 50,
+  },
+  containerLeft: {
+    left: 50,
   },
   runFab: {
     width: 140,
-    marginRight: theme.spacing(2),
   },
+  closeFab: (props) => ({
+    transform: `translateX(${props.width}px)`,
+  }),
   createFab: {
     width: 160,
     marginRight: theme.spacing(2),
@@ -31,7 +49,13 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 type Props = {
-  configurations: {};
+  searchConfiguration:
+    | (ExposedSearchConfiguration & {
+        queryTemplate: ExposedQueryTemplate;
+        rulesets: ExposedRulesetVersion[];
+      })
+    | null;
+  rulesets: ExposedRuleset[];
   canRun: boolean;
   isRunning: boolean;
   onRun: () => void;
@@ -39,26 +63,33 @@ type Props = {
 };
 
 export default function ActionButtons({
-  configurations,
+  searchConfiguration,
+  rulesets,
   canRun,
   isRunning,
   onRun,
   onConfigurationsChange,
 }: Props) {
-  const classes = useStyles();
   const [open, setOpen] = React.useState(false);
+  const [drawerWidth, setDrawerWidth] = React.useState(600);
+  const classes = useStyles({ width: drawerWidth });
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  return (
-    <div className={classnames(classes.fabContainer, "mui-fixed")}>
-      {canRun ? (
-        <>
+  return canRun ? (
+    <div>
+      <div
+        className={classnames(
+          classes.fabContainer,
+          classes.containerRight,
+          "mui-fixed"
+        )}
+      >
+        {!open && (
           <Fab
             color="primary"
             variant="extended"
-            className={classes.runFab}
             onClick={onRun}
             disabled={!canRun || isRunning}
           >
@@ -70,19 +101,46 @@ export default function ActionButtons({
 
             {isRunning ? "Running" : "Run now"}
           </Fab>
+        )}
+      </div>
+      <div
+        className={classnames(
+          classes.fabContainer,
+          classes.containerLeft,
+          "mui-fixed"
+        )}
+      >
+        {!open && (
           <Fab onClick={handleOpen}>
             <SettingsIcon />
           </Fab>
-          <Drawer anchor={"right"} open={open} onClose={handleClose}>
-            Run configurations
-          </Drawer>
-        </>
-      ) : (
-        <Fab color="primary" variant="extended" className={classes.createFab}>
-          <CreateIcon className={classes.fabIcon} />
-          Create Now
-        </Fab>
-      )}
+        )}
+        <LayoutContext.Consumer>
+          {({ sidebarRef }) => (
+            <Portal container={sidebarRef.current}>
+              {open && (
+                <ConfigurationDrawer
+                  canRun={canRun}
+                  isRunning={isRunning}
+                  onRun={onRun}
+                  width={drawerWidth}
+                  setDrawerWidth={setDrawerWidth}
+                  searchConfiguration={searchConfiguration}
+                  rulesets={rulesets}
+                  handleClose={handleClose}
+                />
+              )}
+            </Portal>
+          )}
+        </LayoutContext.Consumer>
+      </div>
+    </div>
+  ) : (
+    <div className={classnames(classes.fabContainer, "mui-fixed")}>
+      <Fab color="primary" variant="extended" className={classes.createFab}>
+        <CreateIcon className={classes.fabIcon} />
+        Create Now
+      </Fab>
     </div>
   );
 }

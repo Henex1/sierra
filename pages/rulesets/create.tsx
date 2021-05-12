@@ -38,7 +38,12 @@ export default function CreateRuleset() {
         <Typography>New Ruleset</Typography>
       </BreadcrumbsButtons>
       <Container maxWidth="sm">
-        <Form onSubmit={onSubmit} />
+        <Form
+          initialValues={{
+            projectId: project?.id,
+          }}
+          onSubmit={onSubmit}
+        />
       </Container>
     </div>
   );
