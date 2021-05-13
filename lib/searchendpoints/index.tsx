@@ -191,6 +191,8 @@ export type QueryResult = {
     id: string;
     explanation: object;
   }>;
+  // User-visible explanation of why the results of this query are incomplete.
+  error?: string;
 };
 
 export interface QueryInterface {

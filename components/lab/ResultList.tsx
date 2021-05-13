@@ -14,7 +14,7 @@ import CloseIcon from "@material-ui/icons/Close";
 import useSWR from "swr";
 
 import { useActiveProject } from "../../components/Session";
-import { MockSearchPhrase, MockSearchResult } from "../../lib/lab";
+import { ExposedSearchPhrase, MockSearchResult } from "../../lib/lab";
 
 import ScoreBox from "./ScoreBox";
 import ExplainBlock from "./ExplainBlock";
@@ -61,7 +61,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 type Props = {
-  searchPhrase: MockSearchPhrase;
+  searchPhrase: ExposedSearchPhrase;
   onClose: () => void;
 };
 

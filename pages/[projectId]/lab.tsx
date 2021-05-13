@@ -20,7 +20,7 @@ import {
   countSearchPhrases,
   getSearchPhrases,
 } from "../../lib/execution";
-import { MockSearchPhrase, ShowOptions, SortOptions } from "../../lib/lab";
+import { ExposedSearchPhrase, ShowOptions, SortOptions } from "../../lib/lab";
 import {
   authenticatedPage,
   requireNumberParam,
@@ -61,10 +61,11 @@ type Props = {
         rulesets: ExposedRulesetVersion[];
       })
     | null;
-  searchPhrases: MockSearchPhrase[];
+  searchPhrases: ExposedSearchPhrase[];
   searchPhrasesTotal: number;
   rulesets: ExposedRuleset[];
-  filters: {
+  timings?: Record<"p50" | "p95" | "p99", number>;
+  displayOptions: {
     show: ShowOptions;
     sort: SortOptions;
   };
@@ -83,28 +84,33 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
   const searchPhrasesTotal = execution
     ? await countSearchPhrases(execution)
     : 0;
+  const displayOptions = {
+    show: (context.query.show as ShowOptions) || "all",
+    sort: (context.query.sort as SortOptions) || "search-phrase-asc",
+  };
   const searchPhrases = execution
     ? await getSearchPhrases(execution, {
         skip: pageSize * page,
         take: pageSize,
+        filter: displayOptions.show,
+        sort: displayOptions.sort,
       })
     : [];
-  const filters = {
-    show: (context.query.show as ShowOptions) || "all",
-    sort: (context.query.sort as SortOptions) || "search-phrase-asc",
-  };
-  const mockObjects: MockSearchPhrase[] = searchPhrases.map((phrase) => {
-    return {
-      id: phrase.id,
-      phrase: phrase.phrase,
-      score: {
-        sierra: phrase.combinedScore * 100,
-        ..._.mapValues(phrase.allScores as object, (s) => s * 100),
-      } as any,
-      results: phrase.totalResults,
-      tookMs: phrase.tookMs,
-    };
-  });
+  const formattedPhrases: ExposedSearchPhrase[] = searchPhrases.map(
+    (phrase) => {
+      return {
+        id: phrase.id,
+        phrase: phrase.phrase,
+        score: {
+          sierra: phrase.combinedScore * 100,
+          ..._.mapValues(phrase.allScores as object, (s) => s * 100),
+        } as any,
+        results: phrase.totalResults,
+        tookMs: phrase.tookMs,
+        error: phrase.error || undefined,
+      };
+    }
+  );
   const rulesets = await prisma.ruleset.findMany({
     where: userCanAccessRuleset(context.user),
   });
@@ -124,10 +130,17 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
   return {
     props: {
       searchConfiguration,
-      searchPhrases: mockObjects,
+      searchPhrases: formattedPhrases,
       searchPhrasesTotal,
       rulesets: rulesets.map(formatRuleset),
-      filters,
+      timings: execution
+        ? {
+            p50: (execution.meta as any).tookP50,
+            p95: (execution.meta as any).tookP95,
+            p99: (execution.meta as any).tookP99,
+          }
+        : undefined,
+      displayOptions,
       page: page + 1,
     },
   };
@@ -138,6 +151,7 @@ export default function Lab({
   searchPhrases,
   searchPhrasesTotal,
   rulesets,
+  timings,
   ...props
 }: Props) {
   const classes = useStyles();
@@ -145,10 +159,12 @@ export default function Lab({
   const [
     searchPhrase,
     setSearchPhrase,
-  ] = React.useState<MockSearchPhrase | null>(null);
-  const [filters, setFilters] = React.useState<Props["filters"]>({
-    show: props.filters.show,
-    sort: props.filters.sort,
+  ] = React.useState<ExposedSearchPhrase | null>(null);
+  const [displayOptions, setDisplayOptions] = React.useState<
+    Props["displayOptions"]
+  >({
+    show: props.displayOptions.show,
+    sort: props.displayOptions.sort,
   });
   const [page, setPage] = React.useState(props.page);
   const [isTestRunning, setIsTestRunning] = React.useState(false);
@@ -176,19 +192,19 @@ export default function Lab({
       pathname: router.pathname,
       query: {
         ...router.query,
-        show: filters.show,
-        sort: filters.sort,
+        show: displayOptions.show,
+        sort: displayOptions.sort,
         page,
       },
     });
-  }, [filters, page]);
+  }, [displayOptions, page]);
 
   const handleFilterChange = (
     key: "show" | "sort",
     value: ShowOptions | SortOptions
   ) => {
-    setFilters({
-      ...filters,
+    setDisplayOptions({
+      ...displayOptions,
       [key]: value,
     });
   };
@@ -225,14 +241,18 @@ export default function Lab({
                   <Typography variant="body2" color="textSecondary">
                     Latency Percentiles (ms):
                     <br />
-                    Mean <b>90</b>, 95th percentile <b>320</b>, 99th percentile{" "}
-                    <b>2204</b>
+                    50th percentile <b>{timings!.p50.toFixed(0)}</b>, 95th
+                    percentile <b>{timings!.p95.toFixed(0)}</b>, 99th percentile{" "}
+                    <b>{timings!.p99.toFixed(0)}</b>
                   </Typography>
                 </Box>
               </Box>
             </Grid>
             <Grid item>
-              <Filters filters={filters} onFilterChange={handleFilterChange} />
+              <Filters
+                filters={displayOptions}
+                onFilterChange={handleFilterChange}
+              />
             </Grid>
           </Grid>
           <Grid container className={classes.listContainer}>

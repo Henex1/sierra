@@ -14,7 +14,9 @@ import prisma, {
 } from "../prisma";
 import { getQueryInterface, expandQuery } from "../searchendpoints";
 import { userCanAccessSearchConfiguration } from "../searchconfigurations";
+import { SortOptions, ShowOptions } from "../lab";
 import * as scorers from "../scorers/algorithms";
+import { percentiles } from "../math";
 
 export type { Execution };
 
@@ -87,13 +89,48 @@ export async function getLatestExecution(
   return execution;
 }
 
+const sortMapping: Record<
+  SortOptions,
+  Prisma.SearchPhraseExecutionOrderByInput
+> = {
+  "search-phrase-asc": { phrase: "asc" },
+  "search-phrase-desc": { phrase: "desc" },
+  "score-asc": { combinedScore: "asc" },
+  "score-desc": { combinedScore: "desc" },
+  "errors-asc": { error: "asc" },
+  "errors-desc": { error: "asc" },
+  "search-results-asc": { totalResults: "asc" },
+  "search-results-desc": { totalResults: "desc" },
+};
+
+const filterMapping: Record<
+  ShowOptions,
+  Prisma.SearchPhraseExecutionWhereInput
+> = {
+  all: {},
+  "no-errors": { error: null },
+  "errors-only": { error: { not: null } },
+  "have-results": { totalResults: { gt: 0 } },
+  "no-results": { totalResults: 0 },
+};
+
+type GetSearchPhraseOptions = OffsetPagination & {
+  sort?: SortOptions;
+  filter?: ShowOptions;
+};
+
 export async function getSearchPhrases(
   execution: Execution,
-  { take = 20, skip = 0 }: OffsetPagination = {}
+  {
+    take = 20,
+    skip = 0,
+    sort = "search-phrase-asc",
+    filter = "all",
+  }: GetSearchPhraseOptions = {}
 ): Promise<SearchPhraseExecution[]> {
   const phrases = await prisma.searchPhraseExecution.findMany({
-    where: { executionId: execution.id },
-    orderBy: [{ phrase: "asc" }],
+    where: { executionId: execution.id, AND: filterMapping[filter] ?? {} },
+    orderBy: [sortMapping[sort]].filter(_.identity).concat([{ phrase: "asc" }]),
     take,
     skip,
   });
@@ -198,10 +235,15 @@ export async function createExecution(
       mean(results.map((r) => (r.allScores as any)[scorer])),
     ])
   );
+  const [tookP50, tookP95, tookP99] = percentiles(
+    results,
+    [0.5, 0.95, 0.99],
+    (r) => r.tookMs
+  );
   const execution = await prisma.execution.create({
     data: {
       searchConfigurationId: config.id,
-      meta: {},
+      meta: { tookP50, tookP95, tookP99 },
       combinedScore,
       allScores,
       phrases: { create: results },
@@ -224,11 +266,15 @@ async function newSearchPhraseExecution(
       jp.results
     ),
   };
+  if (process.env.NODE_ENV === "development" && Math.random() < 0.1) {
+    queryResult.error = "Randomly injected error (development mode)";
+  }
   const combinedScore = mean(Object.values(allScores));
   return {
     phrase: jp.phrase,
     tookMs: queryResult.tookMs,
     totalResults: queryResult.totalResults,
+    error: queryResult.error,
     results: queryResult.results,
     combinedScore,
     allScores,
