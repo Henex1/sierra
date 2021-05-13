@@ -14,7 +14,7 @@ import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import classnames from "classnames";
 
-import { MockSearchPhrase } from "../../lib/lab";
+import { ExposedSearchPhrase } from "../../lib/lab";
 import ScoreBox from "./ScoreBox";
 
 const useStyles = makeStyles((theme) => ({
@@ -48,9 +48,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 type Props = {
-  searchPhrases: MockSearchPhrase[];
-  activePhrase: MockSearchPhrase | null;
-  setActivePhrase: (value: MockSearchPhrase | null) => void;
+  searchPhrases: ExposedSearchPhrase[];
+  activePhrase: ExposedSearchPhrase | null;
+  setActivePhrase: (value: ExposedSearchPhrase | null) => void;
 };
 
 export default function SearchPhraseList({
@@ -101,7 +101,9 @@ export default function SearchPhraseList({
                     <Typography variant="h6" className={classes.phrase}>
                       {item.phrase}
                     </Typography>
-                    <Tooltip title={`Took ${item.tookMs}ms to query`}>
+                    <Tooltip
+                      title={`Took ${item.tookMs}ms to query. ${item.error}`}
+                    >
                       <Typography
                         component="span"
                         variant="caption"
@@ -109,6 +111,7 @@ export default function SearchPhraseList({
                         color="textSecondary"
                       >
                         {item.tookMs}ms
+                        {item.error && " \u26A0"}
                       </Typography>
                     </Tooltip>
                   </>

@@ -269,7 +269,8 @@ model Execution {
   updatedAt             DateTime @updatedAt
   searchConfigurationId Int
   // Meta tracks information about the datasource, like number of documents,
-  // segments, shards; the index maapping; and so on.
+  // segments, shards; the index maapping; and so on. Standard keys:
+  // tookP50, tookP95, tookP99: percentile timing metrics
   meta                  Json
   combinedScore         Float
   // { [ scorerId: string]: number }
@@ -290,6 +291,9 @@ model SearchPhraseExecution {
   totalResults  Int
   // How long the query took to execute
   tookMs        Int
+  // If there were any errors executing this query, this contains a user-facing
+  // string describing them.
+  error         String?
   // The top results, [ { id: documentID, explanation: { ... } }, ... ]
   results       Json
   combinedScore Float

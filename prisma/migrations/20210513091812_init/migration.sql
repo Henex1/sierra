@@ -207,6 +207,7 @@ CREATE TABLE "SearchPhraseExecution" (
     "phrase" TEXT NOT NULL,
     "totalResults" INTEGER NOT NULL,
     "tookMs" INTEGER NOT NULL,
+    "error" TEXT,
     "results" JSONB NOT NULL,
     "combinedScore" DOUBLE PRECISION NOT NULL,
     "allScores" JSONB NOT NULL,

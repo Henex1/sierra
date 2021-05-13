@@ -1,4 +1,4 @@
-export type MockSearchPhrase = {
+export type ExposedSearchPhrase = {
   id: number;
   phrase: string;
   score: {
@@ -9,6 +9,7 @@ export type MockSearchPhrase = {
   };
   results: number;
   tookMs: number;
+  error?: string;
 };
 
 export type MockSearchResult = {

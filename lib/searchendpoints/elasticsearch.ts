@@ -20,21 +20,23 @@ type ElasticsearchHit = {
   _explanation: object;
 };
 
-type ElasticsearchQueryResponse = {
-  took: number;
-  timed_out: boolean;
-  _shards: {
-    total: number;
-    successful: number;
-    skipped: number;
-    failed: number;
-  };
-  hits: {
-    total: { value: number; relation: "eq" };
-    max_score: number;
-    hits: ElasticsearchHit[];
-  };
-};
+type ElasticsearchQueryResponse =
+  | { error: { type: string; reason: string } }
+  | {
+      took: number;
+      timed_out: boolean;
+      _shards: {
+        total: number;
+        successful: number;
+        skipped: number;
+        failed: number;
+      };
+      hits: {
+        total: { value: number; relation: "eq" };
+        max_score: number;
+        hits: ElasticsearchHit[];
+      };
+    };
 
 type ElasticsearchInfo = z.infer<typeof ElasticsearchInfoSchema>;
 
@@ -157,6 +159,11 @@ export class ElasticsearchInterface implements QueryInterface {
       "_search?explain=true",
       JSON.stringify(query)
     );
+    if ("error" in response) {
+      throw new Error(
+        `Elasticsearch error (${response.error.type}) ${response.error.reason}`
+      );
+    }
     const results = response.hits?.hits?.map((h) => ({
       id: h._id,
       explanation: h._explanation,
@@ -165,6 +172,10 @@ export class ElasticsearchInterface implements QueryInterface {
       tookMs: response.took,
       totalResults: response.hits?.total?.value ?? 0,
       results,
+      error:
+        response._shards.failed > 0
+          ? `${response._shards.failed} shards failed`
+          : undefined,
     };
   }
 
