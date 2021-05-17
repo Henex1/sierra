@@ -88,6 +88,7 @@ CREATE TABLE "SearchEndpoint" (
     "displayFields" TEXT[],
     "type" "SearchEndpointType" NOT NULL,
     "info" JSONB NOT NULL,
+    "credentials" TEXT,
 
     PRIMARY KEY ("id")
 );

@@ -1,7 +1,12 @@
 export function requireEnv(name: string): string {
-  return `MOCK_${name}`;
+  return optionalEnv(name);
 }
 
 export function optionalEnv(name: string): string {
-  return `MOCK_${name}`;
+  switch (name) {
+    case "CREDENTIALS_SECRET":
+      return "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+    default:
+      return `MOCK_${name}`;
+  }
 }

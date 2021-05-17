@@ -1,14 +1,21 @@
 import _ from "lodash";
 import * as z from "zod";
+import fernet from "fernet";
 
 import { HttpError } from "../apiServer";
 import prisma, { Prisma, User, SearchEndpoint } from "../prisma";
-import { SearchEndpointSchema } from "../schema";
+import { SearchEndpointSchema, SearchEndpointCredentials } from "../schema";
 import { userCanAccessOrg } from "../org";
+import { requireEnv } from "../env";
 import { ElasticsearchInterface } from "./elasticsearch";
 import { expandQuery, ExpandedQuery } from "./queryexpander";
 
 export { expandQuery };
+
+const fernetSecret = (function () {
+  const encryptionKey = requireEnv("CREDENTIALS_SECRET");
+  return new fernet.Secret(encryptionKey);
+})();
 
 // This is the list of keys which are included in user requests for
 // SearchEndpoint by default.
@@ -45,7 +52,17 @@ export function userCanAccessSearchEndpoint(
 export function formatSearchEndpoint(
   val: SearchEndpoint
 ): ExposedSearchEndpoint {
-  return _.pick(val, _.keys(selectKeys)) as ExposedSearchEndpoint;
+  const ese = _.pick(val, _.keys(selectKeys)) as ExposedSearchEndpoint;
+  switch (ese.type) {
+    case "ELASTICSEARCH":
+    case "OPEN_SEARCH":
+      delete (ese.info as any).password;
+      break;
+    default:
+      // How do we delete the password from this search type?
+      throw new Error(`unsupported SearchEndpoint type ${ese.type}`);
+  }
+  return ese;
 }
 
 export async function getSearchEndpoint(
@@ -112,9 +129,12 @@ export async function createSearchEndpoint(
     return Promise.reject(new HttpError(400, { error: "invalid org" }));
   }
   cleanSearchEndpoint(input);
+  const encodedCredentials = input.credentials
+    ? encryptCredentials(input.credentials)
+    : "";
 
   const ds = await prisma.searchEndpoint.create({
-    data: input,
+    data: { ...input, credentials: encodedCredentials },
     select: selectKeys,
   });
   return ds;
@@ -141,30 +161,43 @@ export type UpdateSearchEndpoint = z.infer<typeof updateSearchEndpointSchema>;
 
 export async function updateSearchEndpoint(
   user: User,
-  input: UpdateSearchEndpoint
+  rawInput: UpdateSearchEndpoint
 ): Promise<SearchEndpoint> {
-  if ("orgId" in input) {
+  let formattedInput: any = rawInput;
+  if ("orgId" in formattedInput) {
     const isValidOrg = await prisma.orgUser.findUnique({
-      where: { userId_orgId: { userId: user.id, orgId: input.orgId! } },
+      where: {
+        userId_orgId: { userId: user.id, orgId: formattedInput.orgId! },
+      },
     });
     if (!isValidOrg) {
       return Promise.reject(new HttpError(400, { error: "invalid org" }));
     }
   }
 
-  const se = await getSearchEndpoint(user, input.id);
+  const se = await getSearchEndpoint(user, formattedInput.id);
   if (!se) {
     return Promise.reject(new HttpError(404, { error: "not found" }));
   }
 
-  if ("info" in input || "type" in input) {
-    input = { type: se.type, info: se.info, ...input } as UpdateSearchEndpoint;
-    cleanSearchEndpoint(input as any);
+  if ("info" in formattedInput || "type" in formattedInput) {
+    formattedInput = {
+      type: se.type,
+      info: se.info,
+      ...formattedInput,
+    } as UpdateSearchEndpoint;
+    cleanSearchEndpoint(formattedInput as any);
+  }
+  if (formattedInput.credentials !== undefined) {
+    formattedInput = {
+      ...formattedInput,
+      credentials: encryptCredentials(formattedInput.credentials),
+    } as Prisma.SearchEndpointUpdateInput;
   }
 
   const endpoint = await prisma.searchEndpoint.update({
     where: { id: se.id },
-    data: input,
+    data: formattedInput,
   });
   return endpoint;
 }
@@ -216,4 +249,33 @@ export function getQueryInterface(
   } else {
     throw new Error(`unimplemented SearchEndpoint ${searchEndpoint.type}`);
   }
+}
+
+function encryptCredentials(
+  creds: SearchEndpointCredentials | null
+): string | null {
+  if (!creds) return null;
+  const token = new fernet.Token({
+    secret: fernetSecret,
+  });
+  return token.encode(JSON.stringify(creds));
+}
+
+function decryptCredentials(
+  creds: string | null
+): SearchEndpointCredentials | null {
+  if (!creds) return null;
+  const token = new fernet.Token({
+    secret: fernetSecret,
+    token: creds,
+    ttl: -1,
+  });
+  const decrypted = token.decode();
+  return JSON.parse(decrypted) as SearchEndpointCredentials;
+}
+
+export async function getSearchEndpointCredentials(
+  se: SearchEndpoint
+): Promise<SearchEndpointCredentials | null> {
+  return decryptCredentials(se.credentials);
 }

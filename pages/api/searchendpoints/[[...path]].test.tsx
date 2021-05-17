@@ -1,4 +1,4 @@
-import prisma from "../../../lib/prisma";
+import prisma, { SearchEndpoint } from "../../../lib/prisma";
 import { mockModels } from "../../../lib/__mocks__/prisma";
 import handler from "./[[...path]]";
 import { getApiRoute, TEST_ORG, TEST_ORGUSER } from "../../../lib/test";
@@ -32,7 +32,7 @@ describe("api/searchendpoints", () => {
     expect(searchEndpoint).toMatchObject(initialInfo);
   });
 
-  it("PATCH /:id", async () => {
+  it("PATCH /:id - no credentials", async () => {
     mockModels("searchEndpoint")
       .action("findFirst")
       .with({ where: { AND: { id: 42 } } })
@@ -54,6 +54,64 @@ describe("api/searchendpoints", () => {
       }
     );
     expect(revisedSearchEndpoint).toMatchObject(revisedInfo);
+  });
+
+  it("PATCH /:id - null credentials", async () => {
+    mockModels("searchEndpoint")
+      .action("findFirst")
+      .with({ where: { AND: { id: 42 } } })
+      .resolvesTo({ id: 42, ...initialInfo });
+    const revisedInfo = {
+      name: "Updated Endpoint Name",
+      info: { endpoint: "http://eshost:9200/", index: "icecat" },
+      credentials: null,
+    };
+    mockModels("searchEndpoint")
+      .action("update")
+      .with({ where: { id: 42 }, data: revisedInfo })
+      .resolvesTo({ id: 42, ...initialInfo, ...revisedInfo });
+    const { searchEndpoint: revisedSearchEndpoint } = await getApiRoute(
+      handler,
+      revisedInfo,
+      {
+        method: "PATCH",
+        query: { path: [42] },
+      }
+    );
+    const { credentials, ...expected } = revisedInfo;
+    expect(revisedSearchEndpoint).toMatchObject(expected);
+  });
+
+  it("PATCH /:id - update credentials", async () => {
+    mockModels("searchEndpoint")
+      .action("findFirst")
+      .with({ where: { AND: { id: 42 } } })
+      .resolvesTo({ id: 42, ...initialInfo });
+    const revisedInfo = {
+      name: "Updated Endpoint Name",
+      info: { endpoint: "http://eshost:9200/", index: "icecat" },
+      credentials: { username: "a", password: "b" },
+    };
+    const internalData = { ...revisedInfo, credentials: expect.any(String) };
+    mockModels("searchEndpoint")
+      .action("update")
+      .with({ where: { id: 42 }, data: internalData })
+      .resolvesTo({ id: 42, ...initialInfo, ...revisedInfo });
+    const { searchEndpoint: revisedSearchEndpoint } = await getApiRoute(
+      handler,
+      revisedInfo,
+      {
+        method: "PATCH",
+        query: { path: [42] },
+      }
+    );
+    const exposedData: any = {
+      id: 42,
+      ...initialInfo,
+      ...revisedInfo,
+    };
+    delete exposedData.credentials;
+    expect(revisedSearchEndpoint).toMatchObject(exposedData);
   });
 
   it("DELETE /:id", async () => {

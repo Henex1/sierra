@@ -10,6 +10,7 @@ import { createExecution } from "../../../lib/execution";
 import { notAuthorized, notFound } from "../../../lib/errors";
 import { getUser, ValidUserSession } from "../../../lib/authServer";
 import { userCanAccessOrg } from "../../../lib/org";
+import { createSearchEndpoint } from "../../../lib/searchendpoints";
 
 // prettier-ignore
 const mockRuleset: RulesetVersionValue = {
@@ -68,17 +69,16 @@ async function handleSeed(
     return res.status(500).json({ error: "user has no attached org" });
   }
 
-  const searchEndpoint = await prisma.searchEndpoint.create({
-    data: {
-      orgId: org.id,
-      name: "Local Elasticsearch",
-      description: "Elasticsearch instance on localhost.",
-      whitelist: [],
-      resultId: "_id",
-      displayFields: [],
-      type: "ELASTICSEARCH",
-      info: { endpoint: "http://localhost:9200/", index: "icecat" },
-    },
+  const searchEndpoint = await createSearchEndpoint(user, {
+    orgId: org.id,
+    name: "Local Elasticsearch",
+    description: "Elasticsearch instance on localhost.",
+    whitelist: [],
+    resultId: "_id",
+    displayFields: [],
+    type: "ELASTICSEARCH",
+    info: { endpoint: "http://localhost:9200/", index: "icecat" },
+    credentials: null,
   });
 
   const project = await prisma.project.create({

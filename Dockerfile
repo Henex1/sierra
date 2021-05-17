@@ -17,6 +17,7 @@ ENV DATABASE_URL=postgresql://postgres:example@postgres:5432/postgres?schema=pub
     QUERY_EXPANDER_URL=http://localhost:8080 \
     GOOGLE_ID=unset_google_id \
     GOOGLE_SECRET=unset_google_secret \
+    CREDENTIALS_SECRET=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
     NODE_ENV=production
 
 WORKDIR /app
