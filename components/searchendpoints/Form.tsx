@@ -1,6 +1,7 @@
 import React from "react";
 import { Form, Field, FormProps as BaseFormProps } from "react-final-form";
-import { TextField, Select } from "mui-rff";
+import { FormApi, SubmissionErrors } from "final-form";
+import { TextField, Select, Checkboxes } from "mui-rff";
 
 import { makeStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
@@ -13,6 +14,7 @@ import SaveIcon from "@material-ui/icons/Save";
 import DeleteIcon from "@material-ui/icons/Delete";
 
 import { ExposedSearchEndpoint } from "../../lib/searchendpoints";
+import { SearchEndpointCredentials } from "../../lib/schema";
 
 import Whitelist from "./Whitelist";
 import DisplayFields from "./DisplayFields";
@@ -50,7 +52,10 @@ export const searchEndpointTypes = [
   },
 ];
 
-export type FormProps = BaseFormProps<ExposedSearchEndpoint> & {
+type FormValues = ExposedSearchEndpoint & {
+  credentials?: SearchEndpointCredentials | null;
+};
+export type FormProps = BaseFormProps<FormValues> & {
   formId?: string;
   onDelete?: () => void;
   hideActions?: boolean;
@@ -77,10 +82,41 @@ export default function SearchEndpointForm({
 }: FormProps) {
   const classes = useStyles();
   const isNew = rest.initialValues?.id === undefined;
+  if (rest.initialValues) {
+    // @ts-ignore - change is a fake property which we remove
+    rest.initialValues.credentials = { change: isNew };
+  }
+
+  function handleSubmit(
+    values: FormValues,
+    form: FormApi<FormValues, Partial<FormValues>>,
+    callback?: (errors?: SubmissionErrors) => void
+  ) {
+    const payload = { ...values };
+    // The "change" prop is not a part of the type
+    const credentials: any = payload.credentials;
+    // There are 3 cases:
+    // credentials: null - unset existing credentials
+    // credentials: undefined - do not edit existing credentials
+    // credentials: object - update existing credentials
+    if (credentials.change) {
+      delete credentials.change;
+      if (
+        (credentials.username || "") == "" &&
+        (credentials.password || "") == ""
+      ) {
+        payload.credentials = null;
+      }
+    } else {
+      delete payload.credentials;
+    }
+    return rest.onSubmit(payload, form, callback);
+  }
 
   return (
     <Form
       {...rest}
+      onSubmit={handleSubmit}
       render={({ handleSubmit, form, submitting, values }) => (
         <form id={formId} onSubmit={handleSubmit}>
           <Grid container spacing={3}>
@@ -165,21 +201,32 @@ export default function SearchEndpointForm({
             {(values.type === "ELASTICSEARCH" ||
               values.type === "OPEN_SEARCH") && (
               <>
+                {isNew ? null : (
+                  <Grid item xs={12}>
+                    <Checkboxes
+                      name="credentials.change"
+                      size="small"
+                      data={{ label: "Change saved credentials", value: true }}
+                    />
+                  </Grid>
+                )}
                 <Grid item xs={12}>
                   <TextField
                     label="Username"
-                    name="info.username"
+                    name="credentials.username"
                     variant="outlined"
                     size="small"
+                    disabled={!(values.credentials as any).change}
                   />
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
                     label="Password"
-                    name="info.password"
+                    name="credentials.password"
                     variant="outlined"
                     type="password"
                     size="small"
+                    disabled={!(values.credentials as any).change}
                   />
                 </Grid>
               </>

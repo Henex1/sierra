@@ -123,6 +123,8 @@ model SearchEndpoint {
   displayFields String[]
   type          SearchEndpointType
   info          Json
+  // This is a JSON-encoded object which has been encrypted.
+  credentials   String?
 
   org      Org       @relation(fields: [orgId], references: [id])
   projects Project[]

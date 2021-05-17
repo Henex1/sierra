@@ -58,6 +58,7 @@ export const TEST_SEARCHENDPOINT: NoTimestamps<SearchEndpoint> = {
   displayFields: [],
   type: "ELASTICSEARCH",
   info: { endpoint: "http://localhost:9200", index: "icecat" },
+  credentials: null,
 };
 
 export const TEST_JUDGEMENT: NoTimestamps<Judgement> = {

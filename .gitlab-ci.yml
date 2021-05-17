@@ -43,7 +43,7 @@ build:
 
 test:
   stage: test
-  image: 
+  image:
     name: $DEPS_IMAGE
     entrypoint: ["/usr/bin/env"]
   before_script: []
@@ -56,9 +56,10 @@ test:
     POSTGRES_HOST_AUTH_METHOD: trust
   script:
     - cd /app
+    - yarn tsc -b .
     - yarn prisma migrate reset -f
     - yarn test
-    
+
 dockerize:
   stage: dockerize
   script:

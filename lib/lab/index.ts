@@ -9,7 +9,7 @@ export type ExposedSearchPhrase = {
   };
   results: number;
   tookMs: number;
-  error?: string;
+  error: string | null;
 };
 
 export type MockSearchResult = {

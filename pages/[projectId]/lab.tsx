@@ -107,7 +107,7 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
         } as any,
         results: phrase.totalResults,
         tookMs: phrase.tookMs,
-        error: phrase.error || undefined,
+        error: phrase.error ?? null,
       };
     }
   );

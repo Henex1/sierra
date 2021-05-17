@@ -11,15 +11,11 @@ export const SearchEndpointType = z.union([
 export const ElasticsearchInfoSchema = z.object({
   endpoint: z.string(),
   index: z.string(),
-  username: z.string().optional(),
-  password: z.string().optional(),
 });
 
 export const OpenSearchInfoSchema = z.object({
   endpoint: z.string(),
   index: z.string(),
-  username: z.string().optional(),
-  password: z.string().optional(),
 });
 
 export const SolrInfoSchema = z.object({
@@ -42,6 +38,15 @@ export const SearchEndpointInfo = z.union([
   RedisSearchInfoSchema,
 ]);
 
+export const searchEndpointCredentialsSchema = z.object({
+  username: z.string(),
+  password: z.string(),
+});
+
+export type SearchEndpointCredentials = z.infer<
+  typeof searchEndpointCredentialsSchema
+>;
+
 export const SearchEndpointSchema = z.object({
   id: z.number(),
   createdAt: z.date(),
@@ -54,4 +59,5 @@ export const SearchEndpointSchema = z.object({
   displayFields: z.array(z.string()),
   type: SearchEndpointType,
   info: SearchEndpointInfo,
+  credentials: searchEndpointCredentialsSchema.nullable().optional(),
 });
