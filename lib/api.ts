@@ -1,4 +1,4 @@
-export async function apiRequest<Req extends object, Res extends object = any>(
+export async function apiRequest<Req = any, Res = any>(
   path: RequestInfo,
   body: Req,
   opts: RequestInit = {}

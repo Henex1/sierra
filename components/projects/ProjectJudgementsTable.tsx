@@ -21,8 +21,8 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    flexDirection: "column"
-  }
+    flexDirection: "column",
+  },
 }));
 
 export default function ProjectJudgementsTable({ judgements }: Props) {
@@ -30,15 +30,17 @@ export default function ProjectJudgementsTable({ judgements }: Props) {
 
   return (
     <Grid container spacing={3}>
-      {judgements.length === 0 &&
+      {judgements.length === 0 && (
         <Grid item xs={12}>
           <Paper className={classes.emptyPaperWrapper}>
             <Typography variant="h4">No judgements added to project</Typography>
-            <Typography variant="h6">Go to Judgements page to add one</Typography>
+            <Typography variant="h6">
+              Go to Judgements page to add one
+            </Typography>
           </Paper>
         </Grid>
-      }
-      {judgements.length > 0 &&
+      )}
+      {judgements.length > 0 && (
         <Grid item xs={12}>
           <TableContainer component={Paper}>
             <Table>
@@ -61,7 +63,7 @@ export default function ProjectJudgementsTable({ judgements }: Props) {
             </Table>
           </TableContainer>
         </Grid>
-      }
+      )}
     </Grid>
   );
 }

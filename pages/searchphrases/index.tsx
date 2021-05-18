@@ -20,13 +20,15 @@ export default function SearchPhrases() {
         <Grid item xs={12}>
           <Typography variant="h4">Search Phrases</Typography>
         </Grid>
-        {!project &&
-          <Grid item xs={6} style={{ margin: "0 auto", textAlign: "center"}}>
+        {!project && (
+          <Grid item xs={6} style={{ margin: "0 auto", textAlign: "center" }}>
             <Typography variant="h6">No project is active</Typography>
-            <Typography variant="subtitle1">You must setup or activate project first</Typography>
+            <Typography variant="subtitle1">
+              You must setup or activate project first
+            </Typography>
           </Grid>
-        }
+        )}
       </Grid>
     </div>
-  )
+  );
 }

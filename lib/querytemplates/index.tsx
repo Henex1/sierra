@@ -1,7 +1,7 @@
 import _ from "lodash";
 import * as z from "zod";
 
-import prisma, { Prisma, QueryTemplate, User, Project } from "../prisma";
+import prisma, { Prisma, QueryTemplate, User } from "../prisma";
 import { userCanAccessProject } from "../projects";
 
 const selectKeys = {
@@ -41,6 +41,15 @@ export async function getQueryTemplate(
     where: userCanAccessQueryTemplate(user, { id }),
   });
   return queryTemplate;
+}
+
+export async function listQueryTemplatesFromAllProjects(
+  user: User
+): Promise<QueryTemplate[]> {
+  const ret = await prisma.queryTemplate.findMany({
+    where: userCanAccessQueryTemplate(user),
+  });
+  return ret;
 }
 
 export const createQueryTemplateSchema = z.object({

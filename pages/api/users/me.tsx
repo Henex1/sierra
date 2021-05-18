@@ -1,4 +1,3 @@
-import { NextApiRequest, NextApiResponse } from "next";
 import * as z from "zod";
 
 import { getOrg } from "../../../lib/org";

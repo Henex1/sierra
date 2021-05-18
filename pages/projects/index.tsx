@@ -1,6 +1,5 @@
 import * as React from "react";
-import { GetServerSideProps } from "next";
-import { useTable, Column } from "react-table";
+import { useTable, Column, CellProps } from "react-table";
 
 import MaUTable from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -12,12 +11,10 @@ import Typography from "@material-ui/core/Typography";
 import Link, { LinkButton } from "../../components/common/Link";
 import { authenticatedPage, requireActiveOrg } from "../../lib/pageHelpers";
 import {
-  userCanAccessProject,
   formatProject,
   listProjects,
   ExposedProject,
 } from "../../lib/projects";
-import prisma from "../../lib/prisma";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
@@ -35,9 +32,13 @@ export default function Projects({ projects }: Props) {
     () => [
       {
         Header: "Name",
-        Cell: ({ row }) => (
-          <Link href={`/projects/${row.original.id}`}>{row.original.name}</Link>
-        ),
+        Cell({ row }: CellProps<ExposedProject>) {
+          return (
+            <Link href={`/projects/${row.original.id}`}>
+              {row.original.name}
+            </Link>
+          );
+        },
         accessor: "name",
       },
     ],
@@ -45,6 +46,7 @@ export default function Projects({ projects }: Props) {
   );
 
   const tableInstance = useTable({ columns, data: projects });
+  /* eslint-disable react/jsx-key */
   const {
     getTableProps,
     getTableBodyProps,

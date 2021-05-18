@@ -13,5 +13,5 @@ export default function Index() {
         <Typography>Settings</Typography>
       </BreadcrumbsButtons>
     </div>
-  )
+  );
 }

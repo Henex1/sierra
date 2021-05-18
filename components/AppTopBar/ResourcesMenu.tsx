@@ -18,7 +18,11 @@ export default function ResourcesMenu() {
     >
       <MenuItemLink href="/searchendpoints">Search Endpoints</MenuItemLink>
       <MenuItemLink href="/searchphrases">Search Phrases</MenuItemLink>
-      <MenuItemLink href={project?.id ? `/${project.id}/judgements` : "/judgements"}>Judgements</MenuItemLink>
+      <MenuItemLink
+        href={project?.id ? `/${project.id}/judgements` : "/judgements"}
+      >
+        Judgements
+      </MenuItemLink>
       <MenuItemLink href="/rulesets">Rulesets</MenuItemLink>
     </MenuButton>
   );

@@ -6,7 +6,7 @@ const colorScale = scaleLinear<string, string>()
   .domain([0, 50, 100])
   .range([colors.red[500], colors.yellow[500], colors.green[500]]);
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   avatar: {
     width: 60,
     fontSize: "18px",

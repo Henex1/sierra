@@ -29,7 +29,7 @@ type Props = {
   orgs: ExposedOrg[] & { domain: string };
 };
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   cardWrapper: {
     display: "flex",
     flexDirection: "column",

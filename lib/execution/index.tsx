@@ -3,12 +3,10 @@ import _ from "lodash";
 import prisma, {
   Prisma,
   User,
-  Project,
   SearchEndpoint,
   SearchConfiguration,
   Execution,
   SearchPhraseExecution,
-  JudgementSearchConfiguration,
   QueryTemplate,
   OffsetPagination,
 } from "../prisma";
@@ -22,7 +20,7 @@ export type { Execution };
 
 export type SearchPhraseExecutionResults = {
   id: string;
-  explanation: object;
+  explanation: Record<string, unknown>;
 }[];
 
 const executionSelect = {
@@ -62,10 +60,10 @@ export function formatSearchPhraseExecution(
 
 export async function getExecution(
   user: User,
-  executionId: number
+  id: number
 ): Promise<Execution | null> {
   const execution = await prisma.execution.findFirst({
-    where: { searchConfiguration: userCanAccessSearchConfiguration(user) },
+    where: { id, searchConfiguration: userCanAccessSearchConfiguration(user) },
   });
   return execution;
 }
@@ -227,7 +225,7 @@ export async function createExecution(
   }
   const combinedScore = mean(results.map((r) => r.combinedScore));
   const scorers = results.length
-    ? Object.keys(results[0].allScores as object)
+    ? Object.keys(results[0].allScores as Record<string, unknown>)
     : [];
   const allScores = _.fromPairs(
     scorers.map((scorer) => [

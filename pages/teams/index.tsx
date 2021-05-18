@@ -13,5 +13,5 @@ export default function Teams() {
         <Typography>Teams</Typography>
       </BreadcrumbsButtons>
     </div>
-  )
+  );
 }

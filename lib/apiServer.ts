@@ -15,8 +15,8 @@ export type SierraApiHandler = (
   res: NextApiResponse
 ) => void | Promise<void>;
 
-export class HttpError extends Error {
-  constructor(public statusCode: number, public data: object) {
+export class HttpError<T extends any> extends Error {
+  constructor(public statusCode: number, public data: T) {
     super(`HTTP ${statusCode}`);
     this.name = "HttpError";
   }

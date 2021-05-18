@@ -16,9 +16,9 @@ type ElasticsearchHit = {
   _id: string;
   _index: string;
   _score: number;
-  _source: object;
+  _source: Record<string, unknown>;
   _type: "_doc";
-  _explanation: object;
+  _explanation: Record<string, unknown>;
 };
 
 type ElasticsearchQueryResponse =

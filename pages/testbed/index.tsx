@@ -27,16 +27,15 @@ import SettingsIcon from "@material-ui/icons/Settings";
 import { makeStyles } from "@material-ui/core/styles";
 import { Alert } from "@material-ui/lab";
 
-import { useActiveProject, useSession } from "../../components/Session";
+import { useActiveProject } from "../../components/Session";
 import { authenticatedPage } from "../../lib/pageHelpers";
 import {
   ExposedRuleset,
   formatRuleset,
-  userCanAccessRuleset,
+  listRulesets,
 } from "../../lib/rulesets";
 
 import { apiRequest } from "../../lib/api";
-import prisma from "../../lib/prisma";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
@@ -138,9 +137,7 @@ const jsonTheme = {
 };
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const rulesets = await prisma.ruleset.findMany({
-    where: userCanAccessRuleset(context.user),
-  });
+  const rulesets = await listRulesets(context.user);
   return { props: { rulesets: rulesets.map(formatRuleset) } };
 });
 
@@ -149,7 +146,6 @@ type Props = {
 };
 
 export default function Testbed({ rulesets }: Props) {
-  const session = useSession();
   const { project } = useActiveProject();
   const classes = useStyles();
   const [
@@ -218,13 +214,13 @@ export default function Testbed({ rulesets }: Props) {
           searchEndpointId: searchEndpoint,
         });
         if (
-            json.suggest?.autocomplete?.length &&
-            json.suggest?.autocomplete[0].options?.length
+          json.suggest?.autocomplete?.length &&
+          json.suggest?.autocomplete[0].options?.length
         ) {
           setSuggestions(
-              json.suggest?.autocomplete[0].options.map(
-                  (option: any) => option.text
-              )
+            json.suggest?.autocomplete[0].options.map(
+              (option: any) => option.text
+            )
           );
         }
       } catch (err) {

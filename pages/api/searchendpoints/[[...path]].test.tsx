@@ -1,4 +1,3 @@
-import prisma, { SearchEndpoint } from "../../../lib/prisma";
 import { mockModels } from "../../../lib/__mocks__/prisma";
 import handler from "./[[...path]]";
 import { getApiRoute, TEST_ORG, TEST_ORGUSER } from "../../../lib/test";
@@ -115,7 +114,6 @@ describe("api/searchendpoints", () => {
   });
 
   it("DELETE /:id", async () => {
-    mockModels("org").action("findMany").with({}).resolvesTo([TEST_ORG]);
     mockModels("searchEndpoint")
       .action("findFirst")
       .with({ where: { AND: { id: 42 } } })

@@ -83,7 +83,7 @@ export default function SearchEndpointForm({
   const classes = useStyles();
   const isNew = rest.initialValues?.id === undefined;
   if (rest.initialValues) {
-    // @ts-ignore - change is a fake property which we remove
+    // @ts-expect-error - change is a fake property which we remove
     rest.initialValues.credentials = { change: isNew };
   }
 

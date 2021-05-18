@@ -14,7 +14,6 @@ import {
   HttpError,
   requireMethod,
   requireUser,
-  requireOnlyOrg,
   requireBody,
 } from "../../../lib/apiServer";
 import { getRuleset, getLatestRulesetVersion } from "../../../lib/rulesets";
@@ -51,7 +50,7 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
   let rulesetVersionIds: number[] | undefined = undefined;
   if (input.rulesetIds) {
     try {
-      let rulesets = await Promise.all(
+      const rulesets = await Promise.all(
         input.rulesetIds.map((id) => getRuleset(user, id))
       );
       if (rulesets.includes(null)) {
@@ -80,7 +79,6 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
 export const handleExecute = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
   const user = requireUser(req);
-  const org = await requireOnlyOrg(req);
   const input = requireBody(req, z.object({ id: z.number() }));
   const sc = await getSearchConfiguration(user, input.id);
   if (!sc) {

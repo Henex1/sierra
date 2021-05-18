@@ -13,5 +13,5 @@ export default function Scores() {
         <Typography>Scores</Typography>
       </BreadcrumbsButtons>
     </div>
-  )
+  );
 }

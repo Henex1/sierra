@@ -222,7 +222,7 @@ export type QueryResult = {
   totalResults: number;
   results: Array<{
     id: string;
-    explanation: object;
+    explanation: any;
   }>;
   // User-visible explanation of why the results of this query are incomplete.
   error?: string;

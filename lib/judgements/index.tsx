@@ -171,24 +171,27 @@ export async function setVotes(
   judgement: Judgement,
   input: SetVotes
 ): Promise<void> {
-  const phrases: [string, null | object][] = Object.entries(input);
-  const deleteInput = phrases
-    .filter(([phrase, votes]) => votes === null)
-    .map(([phrase, votes]) => phrase);
-  const addInput = phrases.filter(([phrase, votes]) => votes !== null) as [
+  const phrases: [
     string,
-    object
+    null | Record<string, number | null>
+  ][] = Object.entries(input);
+  const deleteInput = phrases
+    .filter(([_phrase, votes]) => votes === null)
+    .map(([phrase, _votes]) => phrase);
+  const addInput = phrases.filter(([_phrase, votes]) => votes !== null) as [
+    string,
+    Record<string, number>
   ][];
 
   const addVotes = addInput.flatMap(([phrase, votes]) =>
     Object.entries(votes)
-      .filter(([docId, vote]) => vote !== null)
+      .filter(([_docId, vote]) => vote !== null)
       .map(([docId, vote]): [string, string, number] => [phrase, docId, vote])
   );
   const deleteVotes = addInput.flatMap(([phrase, votes]) =>
     Object.entries(votes)
-      .filter(([docId, vote]) => vote === null)
-      .map(([docId, _]): [string, string] => [phrase, docId])
+      .filter(([_docId, vote]) => vote === null)
+      .map(([docId, _vote]): [string, string] => [phrase, docId])
   );
 
   const transactions: PrismaPromise<any>[] = [];
@@ -224,7 +227,7 @@ export async function setVotes(
     transactions.push(
       prisma.judgementPhrase.createMany({
         data: addInput.map(
-          ([phrase, votesInput]): Prisma.JudgementPhraseCreateManyInput => ({
+          ([phrase, _votesInput]): Prisma.JudgementPhraseCreateManyInput => ({
             judgementId: judgement.id,
             phrase,
           })

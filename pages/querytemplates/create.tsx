@@ -7,21 +7,19 @@ import Container from "@material-ui/core/Container";
 import {
   ExposedProject,
   formatProject,
-  userCanAccessProject,
+  listProjects,
 } from "../../lib/projects";
 import { ExposedQueryTemplate } from "../../lib/querytemplates";
-import { authenticatedPage } from "../../lib/pageHelpers";
+import { authenticatedPage, requireActiveOrg } from "../../lib/pageHelpers";
 import { apiRequest } from "../../lib/api";
-import prisma from "../../lib/prisma";
 
 import Form from "../../components/querytemplates/Form";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const projects = await prisma.project.findMany({
-    where: userCanAccessProject(context.user),
-  });
+  const org = await requireActiveOrg(context);
+  const projects = await listProjects(org);
   return { props: { projects: projects.map(formatProject) } };
 });
 

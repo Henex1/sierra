@@ -56,8 +56,7 @@ export default function DisplayFields({ displayFields }: DisplayFieldsProps) {
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
-      // @ts-ignore
-      const inputValue = event.target.value.trim();
+      const inputValue = (event.target as HTMLInputElement).value.trim();
       if (inputValue.length > 0) {
         const prefixIndex = inputValue.indexOf(":");
         let validDisplayField = true;
@@ -69,7 +68,7 @@ export default function DisplayFields({ displayFields }: DisplayFieldsProps) {
             prefixIndex > 2 &&
             supportedPrefixes.includes(prefix)
           ) {
-            displayFields.input.value.forEach((value: String) => {
+            displayFields.input.value.forEach((value: string) => {
               if (value.indexOf(prefix) !== -1) {
                 validDisplayField = false;
               }
@@ -90,7 +89,7 @@ export default function DisplayFields({ displayFields }: DisplayFieldsProps) {
     }
   };
 
-  const setNewValue = (inputValue: String) => {
+  const setNewValue = (inputValue: string) => {
     displayFields.input.onChange({
       target: {
         type: "input",

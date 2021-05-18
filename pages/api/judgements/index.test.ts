@@ -1,8 +1,4 @@
-import prisma, {
-  Prisma,
-  mockModels,
-  mockSql,
-} from "../../../lib/__mocks__/prisma";
+import { Prisma, mockModels, mockSql } from "../../../lib/__mocks__/prisma";
 import {
   handleCreateJudgement,
   handleUpdateJudgement,
@@ -22,7 +18,12 @@ describe("api/judgements", () => {
     };
     mockModels("judgement")
       .action("create")
-      .with({ data: { name: initialInfo.name, project: { connect: { id: initialInfo.projectId } } } })
+      .with({
+        data: {
+          name: initialInfo.name,
+          project: { connect: { id: initialInfo.projectId } },
+        },
+      })
       .resolvesTo({ id: 42, ...initialInfo });
     const { judgement } = await getApiRoute(
       handleCreateJudgement,
@@ -87,7 +88,7 @@ describe("api/judgements", () => {
         `
       )
       .resolvesTo(12);
-    const { success } = await getApiRoute(handleSetVotes, info, {
+    await getApiRoute(handleSetVotes, info, {
       method: "POST",
     });
   });

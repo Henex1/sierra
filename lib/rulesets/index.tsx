@@ -68,6 +68,13 @@ export async function getRuleset(
   return ruleset;
 }
 
+export async function listRulesets(user: User): Promise<Ruleset[]> {
+  const rulesets = await prisma.ruleset.findMany({
+    where: userCanAccessRuleset(user),
+  });
+  return rulesets;
+}
+
 export const createRulesetSchema = z.object({
   name: z.string(),
 });

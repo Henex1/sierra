@@ -1,7 +1,6 @@
-import prisma from "../../../lib/prisma";
 import { mockModels } from "../../../lib/__mocks__/prisma";
 import { handleCreateRuleset, handleCreateRulesetVersion } from "./index";
-import { getApiRoute, TEST_PROJECT, TEST_USER } from "../../../lib/test";
+import { getApiRoute, TEST_PROJECT } from "../../../lib/test";
 import { RuleSetConditionType } from "../../../lib/rulesets/rules";
 
 describe("api/rulesets", () => {

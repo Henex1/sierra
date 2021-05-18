@@ -25,8 +25,8 @@ export async function expandQuery(
         `Search endpoint type ${endpoint.type} cannot be expanded`
       );
     }
-    const config: any = {};
-    Object.entries(tpl.knobs as object).forEach(([k, v]) => {
+    const config: Record<string, unknown> = {};
+    Object.entries(tpl.knobs as Record<string, unknown>).forEach(([k, v]) => {
       config[k] = v;
     });
     config.rules = rulesets.map((rv) => (rv.value as any).rules);

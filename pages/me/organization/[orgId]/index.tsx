@@ -2,7 +2,6 @@ import * as React from "react";
 
 import Typography from "@material-ui/core/Typography";
 import { Grid } from "@material-ui/core";
-import TextField from "@material-ui/core/TextField";
 import { makeStyles } from "@material-ui/core/styles";
 import EditIcon from "@material-ui/icons/Edit";
 
@@ -14,7 +13,6 @@ import BreadcrumbsButtons from "../../../../components/common/BreadcrumbsButtons
 import Link, { LinkButton } from "../../../../components/common/Link";
 import { ExposedOrg, formatOrg, getOrg } from "../../../../lib/org";
 import CreateOrganizationForm from "../../../../components/organization/CreateOrganizationForm";
-import { ExposedRuleset } from "../../../../lib/rulesets";
 import { apiRequest } from "../../../../lib/api";
 import { useRouter } from "next/router";
 
@@ -28,7 +26,7 @@ export const getServerSideProps = authenticatedPage(async (context) => {
   };
 });
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   headerWrapper: {
     display: "flex",
     justifyContent: "space-between",

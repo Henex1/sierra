@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React from "react";
 
 import {
   Divider,
@@ -15,7 +15,6 @@ import {
 import AddIcon from "@material-ui/icons/Add";
 
 import { ConditionRuleSetFIeld } from "./ConditionRuleSetFIeld";
-import { FormApi } from "final-form";
 import { FieldArray } from "react-final-form-arrays";
 import Box from "@material-ui/core/Box";
 import { RuleSetConditionType } from "../../lib/rulesets/rules";
@@ -41,13 +40,13 @@ const useStyles = makeStyles((theme) =>
   })
 );
 
-type RulesetConditionEditorProps<T> = {
+type RulesetConditionEditorProps = {
   name: string;
 };
 
-export default function RulesetConditionEditor<T>({
+export default function RulesetConditionEditor({
   name,
-}: RulesetConditionEditorProps<T>) {
+}: RulesetConditionEditorProps) {
   const classes = useStyles();
   const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
 

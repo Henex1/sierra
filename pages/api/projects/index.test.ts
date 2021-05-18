@@ -1,4 +1,3 @@
-import prisma from "../../../lib/prisma";
 import { mockModels } from "../../../lib/__mocks__/prisma";
 import {
   handleCreateProject,
@@ -17,17 +16,17 @@ describe("api/projects", () => {
       .resolvesTo(TEST_SEARCHENDPOINT);
     const initialInfo = {
       name: "My Test Project",
-      searchEndpointId: TEST_SEARCHENDPOINT.id
+      searchEndpointId: TEST_SEARCHENDPOINT.id,
     };
     mockModels("project")
       .action("create")
       .with({ data: initialInfo })
       .resolvesTo({ id: 42, ...initialInfo });
-    const defaultTemplate = { ...defaultQueryTemplate, projectId: 42 }
+    const defaultTemplate = { ...defaultQueryTemplate, projectId: 42 };
     mockModels("queryTemplate")
       .action("create")
       .with({ data: defaultTemplate })
-      .resolvesTo({ id: 43, ...defaultTemplate })
+      .resolvesTo({ id: 43, ...defaultTemplate });
     const { project } = await getApiRoute(handleCreateProject, initialInfo, {
       method: "POST",
     });

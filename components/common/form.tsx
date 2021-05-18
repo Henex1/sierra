@@ -1,6 +1,4 @@
-import { isNumber } from 'lodash';
-
-export function parseNonnegativeInt(value: string): Number | undefined {
+export function parseNonnegativeInt(value: string): number | undefined {
   const onlyNums = value.replace(/[^\d]/g, "");
   const parsed = parseInt(onlyNums, 10);
   if (Number.isNaN(parsed)) {
@@ -9,6 +7,6 @@ export function parseNonnegativeInt(value: string): Number | undefined {
   return parsed;
 }
 
-export function parseNumber(value: String): Number | undefined{
+export function parseNumber(value: string): number | undefined {
   return parseInt(value as string, 10);
 }

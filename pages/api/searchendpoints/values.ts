@@ -1,11 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import * as z from "zod";
 
-import prisma, { SearchEndpoint } from "../../../lib/prisma";
 import { notAuthorized } from "../../../lib/errors";
-import { getUser } from "../../../lib/authServer";
 import {
-  userCanAccessSearchEndpoint,
   getSearchEndpoint,
   getQueryInterface,
 } from "../../../lib/searchendpoints";

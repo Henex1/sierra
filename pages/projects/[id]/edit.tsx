@@ -15,7 +15,6 @@ import {
   listSearchEndpoints,
 } from "../../../lib/searchendpoints";
 import {
-  userCanAccessProject,
   formatProject,
   getProject,
   ExposedProject,

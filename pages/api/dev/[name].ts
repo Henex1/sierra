@@ -1,10 +1,9 @@
-import _ from "lodash";
 import { NextApiRequest, NextApiResponse } from "next";
 import * as fs from "fs";
 import * as path from "path";
 
 import { RulesetVersionValue } from "../../../lib/rulesets/rules";
-import prisma, { Prisma } from "../../../lib/prisma";
+import prisma from "../../../lib/prisma";
 import { setVotes, parseVotesCsv } from "../../../lib/judgements";
 import { createExecution } from "../../../lib/execution";
 import { notAuthorized, notFound } from "../../../lib/errors";

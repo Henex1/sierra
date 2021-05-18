@@ -8,11 +8,10 @@ import prisma, {
   Project,
   Judgement,
   Ruleset,
-  QueryTemplate,
   SearchEndpointType,
 } from "../prisma";
 import { userCanAccessOrg } from "../org";
-import { createQueryTemplate, ExposedQueryTemplate, formatQueryTemplate } from "../querytemplates";
+import { createQueryTemplate } from "../querytemplates";
 import { ExposedJudgement, formatJudgement } from "../judgements";
 import { ExposedRuleset, formatRuleset } from "../rulesets";
 
@@ -42,7 +41,7 @@ export type ExtendedProject = {
   name: string;
   judgements: Array<ExposedJudgement>;
   rulesets: Array<ExposedRuleset>;
-}
+};
 
 export function userCanAccessProject(
   user: User,
@@ -65,8 +64,10 @@ export function formatExtendedProject(val: any): ExtendedProject {
     orgId: val.orgId,
     searchEndpointId: val.searchEndpointId,
     name: val.name,
-    judgements: val.judgements.map((judgement: Judgement) => formatJudgement(judgement)),
-    rulesets: val.rulesets.map((rulesets: Ruleset) => formatRuleset(rulesets))
+    judgements: val.judgements.map((judgement: Judgement) =>
+      formatJudgement(judgement)
+    ),
+    rulesets: val.rulesets.map((rulesets: Ruleset) => formatRuleset(rulesets)),
   };
 }
 
@@ -80,17 +81,20 @@ export async function getProject(
   return project;
 }
 
-export async function getExtendedProject(user: User, id: number): Promise<Project | null> {
+export async function getExtendedProject(
+  user: User,
+  id: number
+): Promise<Project | null> {
   return await prisma.project.findFirst({
     where: userCanAccessProject(user, { id }),
     include: {
       judgements: {
-        orderBy: { updatedAt: "desc" }
+        orderBy: { updatedAt: "desc" },
       },
       rulesets: {
-        orderBy: { updatedAt: "desc" }
-      }
-    }
+        orderBy: { updatedAt: "desc" },
+      },
+    },
   });
 }
 

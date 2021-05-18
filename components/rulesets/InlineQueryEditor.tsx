@@ -8,7 +8,7 @@ import AceEditor from "react-ace";
 import { FilterInstruction, UpDownInstruction } from "../../lib/rulesets/rules";
 import JsonEditor from "../JsonEditor";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   hidden: {
     position: "absolute",
     opacity: 0,

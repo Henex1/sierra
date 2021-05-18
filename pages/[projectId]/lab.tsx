@@ -1,5 +1,5 @@
 import _ from "lodash";
-import React, { useState } from "react";
+import React from "react";
 import { Grid, Typography, Box, makeStyles } from "@material-ui/core";
 import { Pagination } from "@material-ui/lab";
 import { useRouter } from "next/router";
@@ -27,7 +27,7 @@ import {
   optionalNumberQuery,
 } from "../../lib/pageHelpers";
 import {
-  userCanAccessRuleset,
+  listRulesets,
   formatRuleset,
   ExposedRuleset,
   formatRulesetVersion,
@@ -39,7 +39,7 @@ import {
   ExposedQueryTemplate,
   formatQueryTemplate,
 } from "../../lib/querytemplates";
-import prisma, { QueryTemplate } from "../../lib/prisma";
+import { QueryTemplate } from "../../lib/prisma";
 import NoExistingExcution from "components/lab/NoExistingExcution";
 
 const useStyles = makeStyles((theme) => ({
@@ -103,7 +103,10 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
         phrase: phrase.phrase,
         score: {
           sierra: phrase.combinedScore * 100,
-          ..._.mapValues(phrase.allScores as object, (s) => s * 100),
+          ..._.mapValues(
+            phrase.allScores as Record<string, number>,
+            (s) => s * 100
+          ),
         } as any,
         results: phrase.totalResults,
         tookMs: phrase.tookMs,
@@ -111,9 +114,7 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
       };
     }
   );
-  const rulesets = await prisma.ruleset.findMany({
-    where: userCanAccessRuleset(context.user),
-  });
+  const rulesets = await listRulesets(context.user);
   const queryTemplate = sc
     ? await getQueryTemplate(context.user, sc.queryTemplateId)
     : null;
@@ -221,10 +222,6 @@ export default function Lab({
     location.reload();
   };
 
-  const handleConfigurationsChange = (configs: {}) => {
-    // TODO
-  };
-
   const isFirstQueryExcute = searchPhrases.length == 0;
 
   return (
@@ -298,7 +295,6 @@ export default function Lab({
         canRun={searchConfiguration !== null}
         isRunning={isTestRunning}
         onRun={handleRun}
-        onConfigurationsChange={handleConfigurationsChange}
       />
     </div>
   );

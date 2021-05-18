@@ -1,6 +1,5 @@
 import * as React from "react";
-import { GetServerSideProps } from "next";
-import { useTable, Column } from "react-table";
+import { useTable, Column, CellProps } from "react-table";
 
 import MaUTable from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -12,19 +11,14 @@ import { Typography } from "@material-ui/core";
 import Link, { LinkButton } from "../../components/common/Link";
 import { authenticatedPage } from "../../lib/pageHelpers";
 import {
-  userCanAccessQueryTemplate,
+  listQueryTemplatesFromAllProjects,
   ExposedQueryTemplate,
   formatQueryTemplate,
 } from "../../lib/querytemplates";
-import { useActiveProject } from "../../components/Session";
-import prisma from "../../lib/prisma";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const templates =
-    (await prisma.queryTemplate.findMany({
-      where: userCanAccessQueryTemplate(context.user),
-    })) || [];
+  const templates = await listQueryTemplatesFromAllProjects(context.user);
   return { props: { templates: templates.map(formatQueryTemplate) } };
 });
 
@@ -37,11 +31,13 @@ export default function QueryTemplates({ templates }: Props) {
     () => [
       {
         Header: "Description",
-        Cell: ({ row }) => (
-          <Link href={`/querytemplates/${row.original.id}`}>
-            {row.original.description}
-          </Link>
-        ),
+        Cell({ row }: CellProps<ExposedQueryTemplate>) {
+          return (
+            <Link href={`/querytemplates/${row.original.id}`}>
+              {row.original.description}
+            </Link>
+          );
+        },
         accessor: "description",
       },
       {
@@ -69,6 +65,7 @@ export default function QueryTemplates({ templates }: Props) {
   );
 
   const tableInstance = useTable({ columns, data: templates });
+  /* eslint-disable react/jsx-key */
   const {
     getTableProps,
     getTableBodyProps,

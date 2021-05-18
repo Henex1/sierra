@@ -1,6 +1,4 @@
-import React, { ChangeEvent, useMemo } from "react";
-import isArray from "lodash/fp/isArray";
-import isString from "lodash/fp/isString";
+import React, { ChangeEvent } from "react";
 
 import { makeStyles } from "@material-ui/core/styles";
 import FormControl from "@material-ui/core/FormControl";
