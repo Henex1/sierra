@@ -69,7 +69,7 @@ export default function RulesetPanel({
   }, [activeRulesetIds, rulesetId]);
 
   const rulesetSelected = typeof rulesetId === "number";
-  const { data, error } = useSWR<RulesetEditorProps>(
+  const { data } = useSWR<RulesetEditorProps>(
     rulesetSelected ? `/api/rulesets/${rulesetId}` : null
   );
 

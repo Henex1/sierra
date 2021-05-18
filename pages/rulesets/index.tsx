@@ -1,6 +1,5 @@
 import * as React from "react";
-import { GetServerSideProps } from "next";
-import { useTable, Column } from "react-table";
+import { useTable, Column, CellProps } from "react-table";
 
 import { Typography } from "@material-ui/core";
 import MaUTable from "@material-ui/core/Table";
@@ -13,19 +12,15 @@ import Grid from "@material-ui/core/Grid";
 import Link, { LinkButton } from "../../components/common/Link";
 import { useActiveProject } from "../../components/Session";
 import { authenticatedPage } from "../../lib/pageHelpers";
-import { redirectToLogin } from "../../lib/errors";
 import {
-  userCanAccessRuleset,
+  listRulesets,
   formatRuleset,
   ExposedRuleset,
 } from "../../lib/rulesets";
-import prisma from "../../lib/prisma";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const rulesets = await prisma.ruleset.findMany({
-    where: userCanAccessRuleset(context.user),
-  });
+  const rulesets = await listRulesets(context.user);
   return { props: { rulesets: rulesets.map(formatRuleset) } };
 });
 
@@ -40,9 +35,13 @@ export default function Rulesets({ rulesets }: Props) {
     () => [
       {
         Header: "Name",
-        Cell: ({ row }) => (
-          <Link href={`/rulesets/${row.original.id}`}>{row.original.name}</Link>
-        ),
+        Cell({ row }: CellProps<ExposedRuleset>) {
+          return (
+            <Link href={`/rulesets/${row.original.id}`}>
+              {row.original.name}
+            </Link>
+          );
+        },
         accessor: "name",
       },
     ],
@@ -50,6 +49,7 @@ export default function Rulesets({ rulesets }: Props) {
   );
 
   const tableInstance = useTable({ columns, data: rulesets });
+  /* eslint-disable react/jsx-key */
   const {
     getTableProps,
     getTableBodyProps,

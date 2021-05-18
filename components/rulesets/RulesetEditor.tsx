@@ -248,7 +248,7 @@ function RulesList({
           {({ fields }) => (
             <DragDropContext onDragEnd={makeOnDragEndFunction(fields)}>
               <Droppable droppableId="droppable">
-                {(provided, snapshot) => (
+                {(provided) => (
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}
@@ -300,10 +300,10 @@ export default function RulesetEditor({
         ...arrayMutators,
         setRulesValue: ([args], state, tools) => {
           const [key, value] = args;
-          tools.changeValue(state, key, (oldState) => value);
+          tools.changeValue(state, key, () => value);
         },
       }}
-      render={({ handleSubmit, submitting, values, dirty, form }) => {
+      render={({ handleSubmit, values, dirty, form }) => {
         function handleAddRule(expression: string) {
           form.mutators.push("rules", {
             enabled: true,

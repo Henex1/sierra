@@ -135,7 +135,7 @@ export default function QueryTemplateEditor({
         query: prettifyQuery(queryTemplate.query),
       }}
       onSubmit={onSubmit}
-      render={({ handleSubmit, form, submitting, values }) => (
+      render={({ handleSubmit, form, values }) => (
         <form id={formId} onSubmit={handleSubmit} className={classes.form}>
           <div className={classes.editorWrapper}>
             <ResizeObserver className={classes.editor}>
@@ -154,11 +154,10 @@ export default function QueryTemplateEditor({
           </div>
           <OnChange name="query">
             {(value) => {
-              const oldKnobs = values.knobs;
+              const oldKnobs = values.knobs as Record<string, unknown>;
               const newKnobs: { [key: string]: any } = {};
               const newKnobsVars = extract(value);
               newKnobsVars.forEach((varName) => {
-                // @ts-ignore
                 newKnobs[varName] = oldKnobs[varName] || KNOB_DEFAULT_VALUE;
               });
               form.change("knobs", newKnobs);
@@ -184,7 +183,7 @@ export default function QueryTemplateEditor({
             <AccordionDetails className={classes.accordionDetails}>
               <Box width="100%">
                 {values.knobs && Object.entries(values.knobs).length > 0 ? (
-                  Object.entries(values.knobs).map(([knobKey, knobVal], i) => (
+                  Object.entries(values.knobs).map(([knobKey, _knobVal], i) => (
                     <React.Fragment key={i}>
                       <Grid container spacing={1} alignItems="center">
                         <Grid item xs>
@@ -256,7 +255,7 @@ function extractParam(match: string) {
 }
 
 function extract(query: string) {
-  let varNames: string[] = [];
+  const varNames: string[] = [];
 
   // strip query var
   const strippedQuery = query.replace(/##\$query##/g, "");

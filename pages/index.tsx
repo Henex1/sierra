@@ -24,12 +24,6 @@ type Props = {
 
 export const getServerSideProps = authenticatedPage<Props>(async (context) => {
   const activeOrgId = context.user.activeOrgId!;
-  const orgUsers = await prisma.orgUser.findMany({
-    where: {
-      userId: context.user.id,
-    },
-  });
-
   const projects = await prisma.project.findMany({
     where: userCanAccessProject(context.user, { orgId: activeOrgId }),
     include: {

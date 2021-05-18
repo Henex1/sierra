@@ -1,5 +1,4 @@
 import { PrismaClient, Prisma } from "@prisma/client";
-const { PrismaClient: RealPrismaClient } = jest.requireActual("@prisma/client");
 
 export interface MockPrismaWrapper {
   readonly client: MockPrismaClient;
@@ -52,7 +51,7 @@ export interface MockModelWrapper<Model extends keyof ModelDelegates> {
 const clientFns: (keyof ClientFns)[] = ["$connect", "$disconnect"];
 
 const spies = new Set<jest.SpyInstance>();
-const matchers = new Map<object, any>();
+const matchers = new Map<any, any>();
 
 function normalizeSql(input: string): string {
   return input.replace(/\s+/gm, " ").replace(/^\s+|\s+$/g, "");
@@ -60,12 +59,14 @@ function normalizeSql(input: string): string {
 
 const mockClient = new PrismaClient() as MockPrismaClient;
 mockClient.$use(async (params) => {
-  for (let [matcher, impl] of matchers.entries()) {
+  for (const [matcher, impl] of matchers.entries()) {
     try {
       expect(params).toMatchObject(matcher);
-      matchers.delete(matcher);
-      return impl(params);
-    } catch (error) {}
+    } catch (error) {
+      continue;
+    }
+    matchers.delete(matcher);
+    return impl(params);
   }
   throw new Error(
     `No matchers defined for query ${JSON.stringify(params, null, 2)}`
@@ -80,12 +81,14 @@ mockClient.$use(async (params) => {
       action: method,
       args: { sql: normalizeSql(query.sql), values: query.values },
     };
-    for (let [matcher, impl] of matchers.entries()) {
+    for (const [matcher, impl] of matchers.entries()) {
       try {
         expect(params).toMatchObject(matcher);
-        matchers.delete(matcher);
-        return impl(query);
-      } catch (error) {}
+      } catch (error) {
+        continue;
+      }
+      matchers.delete(matcher);
+      return impl(query);
     }
     throw new Error(
       `No matchers defined for query ${JSON.stringify(params, null, 2)}`
@@ -119,7 +122,7 @@ afterEach(() => {
   }
 });
 
-const makeMatcher = (matcher: object) => ({
+const makeMatcher = (matcher: any) => ({
   hasImplementation: (implementation: any) =>
     matchers.set(matcher, (params: Parameters<typeof implementation>[0]) =>
       Promise.resolve(params).then(implementation)

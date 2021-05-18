@@ -4,19 +4,10 @@ import {
   TableCell,
   TableContainer,
   TableRow,
-  makeStyles,
 } from "@material-ui/core";
 
-import { Org, UserOrgRole } from "../../lib/prisma";
 import { ExposedProject } from "../../lib/projects";
 import Link from "../common/Link";
-
-const useStyles = makeStyles((theme) => ({
-  chip: {
-    marginLeft: theme.spacing(1),
-    textTransform: "capitalize",
-  },
-}));
 
 export type RecentProject = ExposedProject & {
   updatedAt: number;
@@ -27,8 +18,6 @@ type Props = {
 };
 
 export default function ProjectList({ projects }: Props) {
-  const classes = useStyles();
-
   return (
     <TableContainer>
       <Table>

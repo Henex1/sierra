@@ -2,7 +2,6 @@ import _ from "lodash";
 import { NextApiRequest, NextApiResponse } from "next";
 import * as z from "zod";
 
-import { MockSearchResult } from "../../../lib/lab";
 import {
   apiHandler,
   HttpError,
@@ -80,7 +79,7 @@ export default apiHandler(
     const iface = getQueryInterface(se);
     const docs = await iface.getDocumentsByID(docIds);
     const byId = _.keyBy(docs, "_id");
-    const results = speResults.map((r, i) => ({
+    const results = speResults.map((r) => ({
       id: r.id,
       title: byId[r.id]?._source?.name ?? "Unavailable",
       description: byId[r.id]?._source?.short_description ?? "Unavailable",

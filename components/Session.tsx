@@ -18,8 +18,6 @@ export type Session = Omit<NextSession, "user"> & {
   projects?: ExposedProject[];
 };
 
-const emptySession: Session = { loading: true };
-
 interface SessionContext {
   session: Session;
   refresh(): Promise<void>;
@@ -68,7 +66,6 @@ interface ActiveOrg {
   activeOrg: ExposedOrg | null;
   setActiveOrg(org: ExposedOrg | null): Promise<void>;
 }
-const ActiveOrgContext = React.createContext<ActiveOrg>(undefined as any);
 
 export function useActiveOrg(): ActiveOrg {
   const { session, refresh } = useSession();
@@ -101,7 +98,6 @@ const ActiveProjectContext = React.createContext<ActiveProject>(
 );
 
 export function ActiveProjectProvider({ children }: ProviderProps) {
-  const { session } = useSession();
   const [project, setProject] = React.useState<ExposedProject | null>(null);
 
   return (

@@ -6,7 +6,6 @@ import {
   createStyles,
   InputLabel,
   makeStyles,
-  Paper,
   TextField,
   Typography,
   Grid,
@@ -178,7 +177,7 @@ function Import() {
 
             <div className={classes.buttonActions}>
               <Button
-                disabled={!Boolean(chooseFile) || isUploading}
+                disabled={!chooseFile || isUploading}
                 variant="contained"
                 color="primary"
                 component="span"

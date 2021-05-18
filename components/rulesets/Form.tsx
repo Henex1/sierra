@@ -1,6 +1,6 @@
 import React from "react";
 import { Form, FormProps as BaseFormProps } from "react-final-form";
-import { TextField, Select } from "mui-rff";
+import { TextField } from "mui-rff";
 import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
 
@@ -15,7 +15,7 @@ export default function RulesetForm({ onDelete, ...rest }: FormProps) {
   return (
     <Form
       {...rest}
-      render={({ handleSubmit, form, submitting, values }) => (
+      render={({ handleSubmit, form, submitting }) => (
         <form onSubmit={handleSubmit}>
           <Box pb={2}>
             <TextField

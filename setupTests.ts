@@ -1,10 +1,7 @@
 import path from "path";
 import { loadEnvConfig } from "@next/env";
-import { IncomingMessage } from "http";
 
-import prisma, { User } from "./lib/prisma";
-import { mockModels } from "./lib/__mocks__/prisma";
-import { UserSession } from "./lib/authServer";
+import { User } from "./lib/prisma";
 import {
   TEST_ORG as mockOrg,
   TEST_PROJECT as mockProject,
@@ -21,7 +18,7 @@ jest.mock("./lib/prisma", () => jest.requireActual("./lib/__mocks__/prisma"));
 jest.mock("./lib/env", () => jest.requireActual("./lib/__mocks__/env"));
 
 loadEnvConfig(path.dirname(__filename), true, {
-  info(...args: any[]): void {
+  info(): void {
     // Silence info statements while loading environment variables
   },
   error(...args: any[]): void {

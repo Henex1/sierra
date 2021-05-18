@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/anchor-has-content */
 import * as React from "react";
 import clsx from "clsx";
 import { useRouter } from "next/router";
@@ -21,7 +20,7 @@ interface NextLinkComposedProps
 export const NextLinkComposed = React.forwardRef<
   HTMLAnchorElement,
   NextLinkComposedProps
->(function NextLinkComposed(props, ref) {
+>(function NextLinkComposed(props: NextLinkComposedProps, ref) {
   const {
     linkAs,
     href,
@@ -61,7 +60,7 @@ export type LinkProps = {
 // A styled version of the Next.js Link component:
 // https://nextjs.org/docs/#with-link
 const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(function Link(
-  props,
+  props: LinkProps,
   ref
 ) {
   const {
@@ -166,6 +165,7 @@ export const MenuItemLink = React.forwardRef<
     </NextLink>
   );
 });
+MenuItemLink.displayName = "MenuItemLink";
 
 export type ButtonProps = MuiButtonProps & NextLinkComposedProps;
 

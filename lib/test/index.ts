@@ -5,7 +5,7 @@ import { NextApiHandler } from "next";
 export * from "./constants";
 export { getPage };
 
-export async function getApiRoute<Req extends object, Res extends object = any>(
+export async function getApiRoute<Req = any, Res = any>(
   handler: NextApiHandler,
   body: Req,
   opts: RequestOptions = {}
@@ -21,7 +21,7 @@ export async function getApiRoute<Req extends object, Res extends object = any>(
     },
   });
   const res = createResponse();
-  // @ts-ignore
+  // @ts-expect-error - the mock types don't quite match up, but it's mocks
   await handler(req, res);
   const data = res._getJSONData();
   return data;

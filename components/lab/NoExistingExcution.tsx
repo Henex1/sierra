@@ -1,6 +1,5 @@
 import { Grid, Typography } from "@material-ui/core";
 import React from "react";
-import _ from "lodash";
 
 type Props = {
   isSearchConfig: boolean;
@@ -10,7 +9,7 @@ const NoExistingExcution = ({
   isSearchConfig: isConfig,
   isRunQuery,
 }: Props) => {
-  let message: string = "";
+  let message = "";
   if (!isConfig) {
     message = `You didn't define your search configurations yet!`;
   } else if (!isRunQuery) {

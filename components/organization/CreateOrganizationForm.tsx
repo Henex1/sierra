@@ -17,7 +17,7 @@ export default function CreateOrganizationForm({
   return (
     <Form
       {...rest}
-      render={({ handleSubmit, form, submitting, values }) => (
+      render={({ handleSubmit, form, submitting }) => (
         <form onSubmit={handleSubmit}>
           <Box pb={2}>
             <TextField

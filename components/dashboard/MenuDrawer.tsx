@@ -16,7 +16,7 @@ import AssignmentIcon from "@material-ui/icons/Assignment";
 import ListItemText from "@material-ui/core/ListItemText";
 import { ExposedProject } from "../../lib/projects";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   drawer: {
     width: 240,
     flexShrink: 0,

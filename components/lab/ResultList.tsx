@@ -13,7 +13,6 @@ import { Skeleton } from "@material-ui/lab";
 import CloseIcon from "@material-ui/icons/Close";
 import useSWR from "swr";
 
-import { useActiveProject } from "../../components/Session";
 import { ExposedSearchPhrase, MockSearchResult } from "../../lib/lab";
 
 import ScoreBox from "./ScoreBox";
@@ -67,9 +66,8 @@ type Props = {
 
 export default function ResultList({ searchPhrase, onClose }: Props) {
   const classes = useStyles();
-  const { project } = useActiveProject();
 
-  const { data, error } = useSWR<MockSearchResult[]>(
+  const { data } = useSWR<MockSearchResult[]>(
     `/api/lab/searchResult?id=${searchPhrase.id}`
   );
 

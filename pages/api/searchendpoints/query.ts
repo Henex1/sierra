@@ -1,11 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import * as z from "zod";
 
-import prisma, { SearchEndpoint } from "../../../lib/prisma";
 import { notAuthorized } from "../../../lib/errors";
 import { getUser } from "../../../lib/authServer";
 import {
-  userCanAccessSearchEndpoint,
+  getSearchEndpoint,
   getQueryInterface,
 } from "../../../lib/searchendpoints";
 
@@ -30,9 +29,7 @@ export default async function query(
     return res.status(400).json(input.error);
   }
   const { searchEndpointId, query } = input.data;
-  const searchEndpoint = (await prisma.searchEndpoint.findFirst({
-    where: userCanAccessSearchEndpoint(user, { id: searchEndpointId }),
-  })) as SearchEndpoint | null;
+  const searchEndpoint = await getSearchEndpoint(user, searchEndpointId);
   if (!searchEndpoint) {
     return notAuthorized(res);
   }

@@ -12,7 +12,6 @@ import {
   userCanAccessSearchEndpoint,
 } from "../../../lib/searchendpoints";
 import { userCanAccessQueryTemplate } from "../../../lib/querytemplates";
-import { RulesetVersionValue } from "../../../lib/rulesets/rules";
 
 const ontologyRequestSchema = z.object({
   query: z.string(),

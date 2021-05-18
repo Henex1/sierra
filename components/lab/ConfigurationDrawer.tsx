@@ -205,15 +205,15 @@ export default function ConfigurationDrawer({
     if (!isResizing) {
       return;
     }
-    let offsetLeft = e.clientX;
-    let minWidth = 100;
-    let maxWidth = 1300;
+    const offsetLeft = e.clientX;
+    const minWidth = 100;
+    const maxWidth = 1300;
     if (offsetLeft > minWidth && offsetLeft < maxWidth) {
       setDrawerWidth(offsetLeft);
     }
   }
 
-  function handleMouseup(e: MouseEvent) {
+  function handleMouseup() {
     if (!isResizing) {
       return;
     }

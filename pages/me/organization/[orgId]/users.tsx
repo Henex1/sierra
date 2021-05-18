@@ -26,7 +26,6 @@ import {
 import Button from "@material-ui/core/Button";
 import SaveIcon from "@material-ui/icons/Save";
 import React, { useState } from "react";
-import { getOrg } from "../../../../lib/org";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const orgId = requireNumberParam(context, "orgId");
@@ -95,7 +94,7 @@ export const getServerSideProps = authenticatedPage(async (context) => {
   };
 });
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   editActions: {
     display: "flex",
     justifyContent: "flex-end",
@@ -142,11 +141,10 @@ export default function OrganizationUsers({ orgId, users }: Props) {
                     <Select
                       label="Expiration"
                       value={newRoleValue}
-                      // @ts-ignore
                       onChange={(
-                        event: React.ChangeEvent<{ value: string }>
+                        event: React.ChangeEvent<{ value: unknown }>
                       ) => {
-                        return setNewRoleValue(event.target.value);
+                        return setNewRoleValue(event.target.value as string);
                       }}
                     >
                       <MenuItem value="Admin">Admin</MenuItem>

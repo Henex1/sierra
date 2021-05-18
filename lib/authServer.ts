@@ -25,8 +25,8 @@ const allowRegistrationFrom = requireEnv("ALLOW_REGISTRATION_FROM").split(",");
 export const authOptions: NextAuthOptions = {
   providers: [
     Providers.Google({
-      clientId: process.env.GOOGLE_ID!,
-      clientSecret: process.env.GOOGLE_SECRET!,
+      clientId: googleId,
+      clientSecret: googleSecret,
     }),
   ],
   adapter: Adapters.Prisma.Adapter({ prisma }),
@@ -61,7 +61,7 @@ export const authOptions: NextAuthOptions = {
     async createUser(user: any) {
       // Automatically create an organization for each user. Eventually,
       // replace this with an Org invitation system.
-      const org = await prisma.org.create({
+      await prisma.org.create({
         data: {
           name: `${user.name}'s Organization`,
           users: {

@@ -71,13 +71,13 @@ export const handleSetVotes = apiHandler(async (req, res) => {
   if (!judgement) {
     throw new HttpError(404, { error: "judgement not found" });
   }
-  const updated = await setVotes(judgement, votes);
+  await setVotes(judgement, votes);
   res.status(200).json({ success: true });
 });
 
 export const handleImport = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
-  let data: any = {};
+  const data: any = {};
   try {
     const raw = await new Promise<any>((res, rej) => {
       const form = new IncomingForm();

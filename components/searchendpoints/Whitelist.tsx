@@ -9,7 +9,7 @@ export type WhitelistProps = {
   whitelistProps: any;
 };
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   tagsInputRoot: {
     display: "flex",
     flexWrap: "wrap",
@@ -46,8 +46,7 @@ export default function Whitelist({ whitelistProps }: WhitelistProps) {
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    // @ts-ignore
-    const inputValue = event.target.value.trim();
+    const inputValue = (event.target as HTMLInputElement).value.trim();
     if (event.key === "Enter") {
       if (IPv4withCIDR.test(inputValue) || IPv6withCIDR.test(inputValue)) {
         whitelistProps.input.onChange({

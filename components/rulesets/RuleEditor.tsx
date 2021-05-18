@@ -1,6 +1,6 @@
 import * as React from "react";
 import Grid from "@material-ui/core/Grid";
-import { Field, FieldRenderProps } from "react-final-form";
+import { Field } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
 import { TextField, Select, Autocomplete } from "mui-rff";
 import Box from "@material-ui/core/Box";
@@ -17,7 +17,6 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Tooltip from "@material-ui/core/Tooltip";
 import Switch from "@material-ui/core/Switch";
 import Slider from "@material-ui/core/Slider";
-import CircularProgress from "@material-ui/core/CircularProgress";
 import { withStyles, makeStyles } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -62,7 +61,7 @@ type InstructionFieldProps = {
   facetFilterFields: string[];
 };
 
-const useSynonymFieldStyles = makeStyles((theme) => ({
+const useSynonymFieldStyles = makeStyles(() => ({
   select: {
     display: "flex",
     alignItems: "center",
@@ -333,7 +332,7 @@ function DeleteField({ name, disabled }: InstructionFieldProps) {
   );
 }
 
-const useInstructionFieldStyles = makeStyles((theme) => ({
+const useInstructionFieldStyles = makeStyles(() => ({
   listItemIcon: {
     minWidth: 46,
     paddingLeft: 6,

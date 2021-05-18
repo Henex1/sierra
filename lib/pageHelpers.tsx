@@ -1,4 +1,3 @@
-import * as z from "zod";
 import { ParsedUrlQuery } from "querystring";
 import {
   GetServerSideProps,
@@ -33,7 +32,7 @@ export function authenticatedPage<
   return async (context): Promise<GetServerSidePropsResult<P>> => {
     const session = await getUser(context.req);
     if (!session.user) {
-      return redirectToLogin(context.req);
+      return redirectToLogin();
     }
     try {
       return callback
@@ -96,7 +95,6 @@ export function optionalNumberQuery<P extends ParsedUrlQuery>(
 export async function requireActiveOrg(
   context: ValidUserSession
 ): Promise<Org> {
-  const activeOrgId = context.user.activeOrgId;
   const activeOrg = await getActiveOrg(context.user);
   if (!activeOrg) {
     throw new RedirectError("/me/active-org");

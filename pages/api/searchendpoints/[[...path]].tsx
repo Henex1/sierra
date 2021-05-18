@@ -1,7 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-import prisma, { User, SearchEndpoint } from "../../../lib/prisma";
-import { SearchEndpointSchema } from "../../../lib/schema";
 import {
   formatSearchEndpoint,
   createSearchEndpointSchema,
@@ -10,9 +8,7 @@ import {
   updateSearchEndpointSchema,
   updateSearchEndpoint,
 } from "../../../lib/searchendpoints";
-import { notAuthorized } from "../../../lib/errors";
 import {
-  HttpError,
   apiHandler,
   requireMethod,
   requireUser,
@@ -33,7 +29,6 @@ const handleCreateSearchEndpoint = apiHandler(async (req, res) => {
 const handleDeleteSearchEndpoint = apiHandler(async (req, res) => {
   requireMethod(req, "DELETE");
   const user = requireUser(req);
-  const org = await requireOnlyOrg(req);
   const id = parseInt(req.query.path[0], 10);
   await deleteSearchEndpoint(user, id);
   res.status(200).json({ success: true });

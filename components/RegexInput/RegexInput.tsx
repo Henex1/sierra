@@ -18,7 +18,7 @@ import StartsWithIcon from "./StartsWithIcon";
 import EndsWithIcon from "./EndsWithIcon";
 import ContainedIcon from "./ContainedIcon";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   inputParentContainer: {
     display: "flex",
     flexDirection: "column",

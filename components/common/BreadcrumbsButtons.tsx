@@ -11,10 +11,8 @@ export default function BreadcrumbsButtons({ children }: BreadcrumbsButtons) {
   return (
     <div>
       <Box display="flex" mb={4}>
-        <Breadcrumbs aria-label="breadcrumb">
-          {children}
-        </Breadcrumbs>
+        <Breadcrumbs aria-label="breadcrumb">{children}</Breadcrumbs>
       </Box>
     </div>
-  )
+  );
 }

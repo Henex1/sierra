@@ -59,7 +59,6 @@ type Props = {
   canRun: boolean;
   isRunning: boolean;
   onRun: () => void;
-  onConfigurationsChange: (config: {}) => void;
 };
 
 export default function ActionButtons({
@@ -68,7 +67,6 @@ export default function ActionButtons({
   canRun,
   isRunning,
   onRun,
-  onConfigurationsChange,
 }: Props) {
   const [open, setOpen] = React.useState(false);
   const [drawerWidth, setDrawerWidth] = React.useState(600);
