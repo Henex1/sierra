@@ -23,7 +23,7 @@ import {
 import { ExposedSearchPhrase, ShowOptions, SortOptions } from "../../lib/lab";
 import {
   authenticatedPage,
-  requireNumberParam,
+  requireParam,
   optionalNumberQuery,
 } from "../../lib/pageHelpers";
 import {
@@ -73,7 +73,7 @@ type Props = {
 };
 
 export const getServerSideProps = authenticatedPage<Props>(async (context) => {
-  const projectId = requireNumberParam(context, "projectId");
+  const projectId = requireParam(context, "projectId");
   const project = await getProject(context.user, projectId);
   if (!project) {
     return { notFound: true };

@@ -48,10 +48,10 @@ export type SearchEndpointCredentials = z.infer<
 >;
 
 export const SearchEndpointSchema = z.object({
-  id: z.number(),
+  id: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
-  orgId: z.number(),
+  orgId: z.string(),
   name: z.string(),
   description: z.string(),
   whitelist: z.array(z.string()),

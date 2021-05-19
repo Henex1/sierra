@@ -1,6 +1,11 @@
 import { mockModels } from "../../../lib/__mocks__/prisma";
 import handler from "./[[...path]]";
-import { getApiRoute, TEST_ORG, TEST_ORGUSER } from "../../../lib/test";
+import {
+  getApiRoute,
+  TEST_ORG,
+  TEST_ORGUSER,
+  TEST_SEARCHENDPOINT,
+} from "../../../lib/test";
 
 describe("api/searchendpoints", () => {
   const initialInfo = {
@@ -21,7 +26,10 @@ describe("api/searchendpoints", () => {
     mockModels("searchEndpoint")
       .action("create")
       .with({})
-      .hasImplementation(({ args: { data } }: any) => ({ id: 42, ...data }));
+      .hasImplementation(({ args: { data } }: any) => ({
+        id: TEST_SEARCHENDPOINT.id,
+        ...data,
+      }));
 
     const { searchEndpoint } = await getApiRoute(handler, initialInfo, {
       method: "POST",
@@ -34,22 +42,26 @@ describe("api/searchendpoints", () => {
   it("PATCH /:id - no credentials", async () => {
     mockModels("searchEndpoint")
       .action("findFirst")
-      .with({ where: { AND: { id: 42 } } })
-      .resolvesTo({ id: 42, ...initialInfo });
+      .with({ where: { AND: { id: TEST_SEARCHENDPOINT.id } } })
+      .resolvesTo({ id: TEST_SEARCHENDPOINT.id, ...initialInfo });
     const revisedInfo = {
       name: "Updated Endpoint Name",
       info: { endpoint: "http://eshost:9200/", index: "icecat" },
     };
     mockModels("searchEndpoint")
       .action("update")
-      .with({ where: { id: 42 }, data: revisedInfo })
-      .resolvesTo({ id: 42, ...initialInfo, ...revisedInfo });
+      .with({ where: { id: TEST_SEARCHENDPOINT.id }, data: revisedInfo })
+      .resolvesTo({
+        id: TEST_SEARCHENDPOINT.id,
+        ...initialInfo,
+        ...revisedInfo,
+      });
     const { searchEndpoint: revisedSearchEndpoint } = await getApiRoute(
       handler,
       revisedInfo,
       {
         method: "PATCH",
-        query: { path: [42] },
+        query: { path: [TEST_SEARCHENDPOINT.id] },
       }
     );
     expect(revisedSearchEndpoint).toMatchObject(revisedInfo);
@@ -58,8 +70,8 @@ describe("api/searchendpoints", () => {
   it("PATCH /:id - null credentials", async () => {
     mockModels("searchEndpoint")
       .action("findFirst")
-      .with({ where: { AND: { id: 42 } } })
-      .resolvesTo({ id: 42, ...initialInfo });
+      .with({ where: { AND: { id: TEST_SEARCHENDPOINT.id } } })
+      .resolvesTo({ id: TEST_SEARCHENDPOINT.id, ...initialInfo });
     const revisedInfo = {
       name: "Updated Endpoint Name",
       info: { endpoint: "http://eshost:9200/", index: "icecat" },
@@ -67,14 +79,18 @@ describe("api/searchendpoints", () => {
     };
     mockModels("searchEndpoint")
       .action("update")
-      .with({ where: { id: 42 }, data: revisedInfo })
-      .resolvesTo({ id: 42, ...initialInfo, ...revisedInfo });
+      .with({ where: { id: TEST_SEARCHENDPOINT.id }, data: revisedInfo })
+      .resolvesTo({
+        id: TEST_SEARCHENDPOINT.id,
+        ...initialInfo,
+        ...revisedInfo,
+      });
     const { searchEndpoint: revisedSearchEndpoint } = await getApiRoute(
       handler,
       revisedInfo,
       {
         method: "PATCH",
-        query: { path: [42] },
+        query: { path: [TEST_SEARCHENDPOINT.id] },
       }
     );
     const { credentials, ...expected } = revisedInfo;
@@ -84,8 +100,8 @@ describe("api/searchendpoints", () => {
   it("PATCH /:id - update credentials", async () => {
     mockModels("searchEndpoint")
       .action("findFirst")
-      .with({ where: { AND: { id: 42 } } })
-      .resolvesTo({ id: 42, ...initialInfo });
+      .with({ where: { AND: { id: TEST_SEARCHENDPOINT.id } } })
+      .resolvesTo({ id: TEST_SEARCHENDPOINT.id, ...initialInfo });
     const revisedInfo = {
       name: "Updated Endpoint Name",
       info: { endpoint: "http://eshost:9200/", index: "icecat" },
@@ -94,18 +110,22 @@ describe("api/searchendpoints", () => {
     const internalData = { ...revisedInfo, credentials: expect.any(String) };
     mockModels("searchEndpoint")
       .action("update")
-      .with({ where: { id: 42 }, data: internalData })
-      .resolvesTo({ id: 42, ...initialInfo, ...revisedInfo });
+      .with({ where: { id: TEST_SEARCHENDPOINT.id }, data: internalData })
+      .resolvesTo({
+        id: TEST_SEARCHENDPOINT.id,
+        ...initialInfo,
+        ...revisedInfo,
+      });
     const { searchEndpoint: revisedSearchEndpoint } = await getApiRoute(
       handler,
       revisedInfo,
       {
         method: "PATCH",
-        query: { path: [42] },
+        query: { path: [TEST_SEARCHENDPOINT.id] },
       }
     );
     const exposedData: any = {
-      id: 42,
+      id: TEST_SEARCHENDPOINT.id,
       ...initialInfo,
       ...revisedInfo,
     };
@@ -116,18 +136,18 @@ describe("api/searchendpoints", () => {
   it("DELETE /:id", async () => {
     mockModels("searchEndpoint")
       .action("findFirst")
-      .with({ where: { AND: { id: 42 } } })
-      .resolvesTo({ id: 42, ...initialInfo });
+      .with({ where: { AND: { id: TEST_SEARCHENDPOINT.id } } })
+      .resolvesTo({ id: TEST_SEARCHENDPOINT.id, ...initialInfo });
     mockModels("searchEndpoint")
       .action("delete")
-      .with({ where: { id: 42 } })
-      .resolvesTo({ id: 42, ...initialInfo });
+      .with({ where: { id: TEST_SEARCHENDPOINT.id } })
+      .resolvesTo({ id: TEST_SEARCHENDPOINT.id, ...initialInfo });
     const { success } = await getApiRoute(
       handler,
       {},
       {
         method: "DELETE",
-        query: { path: [42] },
+        query: { path: [TEST_SEARCHENDPOINT.id] },
       }
     );
     expect(success).toEqual(true);

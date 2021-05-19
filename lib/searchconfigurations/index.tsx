@@ -34,7 +34,7 @@ export function formatSearchConfiguration(
 
 export async function getSearchConfiguration(
   user: User,
-  id: number
+  id: string
 ): Promise<SearchConfiguration | null> {
   // SearchConfiguration isn't actually joined to Project, so we check access
   // on the associated QueryTemplate.
@@ -55,16 +55,16 @@ export async function getActiveSearchConfiguration(
 }
 
 export const updateSearchConfigurationSchema = z.object({
-  queryTemplateId: z.number(),
-  rulesetIds: z.array(z.number()).optional(),
+  queryTemplateId: z.string(),
+  rulesetIds: z.array(z.string()).optional(),
 });
 
 export type UpdateSearchConfiguration = Omit<
   z.infer<typeof updateSearchConfigurationSchema>,
   "rulesetIds"
 > & {
-  judgementIds?: number[];
-  rulesetVersionIds?: number[];
+  judgementIds?: string[];
+  rulesetVersionIds?: string[];
 };
 
 export async function updateSearchConfiguration(

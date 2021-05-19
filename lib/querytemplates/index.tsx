@@ -35,7 +35,7 @@ export function formatQueryTemplate(val: QueryTemplate): ExposedQueryTemplate {
 
 export async function getQueryTemplate(
   user: User,
-  id: number
+  id: string
 ): Promise<QueryTemplate | null> {
   const queryTemplate = await prisma.queryTemplate.findFirst({
     where: userCanAccessQueryTemplate(user, { id }),
@@ -57,7 +57,7 @@ export const createQueryTemplateSchema = z.object({
   query: z.string(),
   knobs: z.any(),
   tag: z.string().optional(),
-  projectId: z.number(),
+  projectId: z.string(),
 });
 
 export type CreateQueryTemplate = z.infer<typeof createQueryTemplateSchema>;
@@ -71,12 +71,12 @@ export async function createQueryTemplate(
 }
 
 export const updateQueryTemplateSchema = z.object({
-  parentId: z.number(),
+  parentId: z.string(),
   description: z.string(),
   query: z.string(),
   knobs: z.any(),
   tag: z.string().optional(),
-  projectId: z.number(),
+  projectId: z.string(),
 });
 
 export type UpdateQueryTemplate = z.infer<typeof updateQueryTemplateSchema>;

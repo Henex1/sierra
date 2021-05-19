@@ -26,7 +26,7 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
   const input = requireBody(
     req,
     updateSearchConfigurationSchema.extend({
-      id: z.number(),
+      id: z.string(),
     })
   );
 
@@ -47,7 +47,7 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
   // it should be based on input
   const judgement = await getJudgementForSearchConfiguration(sc);
 
-  let rulesetVersionIds: number[] | undefined = undefined;
+  let rulesetVersionIds: string[] | undefined = undefined;
   if (input.rulesetIds) {
     try {
       const rulesets = await Promise.all(
@@ -79,7 +79,7 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
 export const handleExecute = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
   const user = requireUser(req);
-  const input = requireBody(req, z.object({ id: z.number() }));
+  const input = requireBody(req, z.object({ id: z.string() }));
   const sc = await getSearchConfiguration(user, input.id);
   if (!sc) {
     throw new HttpError(404, { error: "search configuration not found" });

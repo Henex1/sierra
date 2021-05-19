@@ -25,7 +25,7 @@ export function formatOrg(val: Org): ExposedOrg {
   return _.pick(val, _.keys(selectKeys)) as ExposedOrg;
 }
 
-export async function getOrg(user: User, id: number): Promise<Org | null> {
+export async function getOrg(user: User, id: string): Promise<Org | null> {
   const org = await prisma.org.findMany({
     where: userCanAccessOrg(user, { id }),
   });

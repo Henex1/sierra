@@ -5,10 +5,7 @@ import Typography from "@material-ui/core/Typography";
 import Container from "@material-ui/core/Container";
 
 import Form from "../../../components/projects/Form";
-import {
-  authenticatedPage,
-  requireNumberParam,
-} from "../../../lib/pageHelpers";
+import { authenticatedPage, requireParam } from "../../../lib/pageHelpers";
 import { apiRequest } from "../../../lib/api";
 import {
   ExposedSearchEndpoint,
@@ -24,7 +21,7 @@ import Link from "../../../components/common/Link";
 import BreadcrumbsButtons from "../../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const id = requireNumberParam(context, "id");
+  const id = requireParam(context, "id");
   const project = await getProject(context.user, id);
   const searchEndpoints = await listSearchEndpoints(context);
 

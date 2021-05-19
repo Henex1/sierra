@@ -12,7 +12,7 @@ generator client {
 
 // User represents a single human being.
 model User {
-  id            Int          @id @default(autoincrement())
+  id            String       @id @default(cuid())
   name          String?
   email         String?      @unique
   emailVerified DateTime?    @map("email_verified")
@@ -23,7 +23,7 @@ model User {
   // This stores the user's "active" Org, which controls which resources they
   // see when they are on various pages. This is a user preference, and does
   // not imply that the user actually has access to the listed Org.
-  activeOrgId   Int?
+  activeOrgId   String?
 
   orgs      OrgUser[]
   activeOrg Org?      @relation(fields: [activeOrgId], references: [id])
@@ -43,7 +43,7 @@ enum UserSiteRole {
 model Account {
   id                 Int       @id @default(autoincrement())
   compoundId         String    @unique @map("compound_id")
-  userId             Int       @map("user_id")
+  userId             String    @map("user_id")
   providerType       String    @map("provider_type")
   providerId         String    @map("provider_id")
   providerAccountId  String    @map("provider_account_id")
@@ -61,7 +61,7 @@ model Account {
 
 model Session {
   id           Int      @id @default(autoincrement())
-  userId       Int      @map("user_id")
+  userId       String   @map("user_id")
   expires      DateTime
   sessionToken String   @unique @map("session_token")
   accessToken  String   @unique @map("access_token")
@@ -75,7 +75,7 @@ model Session {
 // owned by an Org, and users have access to the Org through the OrgUser
 // relation.
 model Org {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   name      String
@@ -92,8 +92,8 @@ model Org {
 // OrgUser represents membership in an organization.
 model OrgUser {
   id        Int         @id @default(autoincrement())
-  userId    Int
-  orgId     Int
+  userId    String
+  orgId     String
   role      UserOrgRole @default(USER)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
@@ -112,10 +112,10 @@ enum UserOrgRole {
 
 // SearchEndpoint represents a remote datasource which can be queried.
 model SearchEndpoint {
-  id            Int                @id @default(autoincrement())
+  id            String             @id @default(cuid())
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
-  orgId         Int
+  orgId         String
   name          String
   description   String
   whitelist     String[]
@@ -140,11 +140,11 @@ enum SearchEndpointType {
 
 // A Project is a group of search phrases which are being optimized.
 model Project {
-  id               Int      @id @default(autoincrement())
+  id               String   @id @default(cuid())
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  orgId            Int
-  searchEndpointId Int
+  orgId            String
+  searchEndpointId String
   name             String
 
   judgements               Judgement[]
@@ -161,11 +161,11 @@ model Project {
 // with a parentId equal to the original template. In this way, templates form
 // a tree of edits.
 model QueryTemplate {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(cuid())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  projectId   Int
-  parentId    Int?
+  projectId   String
+  parentId    String?
   query       String
   knobs       Json
   // Short tag describing this QueryTemplate. Compare to a git branch.
@@ -182,10 +182,10 @@ model QueryTemplate {
 // A Judgement is a group of JudgementPhrases with a single owner. The owner
 // could be a user, team, external datasource, or something else.
 model Judgement {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  projectId Int
+  projectId String
   name      String
 
   phrases              JudgementPhrase[]
@@ -195,10 +195,10 @@ model Judgement {
 
 // A JudgementPhrase is a set of Votes for a single search phrase.
 model JudgementPhrase {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(cuid())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  judgementId Int
+  judgementId String
   phrase      String
 
   judgement Judgement @relation(fields: [judgementId], references: [id])
@@ -208,10 +208,10 @@ model JudgementPhrase {
 
 // A Vote is a ranking for a particular (search phrase, document ID).
 model Vote {
-  id                Int      @id @default(autoincrement())
+  id                Int   @id @default(autoincrement())
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  judgementPhraseId Int
+  judgementPhraseId String
   documentId        String
   // Score is always stored in the range of [0, 1], and can be scaled in the
   // frontend to provide any arbitrary point scale.
@@ -227,10 +227,10 @@ model Vote {
 // data source might change, and so rerunning a SearchConfiguration later on
 // might result in a different score.
 model SearchConfiguration {
-  id              Int      @id @default(autoincrement())
+  id              String   @id @default(cuid())
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  queryTemplateId Int
+  queryTemplateId String
 
   executions               Execution[]
   judgements               JudgementSearchConfiguration[]
@@ -242,12 +242,12 @@ model SearchConfiguration {
 // A SearchConfigurationLabel allows us to assign a unique label per project to
 // a SearchConfiguration.
 model SearchConfigurationLabel {
-  id                    Int      @id @default(autoincrement())
+  id                    String   @id @default(cuid())
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
   name                  String
-  searchConfigurationId Int
-  projectId             Int
+  searchConfigurationId String
+  projectId             String
 
   project             Project             @relation(fields: [projectId], references: [id])
   searchConfiguration SearchConfiguration @relation(fields: [searchConfigurationId], references: [id])
@@ -257,19 +257,20 @@ model SearchConfigurationLabel {
 // A JudgementSearchConfiguration links a SearchConfiguration to a Judgement.
 model JudgementSearchConfiguration {
   id                    Int   @id @default(autoincrement())
-  judgementId           Int
-  searchConfigurationId Int
+  judgementId           String
+  searchConfigurationId String
   weight                Float @default(1.0)
 
   judgement           Judgement           @relation(fields: [judgementId], references: [id])
   searchConfiguration SearchConfiguration @relation(fields: [searchConfigurationId], references: [id])
+  @@unique([judgementId, searchConfigurationId])
 }
 
 model Execution {
-  id                    Int      @id @default(autoincrement())
+  id                    String   @id @default(cuid())
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
-  searchConfigurationId Int
+  searchConfigurationId String
   // Meta tracks information about the datasource, like number of documents,
   // segments, shards; the index maapping; and so on. Standard keys:
   // tookP50, tookP95, tookP99: percentile timing metrics
@@ -288,7 +289,7 @@ model SearchPhraseExecution {
   id            Int      @id @default(autoincrement())
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  executionId   Int
+  executionId   String
   phrase        String
   totalResults  Int
   // How long the query took to execute
@@ -307,10 +308,10 @@ model SearchPhraseExecution {
 
 // A Ruleset stores information about a query rewriting ruleset.
 model Ruleset {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  projectId Int
+  projectId String
   name      String
 
   project        Project          @relation(fields: [projectId], references: [id])
@@ -322,11 +323,11 @@ model Ruleset {
 // a parentId equal to the original RulesetVersion. In this way, rulesets form
 // a tree of edits.
 model RulesetVersion {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  rulesetId Int
-  parentId  Int?
+  rulesetId String
+  parentId  String?
   value     Json
 
   children             RulesetVersion[]      @relation("RulesetVersionToRulesetVersion")

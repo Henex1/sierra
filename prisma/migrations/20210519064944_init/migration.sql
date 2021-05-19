@@ -9,7 +9,7 @@ CREATE TYPE "SearchEndpointType" AS ENUM ('ELASTICSEARCH', 'OPEN_SEARCH', 'SOLR'
 
 -- CreateTable
 CREATE TABLE "users" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "name" TEXT,
     "email" TEXT,
     "email_verified" TIMESTAMP(3),
@@ -17,7 +17,7 @@ CREATE TABLE "users" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "siteRole" "UserSiteRole" NOT NULL DEFAULT E'USER',
-    "activeOrgId" INTEGER,
+    "activeOrgId" TEXT,
 
     PRIMARY KEY ("id")
 );
@@ -26,7 +26,7 @@ CREATE TABLE "users" (
 CREATE TABLE "accounts" (
     "id" SERIAL NOT NULL,
     "compound_id" TEXT NOT NULL,
-    "user_id" INTEGER NOT NULL,
+    "user_id" TEXT NOT NULL,
     "provider_type" TEXT NOT NULL,
     "provider_id" TEXT NOT NULL,
     "provider_account_id" TEXT NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE "accounts" (
 -- CreateTable
 CREATE TABLE "sessions" (
     "id" SERIAL NOT NULL,
-    "user_id" INTEGER NOT NULL,
+    "user_id" TEXT NOT NULL,
     "expires" TIMESTAMP(3) NOT NULL,
     "session_token" TEXT NOT NULL,
     "access_token" TEXT NOT NULL,
@@ -54,7 +54,7 @@ CREATE TABLE "sessions" (
 
 -- CreateTable
 CREATE TABLE "Org" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "name" TEXT NOT NULL,
@@ -66,8 +66,8 @@ CREATE TABLE "Org" (
 -- CreateTable
 CREATE TABLE "OrgUser" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
-    "orgId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
+    "orgId" TEXT NOT NULL,
     "role" "UserOrgRole" NOT NULL DEFAULT E'USER',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -77,10 +77,10 @@ CREATE TABLE "OrgUser" (
 
 -- CreateTable
 CREATE TABLE "SearchEndpoint" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "orgId" INTEGER NOT NULL,
+    "orgId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "whitelist" TEXT[],
@@ -95,11 +95,11 @@ CREATE TABLE "SearchEndpoint" (
 
 -- CreateTable
 CREATE TABLE "Project" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "orgId" INTEGER NOT NULL,
-    "searchEndpointId" INTEGER NOT NULL,
+    "orgId" TEXT NOT NULL,
+    "searchEndpointId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
@@ -107,11 +107,11 @@ CREATE TABLE "Project" (
 
 -- CreateTable
 CREATE TABLE "QueryTemplate" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "projectId" INTEGER NOT NULL,
-    "parentId" INTEGER,
+    "projectId" TEXT NOT NULL,
+    "parentId" TEXT,
     "query" TEXT NOT NULL,
     "knobs" JSONB NOT NULL,
     "tag" TEXT,
@@ -122,10 +122,10 @@ CREATE TABLE "QueryTemplate" (
 
 -- CreateTable
 CREATE TABLE "Judgement" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "projectId" INTEGER NOT NULL,
+    "projectId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
@@ -133,10 +133,10 @@ CREATE TABLE "Judgement" (
 
 -- CreateTable
 CREATE TABLE "JudgementPhrase" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "judgementId" INTEGER NOT NULL,
+    "judgementId" TEXT NOT NULL,
     "phrase" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
@@ -147,7 +147,7 @@ CREATE TABLE "Vote" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "judgementPhraseId" INTEGER NOT NULL,
+    "judgementPhraseId" TEXT NOT NULL,
     "documentId" TEXT NOT NULL,
     "score" DOUBLE PRECISION NOT NULL,
 
@@ -156,22 +156,22 @@ CREATE TABLE "Vote" (
 
 -- CreateTable
 CREATE TABLE "SearchConfiguration" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "queryTemplateId" INTEGER NOT NULL,
+    "queryTemplateId" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "SearchConfigurationLabel" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "name" TEXT NOT NULL,
-    "searchConfigurationId" INTEGER NOT NULL,
-    "projectId" INTEGER NOT NULL,
+    "searchConfigurationId" TEXT NOT NULL,
+    "projectId" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
 );
@@ -179,8 +179,8 @@ CREATE TABLE "SearchConfigurationLabel" (
 -- CreateTable
 CREATE TABLE "JudgementSearchConfiguration" (
     "id" SERIAL NOT NULL,
-    "judgementId" INTEGER NOT NULL,
-    "searchConfigurationId" INTEGER NOT NULL,
+    "judgementId" TEXT NOT NULL,
+    "searchConfigurationId" TEXT NOT NULL,
     "weight" DOUBLE PRECISION NOT NULL DEFAULT 1.0,
 
     PRIMARY KEY ("id")
@@ -188,10 +188,10 @@ CREATE TABLE "JudgementSearchConfiguration" (
 
 -- CreateTable
 CREATE TABLE "Execution" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "searchConfigurationId" INTEGER NOT NULL,
+    "searchConfigurationId" TEXT NOT NULL,
     "meta" JSONB NOT NULL,
     "combinedScore" DOUBLE PRECISION NOT NULL,
     "allScores" JSONB NOT NULL,
@@ -204,7 +204,7 @@ CREATE TABLE "SearchPhraseExecution" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "executionId" INTEGER NOT NULL,
+    "executionId" TEXT NOT NULL,
     "phrase" TEXT NOT NULL,
     "totalResults" INTEGER NOT NULL,
     "tookMs" INTEGER NOT NULL,
@@ -218,10 +218,10 @@ CREATE TABLE "SearchPhraseExecution" (
 
 -- CreateTable
 CREATE TABLE "Ruleset" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "projectId" INTEGER NOT NULL,
+    "projectId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
@@ -229,11 +229,11 @@ CREATE TABLE "Ruleset" (
 
 -- CreateTable
 CREATE TABLE "RulesetVersion" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "rulesetId" INTEGER NOT NULL,
-    "parentId" INTEGER,
+    "rulesetId" TEXT NOT NULL,
+    "parentId" TEXT,
     "value" JSONB NOT NULL,
 
     PRIMARY KEY ("id")
@@ -241,8 +241,8 @@ CREATE TABLE "RulesetVersion" (
 
 -- CreateTable
 CREATE TABLE "_RulesetVersionToSearchConfiguration" (
-    "A" INTEGER NOT NULL,
-    "B" INTEGER NOT NULL
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
 );
 
 -- CreateIndex
@@ -277,6 +277,9 @@ CREATE UNIQUE INDEX "Vote.judgementPhraseId_documentId_unique" ON "Vote"("judgem
 
 -- CreateIndex
 CREATE UNIQUE INDEX "SearchConfigurationLabel.projectId_name_unique" ON "SearchConfigurationLabel"("projectId", "name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "JudgementSearchConfiguration.judgementId_searchConfigurationId_unique" ON "JudgementSearchConfiguration"("judgementId", "searchConfigurationId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_RulesetVersionToSearchConfiguration_AB_unique" ON "_RulesetVersionToSearchConfiguration"("A", "B");

@@ -187,7 +187,7 @@ export default function ConfigurationDrawer({
   const router = useRouter();
   const [activeTab, setActiveTab] = React.useState(0);
   const [isResizing, setIsResizing] = React.useState(false);
-  const [rulesetIds, setRulesetIds] = React.useState<number[]>([]);
+  const [rulesetIds, setRulesetIds] = React.useState<string[]>([]);
 
   React.useEffect(() => {
     if (searchConfiguration) {
@@ -244,7 +244,7 @@ export default function ConfigurationDrawer({
     setAnchorEl(null);
   };
 
-  async function handleQueryTemplateUpdate(queryTemplateId: number) {
+  async function handleQueryTemplateUpdate(queryTemplateId: string) {
     await apiRequest(`/api/searchconfigurations/update`, {
       id: searchConfiguration?.id,
       queryTemplateId,

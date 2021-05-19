@@ -19,7 +19,7 @@ import AddIcon from "@material-ui/icons/Add";
 import BreadcrumbsButtons from "components/common/BreadcrumbsButtons";
 import { useActiveProject } from "components/Session";
 import Link from "components/common/Link";
-import { authenticatedPage, requireNumberParam } from "lib/pageHelpers";
+import { authenticatedPage, requireParam } from "lib/pageHelpers";
 import {
   ExposedJudgementExtendedMetadata,
   listJudgementsExtended,
@@ -27,7 +27,7 @@ import {
 import { getProject } from "lib/projects";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const projectId = requireNumberParam(context, "projectId");
+  const projectId = requireParam(context, "projectId");
   const project = await getProject(context.user, projectId);
   if (!project) {
     return { notFound: true };

@@ -107,6 +107,7 @@ async function handleSeed(
         },
       },
     },
+    include: { rulesetVersion: true },
   });
 
   const queryTemplate = await prisma.queryTemplate.create({
@@ -127,7 +128,7 @@ async function handleSeed(
       judgements: { create: [{ judgementId: judgement.id, weight: 1.0 }] },
       rulesets: {
         connect: {
-          id: ruleset.id,
+          id: ruleset.rulesetVersion[0].id,
         },
       },
     },

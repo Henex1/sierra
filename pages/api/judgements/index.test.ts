@@ -83,6 +83,7 @@ describe("api/judgements", () => {
             AS "inputs" ("phrase", "documentId", "score")
             INNER JOIN "JudgementPhrase"
             ON "JudgementPhrase"."phrase" = "inputs"."phrase"
+            AND "JudgementPhrase"."judgementId" = ${TEST_JUDGEMENT.id}
           ON CONFLICT ("judgementPhraseId", "documentId")
           DO UPDATE SET "score" = EXCLUDED."score", "updatedAt" = NOW()
         `

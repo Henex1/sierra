@@ -153,7 +153,7 @@ export default function Testbed({ rulesets }: Props) {
     setSettingsPopoverAnchor,
   ] = React.useState<HTMLButtonElement | null>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [selectedRulesetId, setSelectedRulesetId] = React.useState<number[]>(
+  const [selectedRulesetId, setSelectedRulesetId] = React.useState<string[]>(
     []
   );
   const [ltrModelName, setLtrModelName] = React.useState("");
@@ -442,7 +442,7 @@ export default function Testbed({ rulesets }: Props) {
                 onChange={(ev) => {
                   console.log(ev);
                   setSelectedRulesetId(() => [
-                    ...(ev.target.value as number[]),
+                    ...(ev.target.value as string[]),
                   ]);
                 }}
               >

@@ -12,17 +12,18 @@ import {
   requireUser,
 } from "../../../lib/apiServer";
 
-const getFieldsSchema = z.object({
-  searchEndpointId: z.number(),
-});
-
 export default apiHandler(async function getFields(
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<void> {
   requireMethod(req, "POST");
   const user = requireUser(req);
-  const { searchEndpointId } = requireBody(req, getFieldsSchema);
+  const { searchEndpointId } = requireBody(
+    req,
+    z.object({
+      searchEndpointId: z.string(),
+    })
+  );
   const searchEndpoint = await getSearchEndpoint(user, searchEndpointId);
   if (!searchEndpoint) {
     return notFound(res);

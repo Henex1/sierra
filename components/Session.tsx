@@ -9,7 +9,7 @@ import { ExposedOrg } from "../lib/org";
 import { ExposedProject } from "../lib/projects";
 import { apiRequest } from "../lib/api";
 
-type User = NextUser & { id?: number; activeOrgId: number | null };
+type User = NextUser & { id?: number; activeOrgId: string | null };
 
 export type Session = Omit<NextSession, "user"> & {
   loading: boolean;

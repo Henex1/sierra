@@ -29,7 +29,7 @@ export const handleCreateJudgement = apiHandler(async (req, res) => {
   const { projectId, ...input } = requireBody(
     req,
     createJudgementSchema.extend({
-      projectId: z.number(),
+      projectId: z.string(),
     })
   );
   const project = await getProject(user, projectId);
@@ -46,7 +46,7 @@ export const handleUpdateJudgement = apiHandler(async (req, res) => {
   const { id, ...input } = requireBody(
     req,
     updateJudgementSchema.extend({
-      id: z.number(),
+      id: z.string(),
     })
   );
   const judgement = await getJudgement(user, id);
@@ -63,7 +63,7 @@ export const handleSetVotes = apiHandler(async (req, res) => {
   const { id, votes } = requireBody(
     req,
     z.object({
-      id: z.number(),
+      id: z.string(),
       votes: setVotesSchema,
     })
   );

@@ -60,7 +60,7 @@ export function formatSearchPhraseExecution(
 
 export async function getExecution(
   user: User,
-  id: number
+  id: string
 ): Promise<Execution | null> {
   const execution = await prisma.execution.findFirst({
     where: { id, searchConfiguration: userCanAccessSearchConfiguration(user) },

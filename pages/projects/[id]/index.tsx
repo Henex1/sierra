@@ -8,10 +8,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import Chip from "@material-ui/core/Chip";
 import BlurLinearIcon from "@material-ui/icons/BlurLinear";
 
-import {
-  authenticatedPage,
-  requireNumberParam,
-} from "../../../lib/pageHelpers";
+import { authenticatedPage, requireParam } from "../../../lib/pageHelpers";
 import {
   formatExtendedProject,
   getExtendedProject,
@@ -31,7 +28,7 @@ import ProjectRulesetsTable from "../../../components/projects/ProjectRulesetsTa
 import FlaskIcon from "../../../components/common/FlaskIcon";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const id = requireNumberParam(context, "id");
+  const id = requireParam(context, "id");
   const project = await getExtendedProject(context.user, id);
   if (!project) {
     return { notFound: true };

@@ -27,7 +27,7 @@ export const handleCreateProject = apiHandler(async (req, res) => {
   const input = requireBody(
     req,
     createProjectSchema.extend({
-      searchEndpointId: z.number(),
+      searchEndpointId: z.string(),
     })
   );
   const searchEndpoint = await getSearchEndpoint(user, input.searchEndpointId);
@@ -44,8 +44,8 @@ export const handleUpdateProject = apiHandler(async (req, res) => {
   const input = requireBody(
     req,
     updateProjectSchema.extend({
-      id: z.number(),
-      searchEndpointId: z.number().optional(),
+      id: z.string(),
+      searchEndpointId: z.string().optional(),
     })
   );
   const project = await getProject(user, input.id);
@@ -65,7 +65,7 @@ export const handleUpdateProject = apiHandler(async (req, res) => {
 export const handleDeleteProject = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
   const user = requireUser(req);
-  const input = requireBody(req, z.object({ id: z.number() }));
+  const input = requireBody(req, z.object({ id: z.string() }));
   const project = await getProject(user, input.id);
   if (!project) {
     throw new HttpError(404, { error: "project not found" });

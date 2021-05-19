@@ -29,15 +29,14 @@ const handleCreateSearchEndpoint = apiHandler(async (req, res) => {
 const handleDeleteSearchEndpoint = apiHandler(async (req, res) => {
   requireMethod(req, "DELETE");
   const user = requireUser(req);
-  const id = parseInt(req.query.path[0], 10);
-  await deleteSearchEndpoint(user, id);
+  await deleteSearchEndpoint(user, req.query.path[0]);
   res.status(200).json({ success: true });
 });
 
 const handleUpdateSearchEndpoint = apiHandler(async (req, res) => {
   requireMethod(req, "PATCH");
   const user = requireUser(req);
-  req.body.id = parseInt(req.query.path[0], 10);
+  req.body.id = req.query.path[0];
   const body = requireBody(req, updateSearchEndpointSchema);
   const se = await updateSearchEndpoint(user, body);
   res.status(200).json({ searchEndpoint: formatSearchEndpoint(se) });

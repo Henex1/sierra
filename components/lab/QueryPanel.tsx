@@ -93,7 +93,7 @@ const useStyles = makeStyles((theme) => ({
 type Props = {
   queryTemplate: ExposedQueryTemplate;
   formId: string;
-  onUpdate: (id: number) => void;
+  onUpdate: (id: string) => void;
 };
 
 export default function QueryTemplateEditor({

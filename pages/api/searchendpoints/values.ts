@@ -14,19 +14,20 @@ import {
   requireUser,
 } from "../../../lib/apiServer";
 
-const getValuesSchema = z.object({
-  projectId: z.number(),
-  fieldName: z.string(),
-  prefix: z.string().optional(),
-});
-
 export default apiHandler(async function getValues(
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<void> {
   requireMethod(req, "POST");
   const user = requireUser(req);
-  const { projectId, fieldName, prefix } = requireBody(req, getValuesSchema);
+  const { projectId, fieldName, prefix } = requireBody(
+    req,
+    z.object({
+      projectId: z.string(),
+      fieldName: z.string(),
+      prefix: z.string().optional(),
+    })
+  );
   const project = await getProject(user, projectId);
   if (!project) {
     return notAuthorized(res);

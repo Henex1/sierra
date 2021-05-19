@@ -64,9 +64,9 @@ export default function ProjectsMenu() {
   function handleChange(
     e: React.ChangeEvent<{ name?: string | undefined; value: unknown }>
   ) {
-    const id = e.target.value as number;
+    const id = e.target.value as string;
     setProject(
-      id === -1 ? null : session!.projects!.find((p) => p.id == id) ?? null
+      id === "" ? null : session!.projects!.find((p) => p.id == id) ?? null
     );
   }
 
@@ -80,7 +80,7 @@ export default function ProjectsMenu() {
           <Select
             labelId="currentProjectLabel"
             id="currentProject"
-            value={selectValue?.id ?? -1}
+            value={selectValue?.id ?? ""}
             label="Current Project"
             classes={{ icon: classes.selectIcon }}
             input={<ProjectInput />}

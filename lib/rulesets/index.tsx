@@ -60,7 +60,7 @@ export function formatRulesetVersion(
 
 export async function getRuleset(
   user: User,
-  id: number
+  id: string
 ): Promise<Ruleset | null> {
   const ruleset = await prisma.ruleset.findFirst({
     where: userCanAccessRuleset(user, { id }),
@@ -102,7 +102,7 @@ export async function getLatestRulesetVersion(
 }
 
 export const createRulesetVersionSchema = z.object({
-  parentId: z.number().nullable(),
+  parentId: z.string().nullable(),
   value: rulesetVersionValueSchema,
 });
 
