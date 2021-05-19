@@ -244,7 +244,7 @@ export default function ConfigurationDrawer({
     setAnchorEl(null);
   };
 
-  async function handleQueryTemplateUpdate(queryTemplateId: number) {
+  async function handleQueryTemplateUpdate(queryTemplateId: string) {
     await apiRequest(`/api/searchconfigurations/update`, {
       id: searchConfiguration?.id,
       queryTemplateId,

@@ -7,7 +7,7 @@ import Container from "@material-ui/core/Container";
 import { apiRequest } from "../../lib/api";
 import {
   authenticatedPage,
-  requireNumberParam,
+  requireParam,
   requireActiveOrg,
 } from "../../lib/pageHelpers";
 import {
@@ -26,7 +26,7 @@ import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const id = requireNumberParam(context, "id");
+  const id = requireParam(context, "id");
   const template = await getQueryTemplate(context.user, id);
   if (!template) {
     return { notFound: true };

@@ -55,7 +55,7 @@ export async function getActiveSearchConfiguration(
 }
 
 export const updateSearchConfigurationSchema = z.object({
-  queryTemplateId: z.number(),
+  queryTemplateId: z.string(),
   rulesetIds: z.array(z.number()).optional(),
 });
 

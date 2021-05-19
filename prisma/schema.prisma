@@ -161,11 +161,11 @@ model Project {
 // with a parentId equal to the original template. In this way, templates form
 // a tree of edits.
 model QueryTemplate {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(cuid())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   projectId   String
-  parentId    Int?
+  parentId    String?
   query       String
   knobs       Json
   // Short tag describing this QueryTemplate. Compare to a git branch.
@@ -230,7 +230,7 @@ model SearchConfiguration {
   id              Int      @id @default(autoincrement())
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  queryTemplateId Int
+  queryTemplateId String
 
   executions               Execution[]
   judgements               JudgementSearchConfiguration[]

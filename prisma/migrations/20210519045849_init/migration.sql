@@ -95,7 +95,7 @@ CREATE TABLE "SearchEndpoint" (
 
 -- CreateTable
 CREATE TABLE "Project" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "orgId" INTEGER NOT NULL,
@@ -107,11 +107,11 @@ CREATE TABLE "Project" (
 
 -- CreateTable
 CREATE TABLE "QueryTemplate" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "projectId" INTEGER NOT NULL,
-    "parentId" INTEGER,
+    "projectId" TEXT NOT NULL,
+    "parentId" TEXT,
     "query" TEXT NOT NULL,
     "knobs" JSONB NOT NULL,
     "tag" TEXT,
@@ -125,7 +125,7 @@ CREATE TABLE "Judgement" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "projectId" INTEGER NOT NULL,
+    "projectId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
@@ -159,7 +159,7 @@ CREATE TABLE "SearchConfiguration" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "queryTemplateId" INTEGER NOT NULL,
+    "queryTemplateId" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
 );
@@ -171,7 +171,7 @@ CREATE TABLE "SearchConfigurationLabel" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "name" TEXT NOT NULL,
     "searchConfigurationId" INTEGER NOT NULL,
-    "projectId" INTEGER NOT NULL,
+    "projectId" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
 );
@@ -221,7 +221,7 @@ CREATE TABLE "Ruleset" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "projectId" INTEGER NOT NULL,
+    "projectId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
