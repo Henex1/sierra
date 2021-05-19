@@ -17,7 +17,7 @@ CREATE TABLE "users" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "siteRole" "UserSiteRole" NOT NULL DEFAULT E'USER',
-    "activeOrgId" INTEGER,
+    "activeOrgId" TEXT,
 
     PRIMARY KEY ("id")
 );
@@ -54,7 +54,7 @@ CREATE TABLE "sessions" (
 
 -- CreateTable
 CREATE TABLE "Org" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "name" TEXT NOT NULL,
@@ -67,7 +67,7 @@ CREATE TABLE "Org" (
 CREATE TABLE "OrgUser" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
-    "orgId" INTEGER NOT NULL,
+    "orgId" TEXT NOT NULL,
     "role" "UserOrgRole" NOT NULL DEFAULT E'USER',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -80,7 +80,7 @@ CREATE TABLE "SearchEndpoint" (
     "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "orgId" INTEGER NOT NULL,
+    "orgId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "whitelist" TEXT[],
@@ -98,7 +98,7 @@ CREATE TABLE "Project" (
     "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "orgId" INTEGER NOT NULL,
+    "orgId" TEXT NOT NULL,
     "searchEndpointId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
 

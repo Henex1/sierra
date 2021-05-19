@@ -16,7 +16,7 @@ export default apiHandler(async (req, res) => {
   const body = requireBody(
     req,
     z.object({
-      activeOrgId: z.number(),
+      activeOrgId: z.string(),
     })
   );
   const org = await getOrg(user, body.activeOrgId);

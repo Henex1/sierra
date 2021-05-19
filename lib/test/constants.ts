@@ -13,7 +13,7 @@ import {
 type NoTimestamps<T> = Omit<T, "createdAt" | "updatedAt">;
 
 export const TEST_USER_ID = 1100;
-export const TEST_ORG_ID = 1200;
+export const TEST_ORG_ID = "c111111110000orga00000000";
 export const TEST_PROJECT_ID = "c111111110000proj00000000";
 export const TEST_SEARCHENDPOINT_ID = "c111111110000dsrc00000000";
 export const TEST_JUDGEMENT_ID = "c111111110000judg00000000";

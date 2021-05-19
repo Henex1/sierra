@@ -5,10 +5,7 @@ import { Grid } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import EditIcon from "@material-ui/icons/Edit";
 
-import {
-  authenticatedPage,
-  requireNumberParam,
-} from "../../../../lib/pageHelpers";
+import { authenticatedPage, requireParam } from "../../../../lib/pageHelpers";
 import BreadcrumbsButtons from "../../../../components/common/BreadcrumbsButtons";
 import Link, { LinkButton } from "../../../../components/common/Link";
 import { ExposedOrg, formatOrg, getOrg } from "../../../../lib/org";
@@ -17,7 +14,7 @@ import { apiRequest } from "../../../../lib/api";
 import { useRouter } from "next/router";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const orgId = requireNumberParam(context, "orgId");
+  const orgId = requireParam(context, "orgId");
   const organization = await getOrg(context.user, orgId);
   return {
     props: {

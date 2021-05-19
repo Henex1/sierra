@@ -23,7 +23,7 @@ model User {
   // This stores the user's "active" Org, which controls which resources they
   // see when they are on various pages. This is a user preference, and does
   // not imply that the user actually has access to the listed Org.
-  activeOrgId   Int?
+  activeOrgId   String?
 
   orgs      OrgUser[]
   activeOrg Org?      @relation(fields: [activeOrgId], references: [id])
@@ -75,7 +75,7 @@ model Session {
 // owned by an Org, and users have access to the Org through the OrgUser
 // relation.
 model Org {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   name      String
@@ -93,7 +93,7 @@ model Org {
 model OrgUser {
   id        Int         @id @default(autoincrement())
   userId    Int
-  orgId     Int
+  orgId     String
   role      UserOrgRole @default(USER)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
@@ -115,7 +115,7 @@ model SearchEndpoint {
   id            String             @id @default(cuid())
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
-  orgId         Int
+  orgId         String
   name          String
   description   String
   whitelist     String[]
@@ -143,7 +143,7 @@ model Project {
   id               String   @id @default(cuid())
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  orgId            Int
+  orgId            String
   searchEndpointId String
   name             String
 
