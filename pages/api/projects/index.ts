@@ -27,7 +27,7 @@ export const handleCreateProject = apiHandler(async (req, res) => {
   const input = requireBody(
     req,
     createProjectSchema.extend({
-      searchEndpointId: z.number(),
+      searchEndpointId: z.string(),
     })
   );
   const searchEndpoint = await getSearchEndpoint(user, input.searchEndpointId);
@@ -45,7 +45,7 @@ export const handleUpdateProject = apiHandler(async (req, res) => {
     req,
     updateProjectSchema.extend({
       id: z.string(),
-      searchEndpointId: z.number().optional(),
+      searchEndpointId: z.string().optional(),
     })
   );
   const project = await getProject(user, input.id);

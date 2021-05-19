@@ -67,12 +67,8 @@ export function formatSearchEndpoint(
 
 export async function getSearchEndpoint(
   user: User,
-  idStr: string | number
+  id: string
 ): Promise<SearchEndpoint | null> {
-  const id = typeof idStr === "number" ? idStr : parseInt(idStr, 10);
-  if (Number.isNaN(id)) {
-    throw new Error(`Param ${id} is not a number`);
-  }
   const ds = await prisma.searchEndpoint.findFirst({
     where: userCanAccessSearchEndpoint(user, { id }),
   });
@@ -142,7 +138,7 @@ export async function createSearchEndpoint(
 
 export async function deleteSearchEndpoint(
   user: User,
-  id: number
+  id: string
 ): Promise<void> {
   const ds = await getSearchEndpoint(user, id);
   if (!ds) {
@@ -152,10 +148,11 @@ export async function deleteSearchEndpoint(
 }
 
 export const updateSearchEndpointSchema = SearchEndpointSchema.omit({
+  id: true,
   type: true,
 })
   .partial()
-  .merge(z.object({ id: z.number() }));
+  .merge(z.object({ id: z.string() }));
 
 export type UpdateSearchEndpoint = z.infer<typeof updateSearchEndpointSchema>;
 

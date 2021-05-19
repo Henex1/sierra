@@ -48,7 +48,7 @@ export type SearchEndpointCredentials = z.infer<
 >;
 
 export const SearchEndpointSchema = z.object({
-  id: z.number(),
+  id: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
   orgId: z.number(),

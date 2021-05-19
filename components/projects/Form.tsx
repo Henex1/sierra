@@ -39,7 +39,7 @@ export default function ProjectForm({
         },
       }}
       render={({ handleSubmit, form, submitting, values }) => {
-        const withNewEndpoint = values.searchEndpointId === -1;
+        const withNewEndpoint = values.searchEndpointId === "";
         const createProjectFormId = withNewEndpoint
           ? undefined
           : "createProjectForm";
@@ -69,7 +69,7 @@ export default function ProjectForm({
                   variant="filled"
                   required={true}
                 >
-                  <MenuItem value={-1}>
+                  <MenuItem value={""}>
                     <Grid container spacing={1} alignItems="center">
                       <AddIcon fontSize="small" />
                       <Grid item>

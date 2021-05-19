@@ -77,7 +77,7 @@ CREATE TABLE "OrgUser" (
 
 -- CreateTable
 CREATE TABLE "SearchEndpoint" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "orgId" INTEGER NOT NULL,
@@ -99,7 +99,7 @@ CREATE TABLE "Project" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "orgId" INTEGER NOT NULL,
-    "searchEndpointId" INTEGER NOT NULL,
+    "searchEndpointId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
 
     PRIMARY KEY ("id")

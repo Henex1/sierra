@@ -44,7 +44,7 @@ export async function getRulesetEditorProps(id: number, user: User) {
   }
   const searchEndpoint = await getSearchEndpoint(
     user,
-    project.searchEndpointId as number
+    project.searchEndpointId
   );
   if (!searchEndpoint) {
     return { notFound: true };
