@@ -187,7 +187,7 @@ export default function ConfigurationDrawer({
   const router = useRouter();
   const [activeTab, setActiveTab] = React.useState(0);
   const [isResizing, setIsResizing] = React.useState(false);
-  const [rulesetIds, setRulesetIds] = React.useState<number[]>([]);
+  const [rulesetIds, setRulesetIds] = React.useState<string[]>([]);
 
   React.useEffect(() => {
     if (searchConfiguration) {

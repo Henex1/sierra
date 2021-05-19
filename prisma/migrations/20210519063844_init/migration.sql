@@ -218,7 +218,7 @@ CREATE TABLE "SearchPhraseExecution" (
 
 -- CreateTable
 CREATE TABLE "Ruleset" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "projectId" TEXT NOT NULL,
@@ -229,11 +229,11 @@ CREATE TABLE "Ruleset" (
 
 -- CreateTable
 CREATE TABLE "RulesetVersion" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "rulesetId" INTEGER NOT NULL,
-    "parentId" INTEGER,
+    "rulesetId" TEXT NOT NULL,
+    "parentId" TEXT,
     "value" JSONB NOT NULL,
 
     PRIMARY KEY ("id")
@@ -241,7 +241,7 @@ CREATE TABLE "RulesetVersion" (
 
 -- CreateTable
 CREATE TABLE "_RulesetVersionToSearchConfiguration" (
-    "A" INTEGER NOT NULL,
+    "A" TEXT NOT NULL,
     "B" TEXT NOT NULL
 );
 
@@ -277,6 +277,9 @@ CREATE UNIQUE INDEX "Vote.judgementPhraseId_documentId_unique" ON "Vote"("judgem
 
 -- CreateIndex
 CREATE UNIQUE INDEX "SearchConfigurationLabel.projectId_name_unique" ON "SearchConfigurationLabel"("projectId", "name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "JudgementSearchConfiguration.judgementId_searchConfigurationId_unique" ON "JudgementSearchConfiguration"("judgementId", "searchConfigurationId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_RulesetVersionToSearchConfiguration_AB_unique" ON "_RulesetVersionToSearchConfiguration"("A", "B");

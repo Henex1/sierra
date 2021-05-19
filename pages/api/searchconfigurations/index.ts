@@ -47,7 +47,7 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
   // it should be based on input
   const judgement = await getJudgementForSearchConfiguration(sc);
 
-  let rulesetVersionIds: number[] | undefined = undefined;
+  let rulesetVersionIds: string[] | undefined = undefined;
   if (input.rulesetIds) {
     try {
       const rulesets = await Promise.all(

@@ -56,7 +56,7 @@ export async function getActiveSearchConfiguration(
 
 export const updateSearchConfigurationSchema = z.object({
   queryTemplateId: z.string(),
-  rulesetIds: z.array(z.number()).optional(),
+  rulesetIds: z.array(z.string()).optional(),
 });
 
 export type UpdateSearchConfiguration = Omit<
@@ -64,7 +64,7 @@ export type UpdateSearchConfiguration = Omit<
   "rulesetIds"
 > & {
   judgementIds?: string[];
-  rulesetVersionIds?: number[];
+  rulesetVersionIds?: string[];
 };
 
 export async function updateSearchConfiguration(

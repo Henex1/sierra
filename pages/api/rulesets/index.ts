@@ -43,7 +43,7 @@ export const handleCreateRulesetVersion = apiHandler(async (req, res) => {
   const input = requireBody(
     req,
     createRulesetVersionSchema.extend({
-      rulesetId: z.number(),
+      rulesetId: z.string(),
     })
   );
   const ruleset = await getRuleset(user, input.rulesetId);

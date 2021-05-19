@@ -16,7 +16,7 @@ import { userCanAccessQueryTemplate } from "../../../lib/querytemplates";
 const ontologyRequestSchema = z.object({
   query: z.string(),
   projectId: z.string(),
-  rulesetIds: z.array(z.number()),
+  rulesetIds: z.array(z.string()),
   ltrModelName: z.union([z.string(), z.undefined()]),
 });
 

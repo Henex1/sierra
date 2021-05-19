@@ -20,7 +20,7 @@ import {
 } from "../../../lib/searchendpoints";
 import { User } from "../../../lib/prisma";
 
-export async function getRulesetEditorProps(id: number, user: User) {
+export async function getRulesetEditorProps(id: string, user: User) {
   const ruleset = await getRuleset(user, id);
   if (!ruleset) {
     return { notFound: true };
@@ -64,9 +64,7 @@ export async function getRulesetEditorProps(id: number, user: User) {
 export default apiHandler(
   async (req: NextApiRequest, res: NextApiResponse): Promise<any> => {
     const user = requireUser(req);
-    const { id } = requireQuery(req, z.object({ id: z.number() }), (query) => ({
-      id: parseInt(query.id as string),
-    }));
+    const { id } = requireQuery(req, z.object({ id: z.string() }));
 
     const props = await getRulesetEditorProps(id, user);
     if (props.notFound) {

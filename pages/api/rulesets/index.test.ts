@@ -1,6 +1,6 @@
 import { mockModels } from "../../../lib/__mocks__/prisma";
 import { handleCreateRuleset, handleCreateRulesetVersion } from "./index";
-import { getApiRoute, TEST_PROJECT } from "../../../lib/test";
+import { getApiRoute, TEST_PROJECT, TEST_RULESET_ID } from "../../../lib/test";
 import { RuleSetConditionType } from "../../../lib/rulesets/rules";
 
 describe("api/rulesets", () => {
@@ -13,7 +13,7 @@ describe("api/rulesets", () => {
     mockModels("ruleset")
       .action("create")
       .with({ data: expect.objectContaining(initialInfo) })
-      .resolvesTo({ id: 42, ...initialInfo });
+      .resolvesTo({ id: TEST_RULESET_ID, ...initialInfo });
 
     const { ruleset } = await getApiRoute(handleCreateRuleset, initialInfo, {
       method: "POST",
@@ -25,7 +25,7 @@ describe("api/rulesets", () => {
   it("/createVersion", async () => {
     mockModels("ruleset")
       .action("findFirst")
-      .with({ where: { AND: { id: 42 } } })
+      .with({ where: { AND: { id: TEST_RULESET_ID } } })
       .resolvesTo({ name: "My Test Ruleset " });
     mockModels("rulesetVersion")
       .action("create")
@@ -34,7 +34,7 @@ describe("api/rulesets", () => {
 
     // Test endpoint
     const initialInfo = {
-      rulesetId: 42,
+      rulesetId: TEST_RULESET_ID,
       parentId: null,
       value: {
         conditions: [

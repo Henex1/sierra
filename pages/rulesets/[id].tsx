@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { Typography } from "@material-ui/core";
 
 import { getRulesetEditorProps } from "../api/rulesets/[id]";
-import { authenticatedPage, requireNumberParam } from "lib/pageHelpers";
+import { authenticatedPage, requireParam } from "lib/pageHelpers";
 import { apiRequest } from "lib/api";
 import { ExposedRuleset, ExposedRulesetVersion } from "../../lib/rulesets";
 import { RulesetVersionValue } from "../../lib/rulesets/rules";
@@ -12,7 +12,7 @@ import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 import RulesetEditor from "../../components/rulesets/RulesetEditor";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const id = requireNumberParam(context, "id");
+  const id = requireParam(context, "id");
   const props = await getRulesetEditorProps(id, context.user);
   if (props.notFound) {
     return {

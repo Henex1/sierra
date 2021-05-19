@@ -44,8 +44,8 @@ const useStyles = makeStyles((theme) => ({
 type RulesetPanelProps = {
   rulesets: ExposedRuleset[];
   formId: string;
-  activeRulesetIds: number[];
-  setActiveRulesetIds: (ids: number[]) => void;
+  activeRulesetIds: string[];
+  setActiveRulesetIds: (ids: string[]) => void;
   onUpdate: () => void;
 };
 
@@ -58,7 +58,7 @@ export default function RulesetPanel({
 }: RulesetPanelProps) {
   const classes = useStyles();
   const router = useRouter();
-  const [rulesetId, setRulesetId] = React.useState<number | "">("");
+  const [rulesetId, setRulesetId] = React.useState<string>("");
 
   React.useEffect(() => {
     if (!activeRulesetIds.length) {
@@ -98,11 +98,11 @@ export default function RulesetPanel({
         aria-labelledby="rulesetLabel"
         value={activeRulesetIds}
         onChange={(e: React.ChangeEvent<{ value: unknown }>) => {
-          setActiveRulesetIds(e.target.value as number[]);
+          setActiveRulesetIds(e.target.value as string[]);
         }}
         renderValue={(value: any) =>
-          (value as number[])
-            .map((id: number) => rulesets.find((r) => r.id === id)?.name)
+          (value as string[])
+            .map((id: string) => rulesets.find((r) => r.id === id)?.name)
             .join(", ")
         }
         classes={{

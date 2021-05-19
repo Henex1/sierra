@@ -263,6 +263,7 @@ model JudgementSearchConfiguration {
 
   judgement           Judgement           @relation(fields: [judgementId], references: [id])
   searchConfiguration SearchConfiguration @relation(fields: [searchConfigurationId], references: [id])
+  @@unique([judgementId, searchConfigurationId])
 }
 
 model Execution {
@@ -307,7 +308,7 @@ model SearchPhraseExecution {
 
 // A Ruleset stores information about a query rewriting ruleset.
 model Ruleset {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   projectId String
@@ -322,11 +323,11 @@ model Ruleset {
 // a parentId equal to the original RulesetVersion. In this way, rulesets form
 // a tree of edits.
 model RulesetVersion {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  rulesetId Int
-  parentId  Int?
+  rulesetId String
+  parentId  String?
   value     Json
 
   children             RulesetVersion[]      @relation("RulesetVersionToRulesetVersion")
