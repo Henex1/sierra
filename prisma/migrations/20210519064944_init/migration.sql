@@ -9,7 +9,7 @@ CREATE TYPE "SearchEndpointType" AS ENUM ('ELASTICSEARCH', 'OPEN_SEARCH', 'SOLR'
 
 -- CreateTable
 CREATE TABLE "users" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "name" TEXT,
     "email" TEXT,
     "email_verified" TIMESTAMP(3),
@@ -26,7 +26,7 @@ CREATE TABLE "users" (
 CREATE TABLE "accounts" (
     "id" SERIAL NOT NULL,
     "compound_id" TEXT NOT NULL,
-    "user_id" INTEGER NOT NULL,
+    "user_id" TEXT NOT NULL,
     "provider_type" TEXT NOT NULL,
     "provider_id" TEXT NOT NULL,
     "provider_account_id" TEXT NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE "accounts" (
 -- CreateTable
 CREATE TABLE "sessions" (
     "id" SERIAL NOT NULL,
-    "user_id" INTEGER NOT NULL,
+    "user_id" TEXT NOT NULL,
     "expires" TIMESTAMP(3) NOT NULL,
     "session_token" TEXT NOT NULL,
     "access_token" TEXT NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE "Org" (
 -- CreateTable
 CREATE TABLE "OrgUser" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "orgId" TEXT NOT NULL,
     "role" "UserOrgRole" NOT NULL DEFAULT E'USER',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
