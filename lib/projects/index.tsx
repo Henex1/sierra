@@ -35,7 +35,7 @@ export const defaultQueryTemplate = {
 export type ExposedProject = Pick<Project, keyof typeof selectKeys>;
 
 export type ExtendedProject = {
-  id: number;
+  id: string;
   orgId: number;
   searchEndpointId: number;
   name: string;
@@ -73,7 +73,7 @@ export function formatExtendedProject(val: any): ExtendedProject {
 
 export async function getProject(
   user: User,
-  id: number
+  id: string
 ): Promise<Project | null> {
   const project = await prisma.project.findFirst({
     where: userCanAccessProject(user, { id }),
@@ -83,7 +83,7 @@ export async function getProject(
 
 export async function getExtendedProject(
   user: User,
-  id: number
+  id: string
 ): Promise<Project | null> {
   return await prisma.project.findFirst({
     where: userCanAccessProject(user, { id }),

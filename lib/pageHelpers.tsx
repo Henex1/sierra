@@ -48,14 +48,33 @@ export function authenticatedPage<
   };
 }
 
-export function requireNumberParam<P extends ParsedUrlQuery>(
+export function optionalParam<P extends ParsedUrlQuery>(
   context: GetServerSidePropsContext<P>,
   name: keyof P
-): number {
+): string | undefined {
   const str = context.params?.[name];
   if (Array.isArray(str)) {
     throw new Error(`Param ${name} is an array; expected single item`);
   }
+  return str as string | undefined;
+}
+
+export function requireParam<P extends ParsedUrlQuery>(
+  context: GetServerSidePropsContext<P>,
+  name: keyof P
+): string {
+  const str = optionalParam(context, name);
+  if (typeof str === "undefined") {
+    throw new Error(`Required param ${name} is not provided`);
+  }
+  return str;
+}
+
+export function requireNumberParam<P extends ParsedUrlQuery>(
+  context: GetServerSidePropsContext<P>,
+  name: keyof P
+): number {
+  const str = requireParam(context, name);
   const num = str ? parseInt(str as string, 10) : NaN;
   if (isNaN(num)) {
     throw new Error(`Param ${name} is not a number`);

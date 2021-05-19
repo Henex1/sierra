@@ -140,7 +140,7 @@ enum SearchEndpointType {
 
 // A Project is a group of search phrases which are being optimized.
 model Project {
-  id               Int      @id @default(autoincrement())
+  id               String   @id @default(cuid())
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   orgId            Int
@@ -164,7 +164,7 @@ model QueryTemplate {
   id          Int      @id @default(autoincrement())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  projectId   Int
+  projectId   String
   parentId    Int?
   query       String
   knobs       Json
@@ -185,7 +185,7 @@ model Judgement {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  projectId Int
+  projectId String
   name      String
 
   phrases              JudgementPhrase[]
@@ -247,7 +247,7 @@ model SearchConfigurationLabel {
   updatedAt             DateTime @updatedAt
   name                  String
   searchConfigurationId Int
-  projectId             Int
+  projectId             String
 
   project             Project             @relation(fields: [projectId], references: [id])
   searchConfiguration SearchConfiguration @relation(fields: [searchConfigurationId], references: [id])
@@ -310,7 +310,7 @@ model Ruleset {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  projectId Int
+  projectId String
   name      String
 
   project        Project          @relation(fields: [projectId], references: [id])

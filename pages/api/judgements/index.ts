@@ -29,7 +29,7 @@ export const handleCreateJudgement = apiHandler(async (req, res) => {
   const { projectId, ...input } = requireBody(
     req,
     createJudgementSchema.extend({
-      projectId: z.number(),
+      projectId: z.string(),
     })
   );
   const project = await getProject(user, projectId);

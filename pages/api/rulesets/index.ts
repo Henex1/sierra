@@ -25,7 +25,7 @@ export const handleCreateRuleset = apiHandler(async (req, res) => {
     req,
     createRulesetSchema.merge(
       z.object({
-        projectId: z.number(),
+        projectId: z.string(),
       })
     )
   );

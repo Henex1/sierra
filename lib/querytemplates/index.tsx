@@ -57,7 +57,7 @@ export const createQueryTemplateSchema = z.object({
   query: z.string(),
   knobs: z.any(),
   tag: z.string().optional(),
-  projectId: z.number(),
+  projectId: z.string(),
 });
 
 export type CreateQueryTemplate = z.infer<typeof createQueryTemplateSchema>;
@@ -76,7 +76,7 @@ export const updateQueryTemplateSchema = z.object({
   query: z.string(),
   knobs: z.any(),
   tag: z.string().optional(),
-  projectId: z.number(),
+  projectId: z.string(),
 });
 
 export type UpdateQueryTemplate = z.infer<typeof updateQueryTemplateSchema>;
