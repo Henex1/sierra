@@ -63,7 +63,7 @@ export type UpdateSearchConfiguration = Omit<
   z.infer<typeof updateSearchConfigurationSchema>,
   "rulesetIds"
 > & {
-  judgementIds?: number[];
+  judgementIds?: string[];
   rulesetVersionIds?: number[];
 };
 

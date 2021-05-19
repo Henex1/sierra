@@ -122,7 +122,7 @@ CREATE TABLE "QueryTemplate" (
 
 -- CreateTable
 CREATE TABLE "Judgement" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "projectId" TEXT NOT NULL,
@@ -133,10 +133,10 @@ CREATE TABLE "Judgement" (
 
 -- CreateTable
 CREATE TABLE "JudgementPhrase" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "judgementId" INTEGER NOT NULL,
+    "judgementId" TEXT NOT NULL,
     "phrase" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
@@ -147,7 +147,7 @@ CREATE TABLE "Vote" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "judgementPhraseId" INTEGER NOT NULL,
+    "judgementPhraseId" TEXT NOT NULL,
     "documentId" TEXT NOT NULL,
     "score" DOUBLE PRECISION NOT NULL,
 
@@ -179,7 +179,7 @@ CREATE TABLE "SearchConfigurationLabel" (
 -- CreateTable
 CREATE TABLE "JudgementSearchConfiguration" (
     "id" SERIAL NOT NULL,
-    "judgementId" INTEGER NOT NULL,
+    "judgementId" TEXT NOT NULL,
     "searchConfigurationId" INTEGER NOT NULL,
     "weight" DOUBLE PRECISION NOT NULL DEFAULT 1.0,
 

@@ -182,7 +182,7 @@ model QueryTemplate {
 // A Judgement is a group of JudgementPhrases with a single owner. The owner
 // could be a user, team, external datasource, or something else.
 model Judgement {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   projectId String
@@ -195,10 +195,10 @@ model Judgement {
 
 // A JudgementPhrase is a set of Votes for a single search phrase.
 model JudgementPhrase {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(cuid())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  judgementId Int
+  judgementId String
   phrase      String
 
   judgement Judgement @relation(fields: [judgementId], references: [id])
@@ -208,10 +208,10 @@ model JudgementPhrase {
 
 // A Vote is a ranking for a particular (search phrase, document ID).
 model Vote {
-  id                Int      @id @default(autoincrement())
+  id                Int   @id @default(autoincrement())
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  judgementPhraseId Int
+  judgementPhraseId String
   documentId        String
   // Score is always stored in the range of [0, 1], and can be scaled in the
   // frontend to provide any arbitrary point scale.
@@ -257,7 +257,7 @@ model SearchConfigurationLabel {
 // A JudgementSearchConfiguration links a SearchConfiguration to a Judgement.
 model JudgementSearchConfiguration {
   id                    Int   @id @default(autoincrement())
-  judgementId           Int
+  judgementId           String
   searchConfigurationId Int
   weight                Float @default(1.0)
 

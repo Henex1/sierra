@@ -66,7 +66,7 @@ export function formatJudgement(val: Judgement): ExposedJudgement {
 
 export async function getJudgement(
   user: User,
-  id: number
+  id: string
 ): Promise<Judgement | null> {
   const judgement = await prisma.judgement.findFirst({
     where: userCanAccessJudgement(user, { id }),
@@ -252,6 +252,7 @@ export async function setVotes(
         AS "inputs" ("phrase", "documentId", "score")
         INNER JOIN "JudgementPhrase"
         ON "JudgementPhrase"."phrase" = "inputs"."phrase"
+        AND "JudgementPhrase"."judgementId" = ${judgement.id}
       ON CONFLICT ("judgementPhraseId", "documentId")
       DO UPDATE SET "score" = EXCLUDED."score", "updatedAt" = NOW()
     `);
