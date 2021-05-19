@@ -156,7 +156,7 @@ CREATE TABLE "Vote" (
 
 -- CreateTable
 CREATE TABLE "SearchConfiguration" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "queryTemplateId" TEXT NOT NULL,
@@ -166,11 +166,11 @@ CREATE TABLE "SearchConfiguration" (
 
 -- CreateTable
 CREATE TABLE "SearchConfigurationLabel" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "name" TEXT NOT NULL,
-    "searchConfigurationId" INTEGER NOT NULL,
+    "searchConfigurationId" TEXT NOT NULL,
     "projectId" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
@@ -180,7 +180,7 @@ CREATE TABLE "SearchConfigurationLabel" (
 CREATE TABLE "JudgementSearchConfiguration" (
     "id" SERIAL NOT NULL,
     "judgementId" TEXT NOT NULL,
-    "searchConfigurationId" INTEGER NOT NULL,
+    "searchConfigurationId" TEXT NOT NULL,
     "weight" DOUBLE PRECISION NOT NULL DEFAULT 1.0,
 
     PRIMARY KEY ("id")
@@ -188,10 +188,10 @@ CREATE TABLE "JudgementSearchConfiguration" (
 
 -- CreateTable
 CREATE TABLE "Execution" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "searchConfigurationId" INTEGER NOT NULL,
+    "searchConfigurationId" TEXT NOT NULL,
     "meta" JSONB NOT NULL,
     "combinedScore" DOUBLE PRECISION NOT NULL,
     "allScores" JSONB NOT NULL,
@@ -204,7 +204,7 @@ CREATE TABLE "SearchPhraseExecution" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "executionId" INTEGER NOT NULL,
+    "executionId" TEXT NOT NULL,
     "phrase" TEXT NOT NULL,
     "totalResults" INTEGER NOT NULL,
     "tookMs" INTEGER NOT NULL,
@@ -242,7 +242,7 @@ CREATE TABLE "RulesetVersion" (
 -- CreateTable
 CREATE TABLE "_RulesetVersionToSearchConfiguration" (
     "A" INTEGER NOT NULL,
-    "B" INTEGER NOT NULL
+    "B" TEXT NOT NULL
 );
 
 -- CreateIndex

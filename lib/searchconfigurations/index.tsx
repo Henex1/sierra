@@ -34,7 +34,7 @@ export function formatSearchConfiguration(
 
 export async function getSearchConfiguration(
   user: User,
-  id: number
+  id: string
 ): Promise<SearchConfiguration | null> {
   // SearchConfiguration isn't actually joined to Project, so we check access
   // on the associated QueryTemplate.

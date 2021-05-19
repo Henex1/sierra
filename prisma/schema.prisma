@@ -227,7 +227,7 @@ model Vote {
 // data source might change, and so rerunning a SearchConfiguration later on
 // might result in a different score.
 model SearchConfiguration {
-  id              Int      @id @default(autoincrement())
+  id              String   @id @default(cuid())
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   queryTemplateId String
@@ -242,11 +242,11 @@ model SearchConfiguration {
 // A SearchConfigurationLabel allows us to assign a unique label per project to
 // a SearchConfiguration.
 model SearchConfigurationLabel {
-  id                    Int      @id @default(autoincrement())
+  id                    String   @id @default(cuid())
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
   name                  String
-  searchConfigurationId Int
+  searchConfigurationId String
   projectId             String
 
   project             Project             @relation(fields: [projectId], references: [id])
@@ -258,7 +258,7 @@ model SearchConfigurationLabel {
 model JudgementSearchConfiguration {
   id                    Int   @id @default(autoincrement())
   judgementId           String
-  searchConfigurationId Int
+  searchConfigurationId String
   weight                Float @default(1.0)
 
   judgement           Judgement           @relation(fields: [judgementId], references: [id])
@@ -266,10 +266,10 @@ model JudgementSearchConfiguration {
 }
 
 model Execution {
-  id                    Int      @id @default(autoincrement())
+  id                    String   @id @default(cuid())
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
-  searchConfigurationId Int
+  searchConfigurationId String
   // Meta tracks information about the datasource, like number of documents,
   // segments, shards; the index maapping; and so on. Standard keys:
   // tookP50, tookP95, tookP99: percentile timing metrics
@@ -288,7 +288,7 @@ model SearchPhraseExecution {
   id            Int      @id @default(autoincrement())
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  executionId   Int
+  executionId   String
   phrase        String
   totalResults  Int
   // How long the query took to execute
