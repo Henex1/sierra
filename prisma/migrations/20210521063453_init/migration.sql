@@ -114,8 +114,19 @@ CREATE TABLE "QueryTemplate" (
     "parentId" TEXT,
     "query" TEXT NOT NULL,
     "knobs" JSONB NOT NULL,
-    "tag" TEXT,
     "description" TEXT,
+
+    PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "QueryTemplateTag" (
+    "id" SERIAL NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "name" TEXT NOT NULL,
+    "projectId" TEXT NOT NULL,
+    "queryTemplateId" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
 );
@@ -165,7 +176,7 @@ CREATE TABLE "SearchConfiguration" (
 );
 
 -- CreateTable
-CREATE TABLE "SearchConfigurationLabel" (
+CREATE TABLE "SearchConfigurationTag" (
     "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -270,13 +281,16 @@ CREATE UNIQUE INDEX "sessions.access_token_unique" ON "sessions"("access_token")
 CREATE UNIQUE INDEX "OrgUser.userId_orgId_unique" ON "OrgUser"("userId", "orgId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "QueryTemplateTag.projectId_name_unique" ON "QueryTemplateTag"("projectId", "name");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "JudgementPhrase.judgementId_phrase_unique" ON "JudgementPhrase"("judgementId", "phrase");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Vote.judgementPhraseId_documentId_unique" ON "Vote"("judgementPhraseId", "documentId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "SearchConfigurationLabel.projectId_name_unique" ON "SearchConfigurationLabel"("projectId", "name");
+CREATE UNIQUE INDEX "SearchConfigurationTag.projectId_name_unique" ON "SearchConfigurationTag"("projectId", "name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "JudgementSearchConfiguration.judgementId_searchConfigurationId_unique" ON "JudgementSearchConfiguration"("judgementId", "searchConfigurationId");
@@ -312,6 +326,12 @@ ALTER TABLE "QueryTemplate" ADD FOREIGN KEY ("parentId") REFERENCES "QueryTempla
 ALTER TABLE "QueryTemplate" ADD FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "QueryTemplateTag" ADD FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "QueryTemplateTag" ADD FOREIGN KEY ("queryTemplateId") REFERENCES "QueryTemplate"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Judgement" ADD FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -324,10 +344,10 @@ ALTER TABLE "Vote" ADD FOREIGN KEY ("judgementPhraseId") REFERENCES "JudgementPh
 ALTER TABLE "SearchConfiguration" ADD FOREIGN KEY ("queryTemplateId") REFERENCES "QueryTemplate"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "SearchConfigurationLabel" ADD FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "SearchConfigurationTag" ADD FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "SearchConfigurationLabel" ADD FOREIGN KEY ("searchConfigurationId") REFERENCES "SearchConfiguration"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "SearchConfigurationTag" ADD FOREIGN KEY ("searchConfigurationId") REFERENCES "SearchConfiguration"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "JudgementSearchConfiguration" ADD FOREIGN KEY ("judgementId") REFERENCES "Judgement"("id") ON DELETE CASCADE ON UPDATE CASCADE;

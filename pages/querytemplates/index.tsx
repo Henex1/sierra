@@ -41,8 +41,11 @@ export default function QueryTemplates({ templates }: Props) {
         accessor: "description",
       },
       {
-        Header: "Tag",
-        accessor: "tag",
+        Header: "Tags",
+        Cell({ row }: CellProps<ExposedQueryTemplate>) {
+          return <span>{row.original.tags.join(", ")}</span>;
+        },
+        accessor: "tags",
       },
       {
         Header: "Query",
@@ -50,6 +53,9 @@ export default function QueryTemplates({ templates }: Props) {
       },
       {
         Header: "Knobs",
+        Cell({ row }: CellProps<ExposedQueryTemplate>) {
+          return JSON.stringify(row.original.knobs);
+        },
         accessor: "knobs",
       },
       {

@@ -35,11 +35,11 @@ import {
   getRulesetsForSearchConfiguration,
 } from "../../lib/rulesets";
 import {
+  QueryTemplate,
   getQueryTemplate,
   ExposedQueryTemplate,
   formatQueryTemplate,
 } from "../../lib/querytemplates";
-import { QueryTemplate } from "../../lib/prisma";
 import NoExistingExcution from "components/lab/NoExistingExcution";
 
 const useStyles = makeStyles((theme) => ({

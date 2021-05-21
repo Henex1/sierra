@@ -10,6 +10,10 @@ import { notAuthorized, notFound } from "../../../lib/errors";
 import { getUser, ValidUserSession } from "../../../lib/authServer";
 import { userCanAccessOrg } from "../../../lib/org";
 import { createSearchEndpoint } from "../../../lib/searchendpoints";
+import {
+  createQueryTemplate,
+  updateQueryTemplate,
+} from "../../../lib/querytemplates";
 
 // prettier-ignore
 const mockRuleset: RulesetVersionValue = {
@@ -110,19 +114,36 @@ async function handleSeed(
     include: { rulesetVersion: true },
   });
 
-  const queryTemplate = await prisma.queryTemplate.create({
-    data: {
-      projectId: project.id,
-      query: mockQuery,
-      knobs: {},
-    },
+  let qtBase = await createQueryTemplate(project, {
+    description: "Initial query template",
+    query: mockQuery,
+    knobs: {},
   });
+  // Fake a tree of revisions
+  for (let i = 0; i < 2; i++) {
+    qtBase = await updateQueryTemplate(qtBase, {
+      description: `Update number ${i + 1}`,
+      query: qtBase.query,
+      knobs: qtBase.knobs,
+    });
+  }
+  const qtChildren = [qtBase, qtBase];
+  for (let i = 0; i < 2; i++) {
+    for (let j = 0; j < qtChildren.length; j++) {
+      qtChildren[j] = await updateQueryTemplate(qtChildren[j], {
+        description: `Fork ${j + 1}.${i + 1}`,
+        query: qtChildren[j].query,
+        knobs: qtChildren[j].knobs,
+        tags: [`fork-${j + 1}`],
+      });
+    }
+  }
 
   const sc = await prisma.searchConfiguration.create({
     data: {
       queryTemplate: {
         connect: {
-          id: queryTemplate.id,
+          id: qtChildren[0].id,
         },
       },
       judgements: { create: [{ judgementId: judgement.id, weight: 1.0 }] },
