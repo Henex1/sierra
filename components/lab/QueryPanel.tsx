@@ -110,7 +110,6 @@ export default function QueryTemplateEditor({
     } = await apiRequest(`/api/querytemplates/update`, {
       parentId: queryTemplate.id,
       description: queryTemplate.description || "",
-      tag: queryTemplate.tag || "",
       projectId: queryTemplate.projectId,
       query: value.query,
       knobs: value.knobs

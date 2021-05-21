@@ -132,10 +132,9 @@ export async function createProject(
     searchEndpoint.type == SearchEndpointType.ELASTICSEARCH ||
     searchEndpoint.type == SearchEndpointType.OPEN_SEARCH
   ) {
-    await createQueryTemplate({
-      ...defaultQueryTemplate,
-      projectId: project.id,
-    });
+    await createQueryTemplate(project, defaultQueryTemplate);
+  } else {
+    throw new Error(`Project type ${searchEndpoint.type} has no default query`);
   }
   return project;
 }

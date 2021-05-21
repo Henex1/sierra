@@ -147,12 +147,13 @@ model Project {
   searchEndpointId String
   name             String
 
-  judgements               Judgement[]
-  org                      Org                        @relation(fields: [orgId], references: [id])
-  queryTemplates           QueryTemplate[]
-  rulesets                 Ruleset[]
-  searchConfigurationLabel SearchConfigurationLabel[]
-  searchEndpoint           SearchEndpoint             @relation(fields: [searchEndpointId], references: [id])
+  judgements              Judgement[]
+  org                     Org                      @relation(fields: [orgId], references: [id])
+  queryTemplates          QueryTemplate[]
+  rulesets                Ruleset[]
+  searchConfigurationTags SearchConfigurationTag[]
+  searchEndpoint          SearchEndpoint           @relation(fields: [searchEndpointId], references: [id])
+  queryTemplateTags       QueryTemplateTag[]
 }
 
 // A QueryTemplate is an immutable backend query that can be populated combined
@@ -168,8 +169,6 @@ model QueryTemplate {
   parentId    String?
   query       String
   knobs       Json
-  // Short tag describing this QueryTemplate. Compare to a git branch.
-  tag         String?
   // Longer description of the QueryTemplate. Compare to a git commit message.
   description String?
 
@@ -177,6 +176,23 @@ model QueryTemplate {
   parent               QueryTemplate?        @relation(fields: [parentId], references: [id])
   project              Project               @relation(fields: [projectId], references: [id])
   searchConfigurations SearchConfiguration[]
+  // All tags this QueryTemplate has.
+  tags                 QueryTemplateTag[]
+}
+
+// A QueryTemplateTag is a mutable pointer to a particular QueryTemplate. Each
+// tag can only exist once per Project.
+model QueryTemplateTag {
+  id              Int      @id @default(autoincrement())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  name            String
+  projectId       String
+  queryTemplateId String
+
+  project       Project       @relation(fields: [projectId], references: [id])
+  queryTemplate QueryTemplate @relation(fields: [queryTemplateId], references: [id])
+  @@unique([projectId, name])
 }
 
 // A Judgement is a group of JudgementPhrases with a single owner. The owner
@@ -208,7 +224,7 @@ model JudgementPhrase {
 
 // A Vote is a ranking for a particular (search phrase, document ID).
 model Vote {
-  id                Int   @id @default(autoincrement())
+  id                Int      @id @default(autoincrement())
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   judgementPhraseId String
@@ -223,25 +239,26 @@ model Vote {
 
 // A SearchConfiguration is a group of all settings that are required to
 // execute a Project. Ideally, running the same SearchConfigurations multiple
-// times would produce the same results. However, the data in the Judgements or the underlying
-// data source might change, and so rerunning a SearchConfiguration later on
-// might result in a different score.
+// times would produce the same results. However, the data in the Judgements or
+// the underlying data source might change, and so rerunning a
+// SearchConfiguration later on might result in a different score.
 model SearchConfiguration {
   id              String   @id @default(cuid())
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   queryTemplateId String
 
-  executions               Execution[]
-  judgements               JudgementSearchConfiguration[]
-  queryTemplate            QueryTemplate                  @relation(fields: [queryTemplateId], references: [id])
-  rulesets                 RulesetVersion[]
-  searchConfigurationLabel SearchConfigurationLabel[]
+  executions    Execution[]
+  judgements    JudgementSearchConfiguration[]
+  queryTemplate QueryTemplate                  @relation(fields: [queryTemplateId], references: [id])
+  rulesets      RulesetVersion[]
+  // All of the tags which this SearchConfiguration has
+  tags          SearchConfigurationTag[]
 }
 
-// A SearchConfigurationLabel allows us to assign a unique label per project to
+// A SearchConfigurationTag allows us to assign a unique label per project to
 // a SearchConfiguration.
-model SearchConfigurationLabel {
+model SearchConfigurationTag {
   id                    String   @id @default(cuid())
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -256,10 +273,10 @@ model SearchConfigurationLabel {
 
 // A JudgementSearchConfiguration links a SearchConfiguration to a Judgement.
 model JudgementSearchConfiguration {
-  id                    Int   @id @default(autoincrement())
+  id                    Int    @id @default(autoincrement())
   judgementId           String
   searchConfigurationId String
-  weight                Float @default(1.0)
+  weight                Float  @default(1.0)
 
   judgement           Judgement           @relation(fields: [judgementId], references: [id])
   searchConfiguration SearchConfiguration @relation(fields: [searchConfigurationId], references: [id])

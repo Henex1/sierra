@@ -54,9 +54,8 @@ export default function EditQueryTemplate({ template, projects }: Props) {
       id: template.id,
       description: value.description,
       query: value.query,
-      tag: value.tag,
-      projectId: value.projectId,
       knobs: value.knobs,
+      tags: value.tags,
     });
     router.push("/querytemplates");
     // Keep the form stuck as pending
