@@ -1,7 +1,14 @@
 import _ from "lodash";
-import * as z from "zod";
 
-import prisma, { Prisma, User, Project, SearchConfiguration } from "../prisma";
+import prisma, {
+  Prisma,
+  User,
+  Project,
+  SearchConfiguration,
+  QueryTemplate,
+  RulesetVersion,
+  Judgement,
+} from "../prisma";
 import { userCanAccessProject } from "../projects";
 
 const scSelect = {
@@ -54,44 +61,30 @@ export async function getActiveSearchConfiguration(
   return sc;
 }
 
-export const updateSearchConfigurationSchema = z.object({
-  queryTemplateId: z.string(),
-  rulesetIds: z.array(z.string()).optional(),
-});
+// [Judgement, weight]
+export type WeightedJudgement = [Judgement, number];
 
-export type UpdateSearchConfiguration = Omit<
-  z.infer<typeof updateSearchConfigurationSchema>,
-  "rulesetIds"
-> & {
-  judgementIds?: string[];
-  rulesetVersionIds?: string[];
-};
-
-export async function updateSearchConfiguration(
-  input: UpdateSearchConfiguration
+export async function createSearchConfiguration(
+  queryTemplate: QueryTemplate,
+  rulesets: RulesetVersion[],
+  judgements: WeightedJudgement[]
 ): Promise<SearchConfiguration> {
   const sc = await prisma.searchConfiguration.create({
     data: {
       queryTemplate: {
-        connect: {
-          id: input.queryTemplateId,
-        },
+        connect: { id: queryTemplate.id },
       },
-      judgements: input.judgementIds
-        ? {
-            create: input.judgementIds.map((id) => ({
-              judgementId: id,
-              weight: 1.0,
-            })),
-          }
-        : undefined,
-      rulesets: input.rulesetVersionIds
-        ? {
-            connect: input.rulesetVersionIds.map((id) => ({
-              id,
-            })),
-          }
-        : undefined,
+      judgements: {
+        create: judgements.map(([judgement, weight]) => ({
+          judgementId: judgement.id,
+          weight,
+        })),
+      },
+      rulesets: {
+        connect: rulesets.map((rsv) => ({
+          id: rsv.id,
+        })),
+      },
     },
   });
   return sc;
