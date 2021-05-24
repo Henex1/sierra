@@ -1,5 +1,5 @@
 import _ from "lodash";
-import React from "react";
+import React, { useCallback } from "react";
 import { Grid, Typography, Box, makeStyles } from "@material-ui/core";
 import { Pagination } from "@material-ui/lab";
 import { useRouter } from "next/router";
@@ -169,6 +169,7 @@ export default function Lab({
   });
   const [page, setPage] = React.useState(props.page);
   const [isTestRunning, setIsTestRunning] = React.useState(false);
+  const searchConfigurationId = searchConfiguration?.id;
 
   React.useEffect(() => {
     if (searchPhrase) {
@@ -200,27 +201,27 @@ export default function Lab({
     });
   }, [displayOptions, page]);
 
-  const handleFilterChange = (
-    key: "show" | "sort",
-    value: ShowOptions | SortOptions
-  ) => {
-    setDisplayOptions({
-      ...displayOptions,
-      [key]: value,
-    });
-  };
+  const handleFilterChange = useCallback(
+    (key: "show" | "sort", value: ShowOptions | SortOptions) => {
+      setDisplayOptions({
+        ...displayOptions,
+        [key]: value,
+      });
+    },
+    []
+  );
 
-  const handleModalClose = () => {
-    setSearchPhrase(null);
-  };
+  const handleModalClose = useCallback(() => setSearchPhrase(null), []);
 
-  const handleRun = async () => {
-    setIsTestRunning(true);
-    await apiRequest("/api/searchconfigurations/execute", {
-      id: searchConfiguration!.id,
-    });
-    location.reload();
-  };
+  const handleRun = useCallback(async () => {
+    if (searchConfigurationId) {
+      setIsTestRunning(true);
+      await apiRequest("/api/searchconfigurations/execute", {
+        id: searchConfigurationId,
+      });
+      location.reload();
+    }
+  }, [searchConfigurationId]);
 
   const isFirstQueryExcute = searchPhrases.length == 0;
 
@@ -229,22 +230,24 @@ export default function Lab({
       {!!searchConfiguration && !isFirstQueryExcute ? (
         <div>
           <Grid container justify="space-between">
-            <Grid item>
-              <Box mb={1}>
-                <Typography>
-                  Showing {searchPhrases.length} search phrases..
-                </Typography>
-                <Box pt={1}>
-                  <Typography variant="body2" color="textSecondary">
-                    Latency Percentiles (ms):
-                    <br />
-                    50th percentile <b>{timings!.p50.toFixed(0)}</b>, 95th
-                    percentile <b>{timings!.p95.toFixed(0)}</b>, 99th percentile{" "}
-                    <b>{timings!.p99.toFixed(0)}</b>
+            {timings && (
+              <Grid item>
+                <Box mb={1}>
+                  <Typography>
+                    Showing {searchPhrases.length} search phrases..
                   </Typography>
+                  <Box pt={1}>
+                    <Typography variant="body2" color="textSecondary">
+                      Latency Percentiles (ms):
+                      <br />
+                      50th percentile <b>{timings.p50.toFixed(0)}</b>, 95th
+                      percentile <b>{timings.p95.toFixed(0)}</b>, 99th
+                      percentile <b>{timings.p99.toFixed(0)}</b>
+                    </Typography>
+                  </Box>
                 </Box>
-              </Box>
-            </Grid>
+              </Grid>
+            )}
             <Grid item>
               <Filters
                 filters={displayOptions}
