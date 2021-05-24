@@ -9,11 +9,15 @@ import prisma, {
   Project,
   Judgement,
   JudgementPhrase,
-  JudgementSearchConfiguration,
+  JudgementSearchConfiguration as BaseJudgementSearchConfiguration,
   Vote,
   SearchConfiguration,
 } from "../prisma";
 import { userCanAccessProject } from "../projects";
+
+export type JudgementSearchConfiguration = BaseJudgementSearchConfiguration & {
+  judgement: Judgement;
+};
 
 const jSelectKeys = {
   id: true,
@@ -82,6 +86,7 @@ export async function getJudgementForSearchConfiguration(
       where: {
         searchConfigurationId: sc.id,
       },
+      include: { judgement: true },
     }
   );
   return judgementSearchConfiguration;

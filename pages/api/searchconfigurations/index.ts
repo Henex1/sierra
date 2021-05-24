@@ -4,9 +4,8 @@ import * as z from "zod";
 import { createExecution, formatExecution } from "../../../lib/execution";
 import {
   getSearchConfiguration,
-  updateSearchConfigurationSchema,
-  updateSearchConfiguration,
   formatSearchConfiguration,
+  createSearchConfiguration,
 } from "../../../lib/searchconfigurations";
 import { getQueryTemplate } from "../../../lib/querytemplates";
 import {
@@ -17,7 +16,7 @@ import {
   requireBody,
 } from "../../../lib/apiServer";
 import { getRuleset, getLatestRulesetVersion } from "../../../lib/rulesets";
-import { QueryTemplate, Ruleset, RulesetVersion } from "../../../lib/prisma";
+import { RulesetVersion } from "../../../lib/prisma";
 import { getJudgementForSearchConfiguration } from "../../../lib/judgements";
 
 export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
@@ -25,8 +24,10 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
   const user = requireUser(req);
   const input = requireBody(
     req,
-    updateSearchConfigurationSchema.extend({
+    z.object({
       id: z.string(),
+      queryTemplateId: z.string(),
+      rulesetIds: z.array(z.string()).optional(),
     })
   );
 
@@ -35,41 +36,39 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
     throw new HttpError(404, { error: "search configuration not found" });
   }
 
-  let queryTemplate: QueryTemplate | null;
-  if (input.queryTemplateId) {
-    queryTemplate = await getQueryTemplate(user, input.queryTemplateId);
-    if (!queryTemplate) {
-      throw new HttpError(404, { error: "query template not found" });
-    }
+  const queryTemplate = await getQueryTemplate(user, input.queryTemplateId);
+  if (!queryTemplate) {
+    throw new HttpError(404, { error: "query template not found" });
   }
 
   // TODO: this is just for testing lab's search configuration updates
   // it should be based on input
-  const judgement = await getJudgementForSearchConfiguration(sc);
+  const jsc = await getJudgementForSearchConfiguration(sc);
 
-  let rulesetVersionIds: string[] | undefined = undefined;
+  let rulesetVersions: RulesetVersion[] = [];
   if (input.rulesetIds) {
     try {
       const rulesets = await Promise.all(
         input.rulesetIds.map((id) => getRuleset(user, id))
       );
       if (rulesets.includes(null)) {
-        throw "ruleset";
+        throw new HttpError(404, {
+          error: "one or more rulesets not found",
+        });
       }
-      const rulesetVersions = (await Promise.all(
-        rulesets.map((ruleset) => getLatestRulesetVersion(ruleset as Ruleset))
-      )) as RulesetVersion[];
-      rulesetVersionIds = rulesetVersions.map((item) => item.id);
+      rulesetVersions = await Promise.all(
+        rulesets.map(async (rs) => (await getLatestRulesetVersion(rs!))!)
+      );
     } catch (err) {
       throw new HttpError(404, { error: "ruleset not found" });
     }
   }
 
-  const created = await updateSearchConfiguration({
-    queryTemplateId: input.queryTemplateId,
-    rulesetVersionIds,
-    judgementIds: judgement ? [judgement.judgementId] : undefined,
-  });
+  const created = await createSearchConfiguration(
+    queryTemplate,
+    rulesetVersions,
+    jsc ? [[jsc.judgement, jsc.weight]] : []
+  );
 
   return res
     .status(200)

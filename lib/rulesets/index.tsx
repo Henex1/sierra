@@ -121,16 +121,12 @@ export async function createRulesetVersion(
 export async function getRulesetsForSearchConfiguration(
   searchConfiguration: SearchConfiguration
 ): Promise<RulesetVersion[]> {
-  const sc = await prisma.searchConfiguration.findFirst({
+  const rulesets = await prisma.rulesetVersion.findMany({
     where: {
-      id: searchConfiguration.id,
-    },
-    select: {
-      rulesets: true,
+      searchConfigurations: {
+        some: { id: searchConfiguration.id },
+      },
     },
   });
-  if (!sc) {
-    return [];
-  }
-  return sc.rulesets;
+  return rulesets;
 }
