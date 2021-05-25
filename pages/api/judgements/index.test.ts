@@ -6,6 +6,8 @@ import {
 } from "./index";
 import { getApiRoute, TEST_PROJECT, TEST_JUDGEMENT } from "../../../lib/test";
 
+const testDate = new Date(2000, 0, 1);
+
 describe("api/judgements", () => {
   it("/create", async () => {
     mockModels("project")
@@ -24,14 +26,23 @@ describe("api/judgements", () => {
           project: { connect: { id: initialInfo.projectId } },
         },
       })
-      .resolvesTo({ id: 42, ...initialInfo });
+      .resolvesTo({
+        id: 42,
+        ...initialInfo,
+        createdAt: testDate,
+        updatedAt: testDate,
+      });
     const { judgement } = await getApiRoute(
       handleCreateJudgement,
       initialInfo,
       { method: "POST" }
     );
     expect(judgement).toHaveProperty("id");
-    expect(judgement).toMatchObject(initialInfo);
+    expect(judgement).toMatchObject({
+      ...initialInfo,
+      createdAt: testDate.toString(),
+      updatedAt: testDate.toString(),
+    });
   });
 
   it("/update", async () => {
@@ -47,14 +58,23 @@ describe("api/judgements", () => {
     mockModels("judgement")
       .action("update")
       .with({ where: { id: initialInfo.id } })
-      .resolvesTo({ ...initialInfo, ...newInfo });
+      .resolvesTo({
+        ...initialInfo,
+        ...newInfo,
+        createdAt: testDate,
+        updatedAt: testDate,
+      });
     const { judgement } = await getApiRoute(
       handleUpdateJudgement,
       initialInfo,
       { method: "POST" }
     );
     expect(judgement).toHaveProperty("id");
-    expect(judgement).toMatchObject(newInfo);
+    expect(judgement).toMatchObject({
+      ...newInfo,
+      createdAt: testDate.toString(),
+      updatedAt: testDate.toString(),
+    });
   });
 
   it("/setVotes", async () => {

@@ -1,55 +1,95 @@
+import React from "react";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
+  Typography,
+  makeStyles,
+  Button,
+  Box,
+  Tooltip,
+  Avatar,
+  colors,
 } from "@material-ui/core";
-
-import { ExposedProject } from "../../lib/projects";
+import AddIcon from "@material-ui/icons/Add";
 import Link from "../common/Link";
+import { RecentProject } from "../../lib/projects";
+import { scaleLinear } from "d3-scale";
+import { searchEndpointTypes } from "../searchendpoints/Form";
 
-export type RecentProject = ExposedProject & {
-  updatedAt: number;
-};
-
-type Props = {
-  projects: RecentProject[];
-};
-
-export default function ProjectList({ projects }: Props) {
-  return (
-    <TableContainer>
-      <Table>
-        <caption>
-          <Link href="/projects">View all projects</Link>
-        </caption>
-        <TableBody>
-          {projects.length ? (
-            projects
-              .sort((a, b) => b.updatedAt - a.updatedAt)
-              .map((project) => (
-                <TableRow key={project.id}>
-                  <TableCell>
-                    <Link href={`/projects/${project.id}`}>
-                      <b>{project.name}</b>
-                    </Link>
-                  </TableCell>
-                  <TableCell>{`Updated ${getTimeAgo(
-                    project.updatedAt
-                  )}`}</TableCell>
-                </TableRow>
-              ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={2}>No projects</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
-}
+const useStyles = makeStyles((theme) => ({
+  projects: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gap: theme.spacing(2),
+    marginTop: theme.spacing(2),
+  },
+  searchLogo: {
+    height: "30px",
+  },
+  projectCard: {
+    padding: theme.spacing(3),
+    color: "inherit",
+    textDecoration: "none",
+    border: "1px solid #eaeaea",
+    borderRadius: 10,
+    transition: "0.15s",
+    "&:hover, &:focus, &:active": {
+      color: colors.blue[500],
+      borderColor: colors.blue[500],
+      textDecoration: "none",
+    },
+    "& a": {
+      textDecoration: "none !important",
+    },
+  },
+  viewAllProjectCard: {
+    padding: theme.spacing(3),
+    color: "inherit",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    textDecoration: "none",
+    border: "1px solid #eaeaea",
+    borderRadius: 10,
+    transition: "0.15s",
+    "&:hover, &:focus, &:active": {
+      color: colors.blue[500],
+      borderColor: colors.blue[500],
+      textDecoration: "none",
+    },
+  },
+  projectCardTitle: {
+    marginBottom: theme.spacing(1),
+    "& > span": {
+      marginRight: theme.spacing(2),
+    },
+    "&:hover, &:focus, &:active": {
+      color: colors.blue[500],
+    },
+  },
+  chip: {
+    textTransform: "capitalize",
+  },
+  noProjectCOntainer: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  icon: {
+    marginRight: theme.spacing(1),
+  },
+  cardHeaderContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  dataContainer: {
+    marginBottom: 10,
+  },
+  avatar: {
+    width: 60,
+    fontSize: "18px",
+    color: "#111",
+  },
+}));
 
 function getTimeAgo(date: number): string {
   const MINUTE = 60;
@@ -81,4 +121,108 @@ function getTimeAgo(date: number): string {
 
   const count = Math.floor(secondsAgo / (divisor as number));
   return `${count} ${unit}${count > 1 ? "s" : ""} ago`;
+}
+
+type SearchEndpointType = {
+  label: string;
+  value: string;
+  imageSrc: string;
+  enabled: boolean;
+};
+
+function getDataLogo(text: string): SearchEndpointType {
+  return searchEndpointTypes.filter((item) => item.value === text)[0];
+}
+
+const colorScale = scaleLinear<string, string>()
+  .domain([0, 50, 100])
+  .range([colors.red[500], colors.yellow[500], colors.green[500]]);
+
+const MAX_PROJECTS_IN_COMPACT_MODE = 2;
+type Props = {
+  projects: RecentProject[];
+  compact: boolean;
+};
+
+export default function Projects({ projects, compact }: Props) {
+  const classes = useStyles();
+  return (
+    <div className={classes.projects}>
+      {projects.length ? (
+        <React.Fragment>
+          {projects
+            .slice(0, compact ? MAX_PROJECTS_IN_COMPACT_MODE : projects.length)
+            .map((project) => {
+              const searchType = getDataLogo(project.searchEndpointType);
+              return (
+                <Box className={classes.projectCard} key={project.id}>
+                  <Box className={classes.cardHeaderContainer}>
+                    <Link href={`/projects/${project.id}`}>
+                      <Typography
+                        variant="h5"
+                        color="textPrimary"
+                        className={classes.projectCardTitle}
+                      >
+                        <span>{project.name}</span>
+                      </Typography>
+                    </Link>
+
+                    <Tooltip title="Go to Lab">
+                      <Link href={`/${project.id}/lab`}>
+                        <Avatar
+                          variant="rounded"
+                          className={classes.avatar}
+                          style={{
+                            background: colorScale(project.combinedScore),
+                          }}
+                        >
+                          {project.combinedScore}
+                        </Avatar>
+                      </Link>
+                    </Tooltip>
+                  </Box>
+                  <Box className={classes.dataContainer}>
+                    <Typography variant="subtitle2" color="textSecondary">
+                      {project.searchEndpointName}
+                    </Typography>
+                    <img
+                      className={classes.searchLogo}
+                      src={searchType.imageSrc}
+                      alt={searchType.label}
+                    />
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    color="textSecondary"
+                  >{`Updated ${getTimeAgo(project.updatedAt)}`}</Typography>
+                </Box>
+              );
+            })}
+          {compact && projects.length > MAX_PROJECTS_IN_COMPACT_MODE && (
+            <Link href="/projects" className={classes.viewAllProjectCard}>
+              <Typography variant="h5" className={classes.projectCardTitle}>
+                View all
+              </Typography>
+            </Link>
+          )}
+        </React.Fragment>
+      ) : (
+        <React.Fragment>
+          <Box>
+            <Typography style={{ marginBottom: 10 }}>
+              No projects yet.
+            </Typography>
+            {compact && (
+              <Link href="/projects/create">
+                <Button variant="contained" color="primary">
+                  <AddIcon className={classes.icon} />
+                  Add Project
+                </Button>
+              </Link>
+            )}
+          </Box>
+        </React.Fragment>
+      )}
+    </div>
+  );
 }

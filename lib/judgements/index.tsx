@@ -14,6 +14,7 @@ import prisma, {
   SearchConfiguration,
 } from "../prisma";
 import { userCanAccessProject } from "../projects";
+import { ChangeTypeOfKeys } from "../pageHelpers";
 
 export type JudgementSearchConfiguration = BaseJudgementSearchConfiguration & {
   judgement: Judgement;
@@ -23,6 +24,8 @@ const jSelectKeys = {
   id: true,
   projectId: true,
   name: true,
+  createdAt: true,
+  updatedAt: true,
 };
 
 const jpSelectKeys = {
@@ -38,7 +41,10 @@ const vSelectKeys = {
   score: true,
 };
 
-export type ExposedJudgement = Pick<Judgement, keyof typeof jSelectKeys>;
+export type ExposedJudgement = Pick<
+  ChangeTypeOfKeys<Judgement, "createdAt" | "updatedAt", string>,
+  keyof typeof jSelectKeys
+>;
 
 export type ExposedJudgementExtendedMetadata = ExposedJudgement & {
   totalSearchPhrases: number;
@@ -65,7 +71,12 @@ export function userCanAccessJudgement(
 }
 
 export function formatJudgement(val: Judgement): ExposedJudgement {
-  return _.pick(val, _.keys(jSelectKeys)) as ExposedJudgement;
+  const judgement = {
+    ...val,
+    updatedAt: val.updatedAt.toString(),
+    createdAt: val.createdAt.toString(),
+  };
+  return _.pick(judgement, _.keys(judgement)) as ExposedJudgement;
 }
 
 export async function getJudgement(
@@ -289,4 +300,17 @@ export function parseVotesCsv(content: string): SetVotes {
     }
   });
   return actions;
+}
+
+export async function getLatestJudgements(
+  user: User,
+  project: Project,
+  size: number
+): Promise<Judgement[]> {
+  const judgements = await prisma.judgement.findMany({
+    where: userCanAccessJudgement(user, { projectId: project.id }),
+    orderBy: { updatedAt: "desc" },
+    take: size,
+  });
+  return judgements;
 }

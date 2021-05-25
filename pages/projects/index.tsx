@@ -1,96 +1,107 @@
 import * as React from "react";
-import { useTable, Column, CellProps } from "react-table";
-
-import MaUTable from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
+import Box from "@material-ui/core/Box";
+import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
-
-import Link, { LinkButton } from "../../components/common/Link";
-import { authenticatedPage, requireActiveOrg } from "../../lib/pageHelpers";
+import { makeStyles } from "@material-ui/core/styles";
+import Pagination from "@material-ui/lab/Pagination";
+import AddIcon from "@material-ui/icons/Add";
+import { useRouter } from "next/router";
+import Link from "../../components/common/Link";
 import {
-  formatProject,
-  listProjects,
-  ExposedProject,
+  authenticatedPage,
+  optionalNumberQuery,
+  requireActiveOrg,
+} from "../../lib/pageHelpers";
+import ProjectList from "../../components/dashboard/ProjectList";
+import {
+  countProjects,
+  getRecentProjects,
+  RecentProject,
 } from "../../lib/projects";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
+const useStyles = makeStyles((theme) => ({
+  container: {
+    "& a": {
+      textDecoration: "none !important",
+    },
+  },
+  buttonContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  icon: {
+    marginRight: theme.spacing(1),
+  },
+}));
+
+const pageSize = 5;
+
 export const getServerSideProps = authenticatedPage(async (context) => {
   const activeOrg = await requireActiveOrg(context);
-  const projects = await listProjects(activeOrg);
-  return { props: { projects: projects.map(formatProject) } };
+  const page = optionalNumberQuery(context, "page", 1);
+  const projects = await getRecentProjects(activeOrg, context.user, {
+    take: pageSize,
+    skip: Math.max(pageSize * (page - 1), 0),
+  });
+  const projectsTotal = await countProjects(activeOrg);
+  return {
+    props: {
+      projects,
+      projectsTotal,
+      page,
+    },
+  };
 });
 
 type Props = {
-  projects: ExposedProject[];
+  projects: RecentProject[];
+  projectsTotal: number;
+  page: number;
 };
 
-export default function Projects({ projects }: Props) {
-  const columns: Column<ExposedProject>[] = React.useMemo(
-    () => [
-      {
-        Header: "Name",
-        Cell({ row }: CellProps<ExposedProject>) {
-          return (
-            <Link href={`/projects/${row.original.id}`}>
-              {row.original.name}
-            </Link>
-          );
-        },
-        accessor: "name",
+export default function Projects({ projects, projectsTotal, page }: Props) {
+  const router = useRouter();
+  const [currentPage, setCurrentPage] = React.useState(page);
+  const classes = useStyles();
+  React.useEffect(() => {
+    router.push({
+      pathname: router.pathname,
+      query: {
+        page: currentPage,
       },
-    ],
-    []
-  );
-
-  const tableInstance = useTable({ columns, data: projects });
-  /* eslint-disable react/jsx-key */
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-  } = tableInstance;
-
+    });
+  }, [currentPage]);
   return (
-    <div>
+    <Box className={classes.container}>
       <BreadcrumbsButtons>
         <Link href="/">Home</Link>
         <Typography>Projects</Typography>
       </BreadcrumbsButtons>
-      <LinkButton href="/projects/create" variant="contained">
-        Add project
-      </LinkButton>
-      <MaUTable {...getTableProps()}>
-        <TableHead>
-          {headerGroups.map((headerGroup) => (
-            <TableRow {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <TableCell {...column.getHeaderProps()}>
-                  {column.render("Header")}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableHead>
-        <TableBody {...getTableBodyProps()}>
-          {rows.map((row) => {
-            prepareRow(row);
-            return (
-              <TableRow {...row.getRowProps()}>
-                {row.cells.map((cell) => (
-                  <TableCell {...cell.getCellProps()}>
-                    {cell.render("Cell")}
-                  </TableCell>
-                ))}
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </MaUTable>
-    </div>
+      <Box className={classes.buttonContainer}>
+        <Link href="/projects/create">
+          <Button variant="contained" color="primary">
+            <AddIcon className={classes.icon} />
+            Add Project
+          </Button>
+        </Link>
+        <Pagination
+          shape="rounded"
+          showFirstButton={projectsTotal > 10}
+          showLastButton={projectsTotal > 10}
+          page={currentPage}
+          count={Math.ceil(projectsTotal / pageSize)}
+          onChange={(e: React.ChangeEvent<unknown>, value: number) =>
+            setCurrentPage(value)
+          }
+          color="primary"
+          size="large"
+        />
+      </Box>
+      <ProjectList compact={false} projects={projects} />
+    </Box>
   );
 }

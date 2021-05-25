@@ -11,6 +11,7 @@ import prisma, {
 } from "../prisma";
 import { userCanAccessProject } from "../projects";
 import { rulesetVersionValueSchema } from "./rules";
+import { ChangeTypeOfKeys } from "../pageHelpers";
 
 export { rulesetVersionValueSchema };
 
@@ -20,6 +21,8 @@ const selectKeys = {
   id: true,
   projectId: true,
   name: true,
+  createdAt: true,
+  updatedAt: true,
 };
 
 const versionSelectKeys = {
@@ -29,7 +32,10 @@ const versionSelectKeys = {
   value: true,
 };
 
-export type ExposedRuleset = Pick<Ruleset, keyof typeof selectKeys>;
+export type ExposedRuleset = Pick<
+  ChangeTypeOfKeys<Ruleset, "createdAt" | "updatedAt", string>,
+  keyof typeof selectKeys
+>;
 export type ExposedRulesetVersion = Pick<
   RulesetVersion,
   keyof typeof versionSelectKeys
@@ -49,7 +55,12 @@ export function userCanAccessRuleset(
 }
 
 export function formatRuleset(val: Ruleset): ExposedRuleset {
-  return _.pick(val, _.keys(selectKeys)) as ExposedRuleset;
+  const ruleset = {
+    ...val,
+    updatedAt: val.updatedAt.toString(),
+    createdAt: val.createdAt.toString(),
+  };
+  return _.pick(ruleset, _.keys(ruleset)) as ExposedRuleset;
 }
 
 export function formatRulesetVersion(
@@ -127,6 +138,19 @@ export async function getRulesetsForSearchConfiguration(
         some: { id: searchConfiguration.id },
       },
     },
+  });
+  return rulesets;
+}
+
+export async function getLatestRulesets(
+  user: User,
+  project: Project,
+  size: number
+): Promise<Ruleset[]> {
+  const rulesets = await prisma.ruleset.findMany({
+    where: userCanAccessRuleset(user, { projectId: project.id }),
+    orderBy: { updatedAt: "desc" },
+    take: size,
   });
   return rulesets;
 }

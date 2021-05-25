@@ -120,3 +120,8 @@ export async function requireActiveOrg(
   }
   return activeOrg;
 }
+
+// Change the type of Keys of T from NewType
+export type ChangeTypeOfKeys<T extends any, Keys extends keyof T, NewType> = {
+  [key in keyof T]: key extends Keys ? NewType : T[key];
+};
