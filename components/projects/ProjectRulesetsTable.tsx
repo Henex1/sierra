@@ -12,7 +12,7 @@ import Typography from "@material-ui/core/Typography";
 import { ExposedRuleset } from "../../lib/rulesets";
 
 type Props = {
-  rulesets: Array<ExposedRuleset>;
+  rulesets: ExposedRuleset[];
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -46,7 +46,6 @@ export default function ProjectRulesetsTable({ rulesets }: Props) {
                 <TableRow>
                   <TableCell>ID</TableCell>
                   <TableCell>Name</TableCell>
-                  <TableCell>Project ID</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -54,7 +53,6 @@ export default function ProjectRulesetsTable({ rulesets }: Props) {
                   <TableRow key={ruleset.id}>
                     <TableCell>{ruleset.id}</TableCell>
                     <TableCell>{ruleset.name}</TableCell>
-                    <TableCell>{ruleset.projectId}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

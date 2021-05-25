@@ -6,14 +6,24 @@ import prisma, {
   Org,
   SearchEndpoint,
   Project,
-  Judgement,
-  Ruleset,
   SearchEndpointType,
+  OffsetPagination,
 } from "../prisma";
 import { userCanAccessOrg } from "../org";
-import { createQueryTemplate } from "../querytemplates";
-import { ExposedJudgement, formatJudgement } from "../judgements";
-import { ExposedRuleset, formatRuleset } from "../rulesets";
+import {
+  createQueryTemplate,
+  defaultQueryTemplate,
+  getLatestQueryTemplates,
+} from "../querytemplates";
+import { getActiveSearchConfiguration } from "../searchconfigurations";
+import { getLatestExecution } from "../execution";
+import { getSearchEndpoint } from "../searchendpoints";
+import {
+  ExposedJudgement,
+  formatJudgement,
+  getLatestJudgements,
+} from "../judgements";
+import { ExposedRuleset, formatRuleset, getLatestRulesets } from "../rulesets";
 
 // This is the list of keys which are included in user requests for Project
 // by default.
@@ -24,23 +34,16 @@ const selectKeys = {
   name: true,
 };
 
-// This is the default query templated, created when a new project is created.
-export const defaultQueryTemplate = {
-  description: "Initial query",
-  tag: "",
-  query: '{"query":{"match":{"title":"##$query##"}}}', // TODO rely on the data source title: field
-  knobs: {},
-};
-
 export type ExposedProject = Pick<Project, keyof typeof selectKeys>;
 
-export type ExtendedProject = {
-  id: string;
-  orgId: number;
-  searchEndpointId: number;
-  name: string;
-  judgements: Array<ExposedJudgement>;
-  rulesets: Array<ExposedRuleset>;
+export type RecentProject = ExposedProject & {
+  updatedAt: number;
+  searchEndpointName: string;
+  searchEndpointType: string;
+  combinedScore: number;
+  //Id to name of the projects recently updated judgements and rulesets
+  latestJudgements: ExposedJudgement[];
+  latestRulesets: ExposedRuleset[];
 };
 
 export function userCanAccessProject(
@@ -58,19 +61,6 @@ export function formatProject(val: Project): ExposedProject {
   return _.pick(val, _.keys(selectKeys)) as ExposedProject;
 }
 
-export function formatExtendedProject(val: any): ExtendedProject {
-  return {
-    id: val.id,
-    orgId: val.orgId,
-    searchEndpointId: val.searchEndpointId,
-    name: val.name,
-    judgements: val.judgements.map((judgement: Judgement) =>
-      formatJudgement(judgement)
-    ),
-    rulesets: val.rulesets.map((rulesets: Ruleset) => formatRuleset(rulesets)),
-  };
-}
-
 export async function getProject(
   user: User,
   id: string
@@ -79,23 +69,6 @@ export async function getProject(
     where: userCanAccessProject(user, { id }),
   });
   return project;
-}
-
-export async function getExtendedProject(
-  user: User,
-  id: string
-): Promise<Project | null> {
-  return await prisma.project.findFirst({
-    where: userCanAccessProject(user, { id }),
-    include: {
-      judgements: {
-        orderBy: { updatedAt: "desc" },
-      },
-      rulesets: {
-        orderBy: { updatedAt: "desc" },
-      },
-    },
-  });
 }
 
 export async function listProjects(org: Org): Promise<Project[]> {
@@ -164,4 +137,78 @@ export async function deleteProject(project: Project): Promise<void> {
   await prisma.project.delete({
     where: { id: project.id },
   });
+}
+
+export async function getProjects(
+  org: Org,
+  { take = 5, skip = 0 }: OffsetPagination = {}
+): Promise<Project[]> {
+  const projects = await prisma.project.findMany({
+    where: { orgId: org.id },
+    take,
+    skip,
+  });
+  return projects;
+}
+
+export async function countProjects(org: Org): Promise<number> {
+  return await prisma.project.count({
+    where: { orgId: org.id },
+  });
+}
+
+export async function getRecentProject(
+  project: Project,
+  user: User
+): Promise<RecentProject> {
+  const sc = await getActiveSearchConfiguration(project);
+  const lastExecution = sc ? await getLatestExecution(sc) : null;
+  const latestJudgements = await getLatestJudgements(user, project, 1);
+  const latestRulesets = await getLatestRulesets(user, project, 1);
+  const latestQueryTemplates = await getLatestQueryTemplates(user, project, 1);
+  const searchEndpoint = await getSearchEndpoint(
+    user,
+    project.searchEndpointId
+  );
+  const searchEndpointName = searchEndpoint?.name || "";
+  const searchEndpointType = searchEndpoint?.type || "";
+  const combinedScore = lastExecution?.combinedScore || 0;
+
+  const updatedAt = Math.max(
+    project.updatedAt.valueOf(),
+    new Date(latestJudgements[0]?.updatedAt).valueOf() || 0,
+    new Date(latestRulesets[0]?.updatedAt).valueOf() || 0,
+    new Date(latestQueryTemplates[0]?.updatedAt).valueOf() || 0
+  );
+
+  return {
+    id: project.id,
+    orgId: project.orgId,
+    searchEndpointId: project.searchEndpointId,
+    name: project.name,
+    combinedScore: Math.round(combinedScore * 100),
+    searchEndpointName,
+    searchEndpointType,
+    updatedAt,
+    latestJudgements: latestJudgements
+      ? latestJudgements.map((j) => formatJudgement(j))
+      : [],
+    latestRulesets: latestRulesets
+      ? latestRulesets.map((r) => formatRuleset(r))
+      : [],
+  };
+}
+
+export async function getRecentProjects(
+  org: Org,
+  user: User,
+  { take = 5, skip = 0 }: OffsetPagination = {}
+): Promise<RecentProject[]> {
+  const projects = await getProjects(org, { take, skip });
+  const recentProjects: RecentProject[] = [];
+  for (const project of projects) {
+    const recentProject = await getRecentProject(project, user);
+    recentProjects.push(recentProject);
+  }
+  return recentProjects;
 }

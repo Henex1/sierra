@@ -10,11 +10,6 @@ import BlurLinearIcon from "@material-ui/icons/BlurLinear";
 
 import { authenticatedPage, requireParam } from "../../../lib/pageHelpers";
 import {
-  formatExtendedProject,
-  getExtendedProject,
-  ExtendedProject,
-} from "../../../lib/projects";
-import {
   ExposedSearchEndpoint,
   formatSearchEndpoint,
   getSearchEndpoint,
@@ -23,16 +18,22 @@ import {
 import Link, { LinkButton } from "../../../components/common/Link";
 import { useActiveProject } from "../../../components/Session";
 import BreadcrumbsButtons from "../../../components/common/BreadcrumbsButtons";
+import FlaskIcon from "../../../components/common/FlaskIcon";
+import {
+  getProject,
+  getRecentProject,
+  RecentProject,
+} from "../../../lib/projects";
 import ProjectJudgementsTable from "../../../components/projects/ProjectJudgementsTable";
 import ProjectRulesetsTable from "../../../components/projects/ProjectRulesetsTable";
-import FlaskIcon from "../../../components/common/FlaskIcon";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const id = requireParam(context, "id");
-  const project = await getExtendedProject(context.user, id);
+  const project = await getProject(context.user, id);
   if (!project) {
     return { notFound: true };
   }
+  const recentProject = await getRecentProject(project, context.user);
   const searchEndpoint = await getSearchEndpoint(
     context.user,
     project.searchEndpointId
@@ -43,14 +44,14 @@ export const getServerSideProps = authenticatedPage(async (context) => {
 
   return {
     props: {
-      projectData: formatExtendedProject(project),
+      projectData: recentProject,
       searchEndpoint: formatSearchEndpoint(searchEndpoint),
     },
   };
 });
 
 type Props = {
-  projectData: ExtendedProject;
+  projectData: RecentProject;
   searchEndpoint: ExposedSearchEndpoint;
 };
 
@@ -159,7 +160,7 @@ export default function ViewProject({ projectData, searchEndpoint }: Props) {
           </LinkButton>
         </Grid>
         <Grid item xs={12}>
-          <ProjectJudgementsTable judgements={projectData.judgements} />
+          <ProjectJudgementsTable judgements={projectData.latestJudgements} />
         </Grid>
         <Grid item xs={12} className={classes.detailsWrapper}>
           <Typography variant="h6">Rulesets</Typography>
@@ -172,7 +173,7 @@ export default function ViewProject({ projectData, searchEndpoint }: Props) {
           </LinkButton>
         </Grid>
         <Grid item xs={12}>
-          <ProjectRulesetsTable rulesets={projectData.rulesets} />
+          <ProjectRulesetsTable rulesets={projectData.latestRulesets} />
         </Grid>
       </Grid>
     </div>

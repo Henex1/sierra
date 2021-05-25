@@ -6,6 +6,10 @@ import {
   OrgUser,
   SearchEndpoint,
   Judgement,
+  SearchConfiguration,
+  Execution,
+  QueryTemplate,
+  Ruleset,
 } from "../prisma";
 
 // If this ever causes problems, remove it and actually build some fake
@@ -18,6 +22,9 @@ export const TEST_PROJECT_ID = "c111111110000proj00000000";
 export const TEST_SEARCHENDPOINT_ID = "c111111110000dsrc00000000";
 export const TEST_JUDGEMENT_ID = "c111111110000judg00000000";
 export const TEST_RULESET_ID = "c111111110000rset00000000";
+export const TEST_SEARCHCONFIGURATION_ID = "c111111110000scfg00000000";
+export const TEST_EXECUTION_ID = "c111111110000exec00000000";
+export const TEST_QUERYTEMPLATE_ID = "c111111110000tmpl00000000";
 
 export const TEST_PROJECT: NoTimestamps<Project> = {
   id: TEST_PROJECT_ID,
@@ -66,4 +73,32 @@ export const TEST_JUDGEMENT: NoTimestamps<Judgement> = {
   id: TEST_JUDGEMENT_ID,
   name: "Test Judgement",
   projectId: TEST_PROJECT_ID,
+};
+
+export const TEST_SEARCHCONFIGURATION: NoTimestamps<SearchConfiguration> = {
+  id: TEST_SEARCHCONFIGURATION_ID,
+  queryTemplateId: TEST_QUERYTEMPLATE_ID,
+};
+
+export const TEST_EXECUTION: NoTimestamps<Execution> = {
+  id: TEST_EXECUTION_ID,
+  searchConfigurationId: TEST_SEARCHCONFIGURATION_ID,
+  meta: {},
+  combinedScore: 0.5,
+  allScores: {},
+};
+
+export const TEST_QUERYTEMPLATE: NoTimestamps<QueryTemplate> = {
+  id: TEST_EXECUTION_ID,
+  projectId: TEST_PROJECT_ID,
+  parentId: "TEST_PARENT_QT_123123123123",
+  query: "test query",
+  knobs: {},
+  description: "test description",
+};
+
+export const TEST_RULESET: NoTimestamps<Ruleset> = {
+  id: TEST_RULESET_ID,
+  projectId: TEST_PROJECT_ID,
+  name: "Test Ruleset",
 };

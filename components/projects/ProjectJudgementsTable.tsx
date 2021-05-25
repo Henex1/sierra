@@ -48,7 +48,6 @@ export default function ProjectJudgementsTable({ judgements }: Props) {
                 <TableRow>
                   <TableCell>ID</TableCell>
                   <TableCell>Name</TableCell>
-                  <TableCell>Project ID</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -56,7 +55,6 @@ export default function ProjectJudgementsTable({ judgements }: Props) {
                   <TableRow key={judgement.id}>
                     <TableCell>{judgement.id}</TableCell>
                     <TableCell>{judgement.name}</TableCell>
-                    <TableCell>{judgement.projectId}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -9,6 +9,7 @@ import prisma, {
   User,
 } from "../prisma";
 import { userCanAccessProject } from "../projects";
+import { ChangeTypeOfKeys } from "../pageHelpers";
 
 export interface QueryTemplate extends PrismaQueryTemplate {
   tags: PrismaQueryTemplateTag[];
@@ -21,10 +22,12 @@ const selectKeys = {
   description: true,
   knobs: true,
   query: true,
+  createdAt: true,
+  updatedAt: true,
 };
 
 export type ExposedQueryTemplate = Pick<
-  QueryTemplate,
+  ChangeTypeOfKeys<QueryTemplate, "createdAt" | "updatedAt", string>,
   keyof typeof selectKeys
 > & { tags: string[] };
 
@@ -42,8 +45,13 @@ export function userCanAccessQueryTemplate(
 }
 
 export function formatQueryTemplate(val: QueryTemplate): ExposedQueryTemplate {
+  const queryTemplate = {
+    ...val,
+    updatedAt: val.updatedAt.toString(),
+    createdAt: val.createdAt.toString(),
+  };
   const formatted = (_.pick(
-    val,
+    queryTemplate,
     _.keys(selectKeys)
   ) as unknown) as ExposedQueryTemplate;
   formatted.tags = val.tags.map((t) => t.name);
@@ -89,6 +97,13 @@ export const createQueryTemplateSchema = z.object({
 });
 
 export type CreateQueryTemplate = z.infer<typeof createQueryTemplateSchema>;
+
+// This is the default query templated, created when a new project is created.
+export const defaultQueryTemplate = {
+  description: "Initial query",
+  query: '{"query":{"match":{"title":"##$query##"}}}', // TODO rely on the data source title: field
+  knobs: {},
+};
 
 export async function createQueryTemplate(
   project: Project,
@@ -137,6 +152,20 @@ export async function updateQueryTemplate(
     updated.tags = qtt;
   }
   return updated;
+}
+
+export async function getLatestQueryTemplates(
+  user: User,
+  project: Project,
+  size: number
+): Promise<QueryTemplate[]> {
+  const queryTemplates = await prisma.queryTemplate.findMany({
+    where: userCanAccessQueryTemplate(user, { projectId: project.id }),
+    include: { tags: true },
+    orderBy: { updatedAt: "desc" },
+    take: size,
+  });
+  return queryTemplates;
 }
 
 // Tag a particular QueryTemplate. This will automatically replace an existing

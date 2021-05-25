@@ -10,7 +10,7 @@ import {
   TEST_SEARCHENDPOINT,
   TEST_PROJECT,
 } from "../../../lib/test";
-import { defaultQueryTemplate } from "../../../lib/projects";
+import { defaultQueryTemplate } from "../../../lib/querytemplates";
 
 describe("api/projects", () => {
   it("/create", async () => {
