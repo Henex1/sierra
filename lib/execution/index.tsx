@@ -9,6 +9,7 @@ import prisma, {
   SearchPhraseExecution,
   QueryTemplate,
   OffsetPagination,
+  RulesetVersion,
 } from "../prisma";
 import { getQueryInterface, expandQuery } from "../searchendpoints";
 import { userCanAccessSearchConfiguration } from "../searchconfigurations";
@@ -218,10 +219,13 @@ export async function createExecution(
   const endpoint = (await prisma.searchEndpoint.findFirst({
     where: { projects: { some: { queryTemplates: { some: { id: tpl.id } } } } },
   }))!;
+  const rv = await prisma.rulesetVersion.findMany({
+    where: { searchConfigurations: { some: { id: config.id } } },
+  });
   const judgements = await getCombinedJudgements(config);
   const results: Prisma.SearchPhraseExecutionCreateWithoutExecutionInput[] = [];
   for (const j of judgements) {
-    results.push(await newSearchPhraseExecution(endpoint, tpl, j));
+    results.push(await newSearchPhraseExecution(endpoint, tpl, rv, j));
   }
   const combinedScore = mean(results.map((r) => r.combinedScore));
   const scorers = results.length
@@ -253,10 +257,11 @@ export async function createExecution(
 async function newSearchPhraseExecution(
   endpoint: SearchEndpoint,
   tpl: QueryTemplate,
+  rv: RulesetVersion[],
   jp: CombinedJudgementPhrase
 ): Promise<Prisma.SearchPhraseExecutionCreateWithoutExecutionInput> {
   const iface = getQueryInterface(endpoint);
-  const query = await expandQuery(endpoint, tpl, [], undefined, jp.phrase);
+  const query = await expandQuery(endpoint, tpl, rv, undefined, jp.phrase);
   const queryResult = await iface.executeQuery(query);
   const allScores = {
     "ap@5": scorers.ap(
