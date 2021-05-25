@@ -175,6 +175,11 @@ function Import() {
               </InputLabel>
             </div>
 
+            <div>
+              The imported file can be an export from Chorus or a Detailed
+              Export from Quepid.
+            </div>
+
             <div className={classes.buttonActions}>
               <Button
                 disabled={!chooseFile || isUploading}

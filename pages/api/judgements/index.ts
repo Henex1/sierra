@@ -92,7 +92,7 @@ export const handleImport = apiHandler(async (req, res) => {
     data.fileContent = parseVotesCsv(
       fs.readFileSync(raw?.files?.file?.path, { encoding: "utf8" })
     );
-    data.projectId = parseInt(raw?.fields?.projectId);
+    data.projectId = raw?.fields?.projectId;
     data.name = raw?.fields?.name;
   } catch (e) {
     res.status(400).json({ success: false, error: e.message });
