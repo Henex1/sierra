@@ -1,51 +1,9 @@
-import React from "react";
-import {
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  Typography,
-  Tooltip,
-  makeStyles,
-} from "@material-ui/core";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import classnames from "classnames";
-
+import React, { ReactElement, useCallback } from "react";
+import { List, Typography } from "@material-ui/core";
 import { ExposedSearchPhrase } from "../../lib/lab";
-import ScoreBox from "./ScoreBox";
-
-const useStyles = makeStyles((theme) => ({
-  list: {
-    margin: 0,
-    padding: 0,
-  },
-  listItem: {
-    borderBottom: "1px solid rgba(224, 224, 224, 1)",
-    "$list li:last-child &": {
-      borderBottom: "none",
-    },
-  },
-  empty: {
-    marginTop: theme.spacing(16),
-    marginBottom: theme.spacing(16),
-    textAlign: "center",
-  },
-  avatarBox: {
-    minWidth: 76,
-  },
-  phrase: {
-    display: "inline",
-  },
-  took: {
-    marginLeft: theme.spacing(1),
-  },
-  fade: {
-    opacity: 0.5,
-  },
-}));
+import { useStyles } from "./hooks";
+import { ErrorItem } from "./item/ErrorItem";
+import { Item } from "./item/Item";
 
 type Props = {
   searchPhrases: ExposedSearchPhrase[];
@@ -59,81 +17,41 @@ export default function SearchPhraseList({
   setActivePhrase,
 }: Props) {
   const classes = useStyles();
+  const handleClick = useCallback((item: ExposedSearchPhrase) => {
+    if (activePhrase?.id !== item.id) {
+      setActivePhrase(item);
+    } else {
+      setActivePhrase(null);
+    }
+  }, []);
 
   if (!searchPhrases.length) {
-    <Typography variant="body1" className={classes.empty}>
-      No results.
-    </Typography>;
+    return (
+      <Typography variant="body1" className={classes.empty}>
+        No results.
+      </Typography>
+    );
   }
 
   return (
     <>
       <List className={classes.list}>
-        {searchPhrases.slice(0, 10).map((item, i) => {
-          const handleClick = (
-            e: React.MouseEvent<HTMLDivElement | HTMLButtonElement>
-          ) => {
-            e.stopPropagation();
-            if (activePhrase?.id !== item.id) {
-              setActivePhrase(item);
-            } else {
-              setActivePhrase(null);
+        {searchPhrases.slice(0, 10).map(
+          (item): ReactElement => {
+            switch (item.__type) {
+              case "FailedSearchPhraseExecution":
+                return <ErrorItem item={item} />;
+              case "ScoredSearchPhraseExecution":
+                return (
+                  <Item
+                    onClick={handleClick}
+                    item={item}
+                    selected={activePhrase?.id === item.id}
+                  />
+                );
             }
-          };
-
-          return (
-            <ListItem
-              key={i}
-              button
-              onClick={handleClick}
-              selected={activePhrase?.id === item.id}
-              className={classnames(
-                classes.listItem,
-                activePhrase && activePhrase?.id !== item.id && classes.fade
-              )}
-            >
-              <ListItemAvatar className={classes.avatarBox}>
-                <ScoreBox score={item.score.sierra} />
-              </ListItemAvatar>
-              <ListItemText
-                primary={
-                  <>
-                    <Typography variant="h6" className={classes.phrase}>
-                      {item.phrase}
-                    </Typography>
-                    <Tooltip
-                      title={`Took ${item.tookMs}ms to query. ${item.error}`}
-                    >
-                      <Typography
-                        component="span"
-                        variant="caption"
-                        className={classes.took}
-                        color="textSecondary"
-                      >
-                        {item.tookMs}ms
-                        {item.error && " \u26A0"}
-                      </Typography>
-                    </Tooltip>
-                  </>
-                }
-                secondary={item.results + " results"}
-              ></ListItemText>
-              <ListItemSecondaryAction>
-                <IconButton
-                  edge="end"
-                  aria-label="Details"
-                  onClick={handleClick}
-                >
-                  {activePhrase?.id === item.id ? (
-                    <ChevronLeftIcon />
-                  ) : (
-                    <ChevronRightIcon />
-                  )}
-                </IconButton>
-              </ListItemSecondaryAction>
-            </ListItem>
-          );
-        })}
+          }
+        )}
       </List>
     </>
   );

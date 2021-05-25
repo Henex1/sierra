@@ -1,16 +1,4 @@
-export type ExposedSearchPhrase = {
-  id: number;
-  phrase: string;
-  score: {
-    sierra: number;
-    "ndcg@5": number;
-    "ap@5": number;
-    "p@5": number;
-  };
-  results: number;
-  tookMs: number;
-  error: string | null;
-};
+export type { ExposedSearchPhrase } from "../execution/ExposedSearchPhrase";
 
 export type MockSearchResult = {
   id: number;
