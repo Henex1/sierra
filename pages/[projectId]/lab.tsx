@@ -97,21 +97,31 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
       })
     : [];
   const formattedPhrases: ExposedSearchPhrase[] = searchPhrases.map(
-    (phrase) => {
-      return {
-        id: phrase.id,
-        phrase: phrase.phrase,
-        score: {
-          sierra: phrase.combinedScore * 100,
-          ..._.mapValues(
-            phrase.allScores as Record<string, number>,
-            (s) => s * 100
-          ),
-        } as any,
-        results: phrase.totalResults,
-        tookMs: phrase.tookMs,
-        error: phrase.error ?? null,
-      };
+    (phrase): ExposedSearchPhrase => {
+      switch (phrase.error) {
+        case null:
+          return {
+            __type: "ScoredSearchPhraseExecution",
+            id: phrase.id,
+            phrase: phrase.phrase,
+            score: {
+              sierra: phrase.combinedScore * 100,
+              ..._.mapValues(
+                phrase.allScores as Record<string, number>,
+                (s) => s * 100
+              ),
+            } as any,
+            results: phrase.totalResults,
+            tookMs: phrase.tookMs,
+          };
+        default:
+          return {
+            __type: "FailedSearchPhraseExecution",
+            id: phrase.id,
+            phrase: phrase.phrase,
+            error: phrase.error,
+          };
+      }
     }
   );
   const rulesets = await listRulesets(context.user);
