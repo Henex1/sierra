@@ -16,6 +16,7 @@ module.exports = {
     "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
     "plugin:prettier/recommended",
+    "plugin:sierra/recommended",
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -26,7 +27,7 @@ module.exports = {
     ecmaVersion: 12,
     sourceType: "module",
   },
-  plugins: ["react", "@typescript-eslint", "jest"],
+  plugins: ["react", "@typescript-eslint", "jest", "sierra"],
   rules: {
     "@typescript-eslint/no-unused-vars": [
       "error",

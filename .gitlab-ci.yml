@@ -4,6 +4,7 @@ variables:
   STAGING_REGISTRY: "registry.gitlab.com"
   DATABASE_URL: "postgresql://postgres:example@postgres:5432/postgres?schema=public"
   NEXTAUTH_URL: http://localhost:3000/api/auth
+  SECRET: "unset_nextauth_secret"
   ALLOW_REGISTRATION_FROM: bigdataboutique.com
   QUERY_EXPANDER_URL: http://localhost:8080
   GOOGLE_ID: "unset_google_id"
@@ -56,6 +57,7 @@ test:
     POSTGRES_HOST_AUTH_METHOD: trust
   script:
     - cd /app
+    - yarn ts-node eslint/test.js
     - yarn lint
     - yarn tsc -b .
     - yarn prisma migrate reset -f

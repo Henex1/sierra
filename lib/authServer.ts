@@ -21,6 +21,7 @@ export type UserSession = Partial<ValidUserSession>;
 const googleId = requireEnv("GOOGLE_ID");
 const googleSecret = requireEnv("GOOGLE_SECRET");
 const allowRegistrationFrom = requireEnv("ALLOW_REGISTRATION_FROM").split(",");
+const nextAuthSecret = requireEnv("SECRET");
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -30,7 +31,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   adapter: Adapters.Prisma.Adapter({ prisma }),
-  secret: process.env.SECRET,
+  secret: nextAuthSecret,
   callbacks: {
     async session(session: Session, user: User) {
       // For some reason next auth doesn't include this by default.
