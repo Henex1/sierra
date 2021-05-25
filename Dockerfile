@@ -2,7 +2,7 @@ FROM node:15.14.0 AS deps
 
 #### Install dependencies
 WORKDIR /app
-COPY package.json yarn.lock ./
+COPY package.json yarn.lock eslint ./
 RUN yarn --frozen-lockfile
 
 #### Install dependencies again
@@ -13,6 +13,7 @@ FROM node:15.14.0 AS builder
 #### Build
 ENV DATABASE_URL=postgresql://postgres:example@postgres:5432/postgres?schema=public \
     NEXTAUTH_URL=http://localhost:3000/api/auth \
+    SECRET=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
     ALLOW_REGISTRATION_FROM=bigdataboutique.com \
     QUERY_EXPANDER_URL=http://localhost:8080 \
     GOOGLE_ID=unset_google_id \

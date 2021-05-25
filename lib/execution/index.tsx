@@ -155,13 +155,13 @@ export async function getCombinedJudgements(
   config: SearchConfiguration
 ): Promise<CombinedJudgementPhrase[]> {
   const results = await prisma.$queryRaw`
-    SELECT JP."phrase", V."documentId", SUM(JSP."weight" * V."score") / SUM(JSP."weight") AS "score"
-    FROM "JudgementSearchConfiguration" AS JSP
+    SELECT JP."phrase", V."documentId", SUM(JSC."weight" * V."score") / SUM(JSC."weight") AS "score"
+    FROM "JudgementSearchConfiguration" AS JSC
     INNER JOIN "JudgementPhrase" AS JP
-    ON JP."judgementId" = JSP."judgementId"
+    ON JP."judgementId" = JSC."judgementId"
     INNER JOIN "Vote" AS V
     ON V."judgementPhraseId" = JP."id"
-    WHERE JSP."searchConfigurationId" = ${config.id}
+    WHERE JSC."searchConfigurationId" = ${config.id}
     GROUP BY JP."phrase", V."documentId"
     ORDER BY JP."phrase", V."documentId"
   `;
@@ -180,13 +180,13 @@ export async function getCombinedJudgementForPhrase(
     documentId: string;
     score: number;
   }> = await prisma.$queryRaw`
-    SELECT V."documentId", SUM(JSP."weight" * V."score") / SUM(JSP."weight") AS "score"
-    FROM "JudgementSearchConfiguration" AS JSP
+    SELECT V."documentId", SUM(JSC."weight" * V."score") / SUM(JSC."weight") AS "score"
+    FROM "JudgementSearchConfiguration" AS JSC
     INNER JOIN "JudgementPhrase" AS JP
-    ON JP."judgementId" = JSP."judgementId"
+    ON JP."judgementId" = JSC."judgementId"
     INNER JOIN "Vote" AS V
     ON V."judgementPhraseId" = JP."id"
-    WHERE JSP."searchConfigurationId" = ${config.id}
+    WHERE JSC."searchConfigurationId" = ${config.id}
     AND JP."phrase" = ${phrase}
     ${
       documentIds
