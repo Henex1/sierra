@@ -1,4 +1,3 @@
-import * as z from "zod";
 import fetch, { RequestInit } from "node-fetch";
 
 import { SearchEndpoint } from "../prisma";
@@ -39,8 +38,6 @@ type ElasticsearchQueryResponse =
       };
     };
 
-type ElasticsearchInfo = z.infer<typeof ElasticsearchInfoSchema>;
-
 function getHeaders(
   credentials: SearchEndpointCredentials | null
 ): Record<string, string> {
@@ -64,7 +61,9 @@ export class ElasticsearchInterface implements QueryInterface {
     body: string | undefined,
     extra: RequestInit = {}
   ): Promise<ResultType> {
-    const { endpoint, index } = this.searchEndpoint.info as ElasticsearchInfo;
+    const { endpoint, index } = ElasticsearchInfoSchema.parse(
+      this.searchEndpoint.info
+    );
     const credentials = await getSearchEndpointCredentials(this.searchEndpoint);
     const response = await fetch(`${endpoint}${index}/${api}`, {
       method: "POST",
@@ -72,8 +71,8 @@ export class ElasticsearchInterface implements QueryInterface {
       headers: getHeaders(credentials),
       ...extra,
     });
-    const result = await response.json();
-    return result;
+
+    return await response.json();
   }
 
   async getFields(filters?: FieldsCapabilitiesFilters): Promise<string[]> {

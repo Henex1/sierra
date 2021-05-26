@@ -9,7 +9,7 @@ export const SearchEndpointType = z.union([
 ]);
 
 export const ElasticsearchInfoSchema = z.object({
-  endpoint: z.string(),
+  endpoint: z.string().url(),
   index: z.string(),
 });
 
