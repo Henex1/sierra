@@ -35,7 +35,7 @@
     "formidable": "^1.2.2",
     "lodash": "^4.17.21",
     "mui-rff": "^3.0.6",
-    "next": "10.0.9",
+    "next": "10.2.1",
     "next-auth": "^3.19.3",
     "node-fetch": "^2.6.1",
     "prop-types": "^15.6.0",
