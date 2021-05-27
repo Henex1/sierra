@@ -16,6 +16,9 @@ import prisma, {
 import { userCanAccessProject } from "../projects";
 import { ChangeTypeOfKeys } from "../pageHelpers";
 
+// Votes range from 0 to VOTE_MAX.
+export const VOTE_MAX = 3;
+
 export type JudgementSearchConfiguration = BaseJudgementSearchConfiguration & {
   judgement: Judgement;
 };
@@ -277,26 +280,65 @@ export async function setVotes(
   await prisma.$transaction(transactions);
 }
 
-export function parseVotesCsv(content: string): SetVotes {
+export function parseVotesCsv(content: Buffer | string): SetVotes {
   const raw = csvParser(content, {
     columns: true,
     trim: true,
     skip_empty_lines: true,
   });
-  const actions: any = {};
+  if (raw.length == 0) return {};
+  const firstRecord = raw[0];
+  if ("Query Text" in firstRecord) {
+    return parseQuepidCsv(raw);
+  } else {
+    return parseChorusCsv(raw);
+  }
+}
+
+type ChorusRecord = {
+  query: string;
+  docid: string;
+  rating: string;
+};
+
+function parseChorusCsv(records: ChorusRecord[]): SetVotes {
+  const actions: SetVotes = {};
   // transform to vote actions
-  raw.forEach((item: any) => {
+  records.forEach((item) => {
     if (!item.query || !item.query.length)
       throw new Error("Invalid CSV format");
     if (!actions[item.query]) {
       actions[item.query] = {};
     }
     if (item.docid?.length) {
-      item.rating = parseInt(item.rating);
-      item.rating = Number.isNaN(item.rating) ? 0 : item.rating;
-      actions[item.query][item.docid] = isNaN(item.rating)
-        ? 0
-        : parseInt(item.rating);
+      let rating = parseInt(item.rating, 10);
+      rating = Number.isNaN(rating) ? 0 : rating;
+      actions[item.query]![item.docid] = rating;
+    }
+  });
+  return actions;
+}
+
+type QuepidRecord = {
+  "Query Text": string;
+  "Doc ID": string;
+  Rating: string;
+};
+
+function parseQuepidCsv(records: QuepidRecord[]): SetVotes {
+  const actions: SetVotes = {};
+  // transform to vote actions
+  records.forEach((item) => {
+    const query = item["Query Text"];
+    const docid = item["Doc ID"];
+    const rawRating = item["Rating"];
+    if (!query || !query.length) throw new Error("Invalid CSV format");
+    if (!actions[query]) {
+      actions[query] = {};
+    }
+    if (!rawRating || !rawRating.length) return;
+    if (docid?.length) {
+      actions[query]![docid] = (parseInt(rawRating, 10) / 10) * VOTE_MAX;
     }
   });
   return actions;
