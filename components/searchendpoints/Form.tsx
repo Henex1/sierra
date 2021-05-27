@@ -292,5 +292,6 @@ export default function SearchEndpointForm({
 SearchEndpointForm.defaultProps = {
   initialValues: {
     resultId: "_id",
+    displayFields: [],
   },
 };
