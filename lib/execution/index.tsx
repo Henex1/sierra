@@ -79,6 +79,17 @@ export async function getLatestExecution(
   return execution;
 }
 
+export async function listExecutions(
+  sc: SearchConfiguration
+): Promise<Execution[]> {
+  const execution = await prisma.execution.findMany({
+    where: { searchConfigurationId: sc.id },
+    orderBy: [{ createdAt: "desc" }],
+    take: 10,
+  });
+  return execution;
+}
+
 const sortMapping: Record<
   SortOptions,
   Prisma.SearchPhraseExecutionOrderByInput

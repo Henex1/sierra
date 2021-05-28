@@ -84,6 +84,17 @@ export async function getExecutionSearchConfiguration(
   return sc!;
 }
 
+export async function listSearchConfigurations(
+  project: Project
+): Promise<SearchConfiguration[]> {
+  const results = await prisma.searchConfiguration.findMany({
+    where: { queryTemplate: { projectId: project.id } },
+    orderBy: [{ updatedAt: "desc" }],
+    include: { tags: true },
+  });
+  return results;
+}
+
 // [Judgement, weight]
 export type WeightedJudgement = [Judgement, number];
 
