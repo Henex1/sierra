@@ -69,15 +69,6 @@ export async function getExecution(
   return execution;
 }
 
-export async function getExecutionSearchConfiguration(
-  execution: Execution
-): Promise<SearchConfiguration> {
-  const sc = await prisma.searchConfiguration.findFirst({
-    where: { id: execution.searchConfigurationId },
-  });
-  return sc!;
-}
-
 export async function getLatestExecution(
   sc: SearchConfiguration
 ): Promise<Execution | null> {

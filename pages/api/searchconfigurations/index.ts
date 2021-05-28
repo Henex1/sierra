@@ -28,6 +28,7 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
       id: z.string(),
       queryTemplateId: z.string(),
       rulesetIds: z.array(z.string()).optional(),
+      tags: z.array(z.string()).optional(),
     })
   );
 
@@ -67,7 +68,8 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
   const created = await createSearchConfiguration(
     queryTemplate,
     rulesetVersions,
-    jsc ? [[jsc.judgement, jsc.weight]] : []
+    jsc ? [[jsc.judgement, jsc.weight]] : [],
+    input.tags
   );
 
   return res
