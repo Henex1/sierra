@@ -50,12 +50,21 @@ export const deleteInstructionSchema = z.object({
 
 export type DeleteInstruction = z.infer<typeof deleteInstructionSchema>;
 
+export const substituteInstructionSchema = z.object({
+  type: z.literal("substitute"),
+  value: z.string(),
+  enabled: z.boolean(),
+});
+
+export type SubstituteInstruction = z.infer<typeof substituteInstructionSchema>;
+
 export const ruleInstructionSchema = z.union([
   facetFilterInstructionSchema,
   synonymInstructionSchema,
   upDownInstructionSchema,
   filterInstructionSchema,
   deleteInstructionSchema,
+  substituteInstructionSchema,
 ]);
 
 export type RuleInstruction = z.infer<typeof ruleInstructionSchema>;
