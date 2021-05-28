@@ -316,9 +316,10 @@ model SearchPhraseExecution {
   error         String?
   // The top results, [ { id: documentID, explanation: { ... } }, ... ]
   results       Json
-  combinedScore Float
+  // The score can be empty if the search phrase has no judgements
+  combinedScore Float?
   // { [ scorerId: string]: number }
-  allScores     Json
+  allScores     Json?
 
   execution Execution @relation(fields: [executionId], references: [id])
 }

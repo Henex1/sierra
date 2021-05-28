@@ -33,7 +33,7 @@ export function Item({ onClick, item, selected }: Props): ReactElement {
       className={classNames(classes.listItem, selected && classes.fade)}
     >
       <ListItemAvatar className={classes.avatarBox}>
-        <PhraseScore score={item.score.sierra} />
+        <PhraseScore score={item.combinedScore} />
       </ListItemAvatar>
       <ListItemText
         primary={

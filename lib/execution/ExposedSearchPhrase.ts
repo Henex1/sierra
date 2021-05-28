@@ -5,12 +5,8 @@ interface Base {
 
 export interface ScoredSearchPhraseExecution extends Base {
   __type: "ScoredSearchPhraseExecution";
-  score: {
-    sierra: number;
-    "ndcg@5": number;
-    "ap@5": number;
-    "p@5": number;
-  };
+  combinedScore: number | null;
+  allScores: Record<string, number> | null;
   results: number;
   tookMs: number;
 }
