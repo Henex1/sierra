@@ -8,7 +8,7 @@ const colorScale = scaleLinear<string, string>()
   .range([colors.red[500], colors.yellow[500], colors.green[500]]);
 
 type Props = {
-  score: number;
+  score: number | null;
 };
 
 export default function PhraseScore({ score }: Props) {
@@ -20,10 +20,10 @@ export default function PhraseScore({ score }: Props) {
         variant="rounded"
         className={classes.scoreBoxAvatar}
         style={{
-          background: colorScale(score),
+          background: score !== null ? colorScale(score) : undefined,
         }}
       >
-        {score === undefined
+        {score === null
           ? "--"
           : Number.isInteger(score)
           ? score

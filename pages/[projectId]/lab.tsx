@@ -104,13 +104,15 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
             __type: "ScoredSearchPhraseExecution",
             id: phrase.id,
             phrase: phrase.phrase,
-            score: {
-              sierra: phrase.combinedScore * 100,
-              ..._.mapValues(
-                phrase.allScores as Record<string, number>,
-                (s) => s * 100
-              ),
-            } as any,
+            combinedScore: _.isNumber(phrase.combinedScore)
+              ? phrase.combinedScore * 100
+              : null,
+            allScores: phrase.allScores
+              ? _.mapValues(
+                  phrase.allScores as Record<string, number>,
+                  (s) => s * 100
+                )
+              : null,
             results: phrase.totalResults,
             tookMs: phrase.tookMs,
           };

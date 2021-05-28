@@ -221,8 +221,8 @@ CREATE TABLE "SearchPhraseExecution" (
     "tookMs" INTEGER NOT NULL,
     "error" TEXT,
     "results" JSONB NOT NULL,
-    "combinedScore" DOUBLE PRECISION NOT NULL,
-    "allScores" JSONB NOT NULL,
+    "combinedScore" DOUBLE PRECISION,
+    "allScores" JSONB,
 
     PRIMARY KEY ("id")
 );

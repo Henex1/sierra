@@ -151,15 +151,19 @@ export async function getCombinedJudgements(
     FROM "JudgementSearchConfiguration" AS JSC
     INNER JOIN "JudgementPhrase" AS JP
     ON JP."judgementId" = JSC."judgementId"
-    INNER JOIN "Vote" AS V
+    LEFT JOIN "Vote" AS V
     ON V."judgementPhraseId" = JP."id"
     WHERE JSC."searchConfigurationId" = ${config.id}
     GROUP BY JP."phrase", V."documentId"
     ORDER BY JP."phrase", V."documentId"
   `;
+  // If documentId is NULL< it means there are no judgements for this phrase,
+  // but we still need to return it to get the unjudged results.
   return _.map(_.groupBy(results, "phrase"), (records, phrase) => ({
     phrase,
-    results: records.map(({ documentId, score }) => [documentId, score]),
+    results: records[0]?.documentId
+      ? records.map(({ documentId, score }) => [documentId, score])
+      : [],
   }));
 }
 
@@ -218,14 +222,18 @@ export async function createExecution(
   for (const j of judgements) {
     results.push(await newSearchPhraseExecution(endpoint, tpl, rv, j));
   }
-  const combinedScore = mean(results.map((r) => r.combinedScore));
-  const scorers = results.length
-    ? Object.keys(results[0].allScores as Record<string, unknown>)
-    : [];
+  const combinedScore = mean(
+    results.map((r) => r.combinedScore).filter(_.isNumber)
+  );
+  const scorers = Object.keys(results.find((x) => x)?.allScores ?? {}) ?? [];
   const allScores = _.fromPairs(
     scorers.map((scorer) => [
       scorer,
-      mean(results.map((r) => (r.allScores as any)[scorer])),
+      mean(
+        results
+          .map((r) => (r.allScores as Record<string, number> | null)?.[scorer])
+          .filter(_.isNumber)
+      ),
     ])
   );
   const [tookP50, tookP95, tookP99] = percentiles(
@@ -254,16 +262,19 @@ async function newSearchPhraseExecution(
   const iface = getQueryInterface(endpoint);
   const query = await expandQuery(endpoint, tpl, rv, undefined, jp.phrase);
   const queryResult = await iface.executeQuery(query);
-  const allScores = {
-    "ap@5": scorers.ap(
-      queryResult.results.slice(0, 5).map((r) => r.id),
-      jp.results
-    ),
-  };
+  const allScores =
+    jp.results.length > 0
+      ? {
+          "ap@5": scorers.ap(
+            queryResult.results.slice(0, 5).map((r) => r.id),
+            jp.results
+          ),
+        }
+      : null;
   if (process.env.NODE_ENV === "development" && Math.random() < 0.1) {
     queryResult.error = "Randomly injected error (development mode)";
   }
-  const combinedScore = mean(Object.values(allScores));
+  const combinedScore = allScores ? mean(Object.values(allScores)) : null;
   return {
     phrase: jp.phrase,
     tookMs: queryResult.tookMs,
