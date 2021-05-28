@@ -12,7 +12,7 @@ import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import { useStyles } from "../hooks";
 import classNames from "classnames";
-import ScoreBox from "../ScoreBox";
+import PhraseScore from "../PhraseScore";
 import { ScoredSearchPhraseExecution } from "../../../lib/execution/ExposedSearchPhrase";
 
 export interface Props {
@@ -33,7 +33,7 @@ export function Item({ onClick, item, selected }: Props): ReactElement {
       className={classNames(classes.listItem, selected && classes.fade)}
     >
       <ListItemAvatar className={classes.avatarBox}>
-        <ScoreBox score={item.score.sierra} />
+        <PhraseScore score={item.score.sierra} />
       </ListItemAvatar>
       <ListItemText
         primary={

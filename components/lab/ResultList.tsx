@@ -15,7 +15,7 @@ import useSWR from "swr";
 
 import { ExposedSearchPhrase, MockSearchResult } from "../../lib/lab";
 
-import ScoreBox from "./ScoreBox";
+import ResultScore from "./ResultScore";
 import ExplainBlock from "./ExplainBlock";
 import Link from "../common/Link";
 import Scrollable from "../common/Scrollable";
@@ -134,7 +134,7 @@ export default function ResultList({ searchPhrase, onClose }: Props) {
             <Paper key={result.id} className={classes.paper}>
               <Grid container>
                 <Grid item xs={1}>
-                  <ScoreBox score={result.score} />
+                  <ResultScore score={result.score} />
                 </Grid>
                 <Grid item xs={8} className={classes.content}>
                   <Box mb={1} className={classes.withLabel}>
