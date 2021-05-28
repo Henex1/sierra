@@ -12,10 +12,12 @@ import {
   SearchPhraseExecutionResults,
   getExecution,
   getSearchPhraseExecution,
-  getExecutionSearchConfiguration,
   getCombinedJudgementForPhrase,
 } from "../../../lib/execution";
-import { getSearchConfigurationProject } from "../../../lib/searchconfigurations";
+import {
+  getSearchConfigurationProject,
+  getExecutionSearchConfiguration,
+} from "../../../lib/searchconfigurations";
 import {
   getSearchEndpoint,
   getQueryInterface,

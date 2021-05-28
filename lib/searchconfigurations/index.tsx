@@ -2,14 +2,20 @@ import _ from "lodash";
 
 import prisma, {
   Prisma,
+  Execution,
   User,
   Project,
-  SearchConfiguration,
+  SearchConfiguration as PrismaSearchConfiguration,
+  SearchConfigurationTag as PrismaSearchConfigurationTag,
   QueryTemplate,
   RulesetVersion,
   Judgement,
 } from "../prisma";
 import { userCanAccessProject } from "../projects";
+
+export interface SearchConfiguration extends PrismaSearchConfiguration {
+  tags: PrismaSearchConfigurationTag[];
+}
 
 const scSelect = {
   id: true,
@@ -18,7 +24,7 @@ const scSelect = {
 export type ExposedSearchConfiguration = Pick<
   SearchConfiguration,
   keyof typeof scSelect
->;
+> & { tags: string[] };
 
 export function userCanAccessSearchConfiguration(
   user: User,
@@ -36,7 +42,12 @@ export function userCanAccessSearchConfiguration(
 export function formatSearchConfiguration(
   val: SearchConfiguration
 ): ExposedSearchConfiguration {
-  return _.pick(val, _.keys(scSelect)) as ExposedSearchConfiguration;
+  const formatted = (_.pick(
+    val,
+    _.keys(scSelect)
+  ) as unknown) as ExposedSearchConfiguration;
+  formatted.tags = val.tags.map((t) => t.name);
+  return formatted;
 }
 
 export async function getSearchConfiguration(
@@ -47,6 +58,7 @@ export async function getSearchConfiguration(
   // on the associated QueryTemplate.
   const sc = await prisma.searchConfiguration.findFirst({
     where: userCanAccessSearchConfiguration(user, { id }),
+    include: { tags: true },
   });
   return sc;
 }
@@ -57,8 +69,19 @@ export async function getActiveSearchConfiguration(
   const sc = await prisma.searchConfiguration.findFirst({
     where: { queryTemplate: { projectId: project.id } },
     orderBy: [{ updatedAt: "desc" }],
+    include: { tags: true },
   });
   return sc;
+}
+
+export async function getExecutionSearchConfiguration(
+  execution: Execution
+): Promise<SearchConfiguration> {
+  const sc = await prisma.searchConfiguration.findFirst({
+    where: { id: execution.searchConfigurationId },
+    include: { tags: true },
+  });
+  return sc!;
 }
 
 // [Judgement, weight]
@@ -67,7 +90,8 @@ export type WeightedJudgement = [Judgement, number];
 export async function createSearchConfiguration(
   queryTemplate: QueryTemplate,
   rulesets: RulesetVersion[],
-  judgements: WeightedJudgement[]
+  judgements: WeightedJudgement[],
+  tags?: string[]
 ): Promise<SearchConfiguration> {
   const sc = await prisma.searchConfiguration.create({
     data: {
@@ -86,7 +110,15 @@ export async function createSearchConfiguration(
         })),
       },
     },
+    include: { tags: true },
   });
+  if (tags) {
+    await prisma.$transaction(
+      tags.map((tag) =>
+        upsertSearchConfigurationTag(queryTemplate.projectId, sc, tag)
+      )
+    );
+  }
   return sc;
 }
 
@@ -105,4 +137,21 @@ export async function getSearchConfigurationProject(
     },
   });
   return project!;
+}
+
+// Private method which returns an incomplete prisma operation.
+function upsertSearchConfigurationTag(
+  projectId: string,
+  sc: SearchConfiguration,
+  name: string
+) {
+  return prisma.searchConfigurationTag.upsert({
+    where: { projectId_name: { projectId: projectId, name } },
+    update: { searchConfigurationId: sc.id },
+    create: {
+      projectId: projectId,
+      searchConfigurationId: sc.id,
+      name,
+    },
+  });
 }
