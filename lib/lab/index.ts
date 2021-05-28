@@ -5,7 +5,7 @@ export type MockSearchResult = {
   title: string;
   description: string;
   url: string;
-  score: number;
+  score: number | undefined;
   matches: {
     scores: {
       name: string;

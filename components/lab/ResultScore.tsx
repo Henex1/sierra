@@ -4,23 +4,23 @@ import { scaleLinear } from "d3-scale";
 import { useStyles } from "./hooks";
 
 const colorScale = scaleLinear<string, string>()
-  .domain([0, 50, 100])
+  .domain([0, 1, 3])
   .range([colors.red[500], colors.yellow[500], colors.green[500]]);
 
 type Props = {
   score?: number;
 };
 
-export default function ScoreBox({ score = 0 }: Props) {
+export default function ResultScore({ score }: Props) {
   const classes = useStyles();
 
   return (
-    <Tooltip title="Sierra score">
+    <Tooltip title="Combined judgement">
       <Avatar
         variant="rounded"
         className={classes.scoreBoxAvatar}
         style={{
-          background: colorScale(score),
+          background: score !== undefined ? colorScale(score) : undefined,
         }}
       >
         {score === undefined
