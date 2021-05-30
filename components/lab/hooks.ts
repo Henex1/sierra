@@ -11,6 +11,12 @@ export const useStyles = makeStyles((theme) => ({
       borderBottom: "none",
     },
   },
+  errorItem: {
+    opacity: 0.5,
+    pointerEvents: "none",
+    paddingTop: 20,
+    paddingBottom: 20,
+  },
   empty: {
     marginTop: theme.spacing(16),
     marginBottom: theme.spacing(16),

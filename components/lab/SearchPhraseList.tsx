@@ -17,13 +17,16 @@ export default function SearchPhraseList({
   setActivePhrase,
 }: Props) {
   const classes = useStyles();
-  const handleClick = useCallback((item: ExposedSearchPhrase) => {
-    if (activePhrase?.id !== item.id) {
-      setActivePhrase(item);
-    } else {
-      setActivePhrase(null);
-    }
-  }, []);
+  const handleClick = useCallback(
+    (item: ExposedSearchPhrase) => {
+      if (activePhrase?.id !== item.id) {
+        setActivePhrase(item);
+      } else {
+        setActivePhrase(null);
+      }
+    },
+    [activePhrase]
+  );
 
   if (!searchPhrases.length) {
     return (
@@ -41,14 +44,16 @@ export default function SearchPhraseList({
             switch (item.__type) {
               case "FailedSearchPhraseExecution":
                 return <ErrorItem item={item} />;
-              case "ScoredSearchPhraseExecution":
+              case "ScoredSearchPhraseExecution": {
+                const itemStatus = !activePhrase
+                  ? "normal"
+                  : activePhrase.id === item.id
+                  ? "active"
+                  : "inactive";
                 return (
-                  <Item
-                    onClick={handleClick}
-                    item={item}
-                    selected={activePhrase?.id === item.id}
-                  />
+                  <Item onClick={handleClick} item={item} status={itemStatus} />
                 );
+              }
             }
           }
         )}

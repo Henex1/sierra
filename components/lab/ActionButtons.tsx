@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  Fab,
-  Portal,
-  CircularProgress,
-  colors,
-  makeStyles,
-  Theme,
-} from "@material-ui/core";
-import PlayArrowIcon from "@material-ui/icons/PlayArrow";
+import { Fab, Portal, colors, makeStyles, Theme } from "@material-ui/core";
 import SettingsIcon from "@material-ui/icons/Settings";
 import CreateIcon from "@material-ui/icons/Create";
 import classnames from "classnames";
@@ -77,30 +69,6 @@ export default function ActionButtons({
 
   return canRun ? (
     <div>
-      <div
-        className={classnames(
-          classes.fabContainer,
-          classes.containerRight,
-          "mui-fixed"
-        )}
-      >
-        {!open && (
-          <Fab
-            color="primary"
-            variant="extended"
-            onClick={onRun}
-            disabled={!canRun || isRunning}
-          >
-            {isRunning ? (
-              <CircularProgress size={24} className={classes.fabProgress} />
-            ) : (
-              <PlayArrowIcon className={classes.fabIcon} />
-            )}
-
-            {isRunning ? "Running" : "Run now"}
-          </Fab>
-        )}
-      </div>
       <div
         className={classnames(
           classes.fabContainer,

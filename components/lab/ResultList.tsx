@@ -6,7 +6,6 @@ import {
   IconButton,
   Typography,
   Box,
-  ClickAwayListener,
   makeStyles,
 } from "@material-ui/core";
 import { Skeleton } from "@material-ui/lab";
@@ -73,107 +72,103 @@ export default function ResultList({ searchPhrase, onClose }: Props) {
 
   if (!data) {
     return (
-      <ClickAwayListener onClickAway={onClose}>
-        <Box mt={10}>
-          {Array.from(Array(5)).map((item, i) => (
-            <Box key={i} marginLeft={3} my={4}>
-              <Grid container>
-                <Grid item xs={1}>
-                  <Skeleton
-                    animation="wave"
-                    variant="circle"
-                    width={50}
-                    height={50}
-                  />
-                </Grid>
-                <Grid item xs>
-                  <Skeleton animation="wave" variant="text" />
-                  <Skeleton animation="wave" variant="text" />
-                  <Skeleton animation="wave" variant="text" />
-                </Grid>
+      <Box mt={10}>
+        {Array.from(Array(5)).map((item, i) => (
+          <Box key={i} marginLeft={3} my={4}>
+            <Grid container>
+              <Grid item xs={1}>
+                <Skeleton
+                  animation="wave"
+                  variant="circle"
+                  width={50}
+                  height={50}
+                />
               </Grid>
-            </Box>
-          ))}
-        </Box>
-      </ClickAwayListener>
+              <Grid item xs>
+                <Skeleton animation="wave" variant="text" />
+                <Skeleton animation="wave" variant="text" />
+                <Skeleton animation="wave" variant="text" />
+              </Grid>
+            </Grid>
+          </Box>
+        ))}
+      </Box>
     );
   }
 
   return (
-    <ClickAwayListener onClickAway={onClose}>
-      <div className={classes.root}>
-        <Grid
-          container
-          justify="flex-end"
-          alignItems="center"
-          spacing={1}
-          className={classes.actions}
-        >
-          <Grid item>
-            <Button variant="outlined">Ignore</Button>
-          </Grid>
-          <Grid item>
-            <Button variant="outlined">Notes</Button>
-          </Grid>
-          <Grid item>
-            <Button variant="outlined">Explain missing documents</Button>
-          </Grid>
-          <Grid item>
-            <IconButton aria-label="close" onClick={onClose}>
-              <CloseIcon />
-            </IconButton>
-          </Grid>
+    <div className={classes.root}>
+      <Grid
+        container
+        justify="flex-end"
+        alignItems="center"
+        spacing={1}
+        className={classes.actions}
+      >
+        <Grid item>
+          <Button variant="outlined">Ignore</Button>
         </Grid>
-        <Scrollable
-          maxHeight="calc(100vh - 350px)"
-          classes={{
-            root: classes.scrollable,
-          }}
-        >
-          {data.map((result) => (
-            <Paper key={result.id} className={classes.paper}>
-              <Grid container>
-                <Grid item xs={1}>
-                  <ResultScore score={result.score} />
-                </Grid>
-                <Grid item xs={8} className={classes.content}>
-                  <Box mb={1} className={classes.withLabel}>
-                    <Typography
-                      color="textSecondary"
-                      variant="caption"
-                      className={classes.label}
-                    >
-                      Base name
-                    </Typography>
-                    <Typography color="textPrimary" className={classes.title}>
-                      {result.url ? (
-                        <Link href={result.url}>{result.title}</Link>
-                      ) : (
-                        result.title
-                      )}
-                    </Typography>
-                  </Box>
-                  <Box className={classes.withLabel}>
-                    <Typography
-                      color="textSecondary"
-                      variant="caption"
-                      className={classes.label}
-                    >
-                      Short description
-                    </Typography>
-                    <Typography>
-                      {result.description || "No description"}
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={3}>
-                  <ExplainBlock {...result.matches} />
-                </Grid>
+        <Grid item>
+          <Button variant="outlined">Notes</Button>
+        </Grid>
+        <Grid item>
+          <Button variant="outlined">Explain missing documents</Button>
+        </Grid>
+        <Grid item>
+          <IconButton aria-label="close" onClick={onClose}>
+            <CloseIcon />
+          </IconButton>
+        </Grid>
+      </Grid>
+      <Scrollable
+        maxHeight="calc(100vh - 350px)"
+        classes={{
+          root: classes.scrollable,
+        }}
+      >
+        {data.map((result) => (
+          <Paper key={result.id} className={classes.paper}>
+            <Grid container>
+              <Grid item xs={1}>
+                <ResultScore score={result.score} />
               </Grid>
-            </Paper>
-          ))}
-        </Scrollable>
-      </div>
-    </ClickAwayListener>
+              <Grid item xs={8} className={classes.content}>
+                <Box mb={1} className={classes.withLabel}>
+                  <Typography
+                    color="textSecondary"
+                    variant="caption"
+                    className={classes.label}
+                  >
+                    Base name
+                  </Typography>
+                  <Typography color="textPrimary" className={classes.title}>
+                    {result.url ? (
+                      <Link href={result.url}>{result.title}</Link>
+                    ) : (
+                      result.title
+                    )}
+                  </Typography>
+                </Box>
+                <Box className={classes.withLabel}>
+                  <Typography
+                    color="textSecondary"
+                    variant="caption"
+                    className={classes.label}
+                  >
+                    Short description
+                  </Typography>
+                  <Typography>
+                    {result.description || "No description"}
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={3}>
+                <ExplainBlock {...result.matches} />
+              </Grid>
+            </Grid>
+          </Paper>
+        ))}
+      </Scrollable>
+    </div>
   );
 }

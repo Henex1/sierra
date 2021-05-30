@@ -18,10 +18,10 @@ import { ScoredSearchPhraseExecution } from "../../../lib/execution/ExposedSearc
 export interface Props {
   onClick: (item: ScoredSearchPhraseExecution) => void;
   item: ScoredSearchPhraseExecution;
-  selected: boolean;
+  status: "normal" | "active" | "inactive";
 }
 
-export function Item({ onClick, item, selected }: Props): ReactElement {
+export function Item({ onClick, item, status }: Props): ReactElement {
   const classes = useStyles();
   const handleClick = useCallback(() => onClick(item), [onClick, item]);
 
@@ -29,8 +29,11 @@ export function Item({ onClick, item, selected }: Props): ReactElement {
     <ListItem
       button
       onClick={handleClick}
-      selected={selected}
-      className={classNames(classes.listItem, selected && classes.fade)}
+      selected={status === "active"}
+      className={classNames(
+        classes.listItem,
+        status === "inactive" && classes.fade
+      )}
     >
       <ListItemAvatar className={classes.avatarBox}>
         <PhraseScore score={item.combinedScore} />
@@ -57,7 +60,7 @@ export function Item({ onClick, item, selected }: Props): ReactElement {
       />
       <ListItemSecondaryAction>
         <IconButton edge="end" aria-label="Details" onClick={handleClick}>
-          {selected ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+          {status === "active" ? <ChevronLeftIcon /> : <ChevronRightIcon />}
         </IconButton>
       </ListItemSecondaryAction>
     </ListItem>
