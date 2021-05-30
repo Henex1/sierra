@@ -16,6 +16,7 @@ import { userCanAccessSearchConfiguration } from "../searchconfigurations";
 import { SortOptions, ShowOptions } from "../lab";
 import * as scorers from "../scorers/algorithms";
 import { percentiles } from "../math";
+import { isNotEmpty } from "../../utils/array";
 
 export type { Execution };
 
@@ -212,7 +213,7 @@ export async function getCombinedJudgementForPhrase(
   };
 }
 
-function mean(input: number[]): number {
+function mean(input: [number, ...number[]]): number {
   return input.reduce((a, b) => a + b) / input.length;
 }
 
@@ -233,19 +234,23 @@ export async function createExecution(
   for (const j of judgements) {
     results.push(await newSearchPhraseExecution(endpoint, tpl, rv, j));
   }
-  const combinedScore = mean(
-    results.map((r) => r.combinedScore).filter(_.isNumber)
-  );
+
+  const combinedNumbers = results
+    .map((r) => r.combinedScore)
+    .filter(_.isNumber);
+  const combinedScore = isNotEmpty(combinedNumbers) ? mean(combinedNumbers) : 0;
   const scorers = Object.keys(results.find((x) => x)?.allScores ?? {}) ?? [];
+
   const allScores = _.fromPairs(
-    scorers.map((scorer) => [
-      scorer,
-      mean(
-        results
-          .map((r) => (r.allScores as Record<string, number> | null)?.[scorer])
-          .filter(_.isNumber)
-      ),
-    ])
+    scorers.map((scorer) => {
+      const allScoresNumbers = results
+        .map((r) => (r.allScores as Record<string, number> | null)?.[scorer])
+        .filter(_.isNumber);
+      return [
+        scorer,
+        isNotEmpty(allScoresNumbers) ? mean(allScoresNumbers) : 0,
+      ];
+    })
   );
   const [tookP50, tookP95, tookP99] = percentiles(
     results,
@@ -285,7 +290,11 @@ async function newSearchPhraseExecution(
   if (process.env.NODE_ENV === "development" && Math.random() < 0.1) {
     queryResult.error = "Randomly injected error (development mode)";
   }
-  const combinedScore = allScores ? mean(Object.values(allScores)) : null;
+  const allScoresNumbers = allScores ? Object.values(allScores) : null;
+  const combinedScore =
+    allScoresNumbers && isNotEmpty(allScoresNumbers)
+      ? mean(allScoresNumbers)
+      : null;
   return {
     phrase: jp.phrase,
     tookMs: queryResult.tookMs,
