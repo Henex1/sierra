@@ -22,7 +22,7 @@ services:
       - 9200:9200
 
   query_expander:
-    image: registry.gitlab.com/eyfo/sierra-query-expander:2021-04-13-1054-86bc326d4
+    image: registry.gitlab.com/project-sierra/sierra-query-expander:2021-05-12-1452-6b8990a6a
     ports:
       - 8080:8080
 
