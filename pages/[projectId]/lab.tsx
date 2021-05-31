@@ -86,7 +86,7 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
     : 0;
   const displayOptions = {
     show: (context.query.show as ShowOptions) || "all",
-    sort: (context.query.sort as SortOptions) || "search-phrase-asc",
+    sort: (context.query.sort as SortOptions) || "score-desc",
   };
   const searchPhrases = execution
     ? await getSearchPhrases(execution, {
