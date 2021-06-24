@@ -1,19 +1,16 @@
 import * as React from "react";
 import classnames from "classnames";
 import { debounce } from "lodash";
-import JSONTree from "react-json-tree";
 
 import {
   Box,
   Button,
   Checkbox,
-  Grid,
   IconButton,
   Input,
   InputBase,
   ListItemText,
   MenuItem,
-  Modal,
   Paper,
   Popover,
   Select,
@@ -22,7 +19,6 @@ import {
   Typography,
 } from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
-import FullScreenIcon from "@material-ui/icons/Fullscreen";
 import SettingsIcon from "@material-ui/icons/Settings";
 import { makeStyles } from "@material-ui/core/styles";
 import { Alert } from "@material-ui/lab";
@@ -38,6 +34,10 @@ import {
 import { apiRequest } from "../../lib/api";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
+import { getSearchEndpoint } from "../../lib/searchendpoints";
+import { getProject } from "../../lib/projects";
+import { uniq } from "lodash";
+import { ResultCard } from "../../components/lab/ResultCard";
 
 const useStyles = makeStyles((theme) => ({
   boxWrapper: {
@@ -87,7 +87,6 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: "#fff",
   },
   searchResult: {
-    height: 300,
     width: 600,
     padding: 15,
     backgroundColor: "#FFF",
@@ -115,37 +114,42 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const jsonTheme = {
-  scheme: "bright",
-  author: "chris kempson (http://chriskempson.com)",
-  base00: "#000000",
-  base01: "#303030",
-  base02: "#505050",
-  base03: "#b0b0b0",
-  base04: "#d0d0d0",
-  base05: "#e0e0e0",
-  base06: "#f5f5f5",
-  base07: "#ffffff",
-  base08: "#fb0120",
-  base09: "#fc6d24",
-  base0A: "#fda331",
-  base0B: "#a1c659",
-  base0C: "#76c7b7",
-  base0D: "#6fb3d2",
-  base0E: "#d381c3",
-  base0F: "#be643c",
-};
-
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const rulesets = await listRulesets(context.user);
-  return { props: { rulesets: rulesets.map(formatRuleset) } };
+  const rulesets = await listRulesets(context.user).then((rs) =>
+    rs.map(formatRuleset)
+  );
+
+  const getDisplayFields = async (id: string) => {
+    return await getProject(context.user, id).then((p) =>
+      p
+        ? getSearchEndpoint(context.user, p.searchEndpointId).then(
+            (v) => v?.displayFields ?? []
+          )
+        : []
+    );
+  };
+
+  const projectIds = uniq(rulesets.map((v) => v.projectId));
+  const fetchFields = await Promise.all(
+    projectIds.map(async (id) => [id, await getDisplayFields(id)] as const)
+  );
+  const displayFields = fetchFields.reduce(
+    (acc: Record<string, string[]>, [id, v]) => {
+      acc[id] = v;
+      return acc;
+    },
+    {}
+  );
+
+  return { props: { rulesets, displayFields } };
 });
 
 type Props = {
   rulesets: ExposedRuleset[];
+  displayFields: Record<string, string[]>;
 };
 
-export default function Testbed({ rulesets }: Props) {
+export default function Testbed({ rulesets, displayFields }: Props) {
   const { project } = useActiveProject();
   const classes = useStyles();
   const [
@@ -166,11 +170,9 @@ export default function Testbed({ rulesets }: Props) {
   const [searchResults, setSearchResults] = React.useState<any[]>([]);
   const [totalResults, setTotalResults] = React.useState("0");
   const [error, setError] = React.useState<string | null>(null);
-  const [expandedResult, setExpandedResult] = React.useState<any | null>(null);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = React.useState(
     -1
   );
-  const resultModalOpen = Boolean(expandedResult);
   const showAutocomplete =
     searchQuery && queryInFocus && suggestions.length > 0;
   const showErrorSnackbar = Boolean(error);
@@ -317,48 +319,10 @@ export default function Testbed({ rulesets }: Props) {
 
   const renderSearchResult = (result: any) => (
     <Paper key={result._id} className={classes.searchResult}>
-      <IconButton
-        onClick={() => setExpandedResult(result)}
-        style={{ position: "absolute", top: 15, right: 15 }}
-      >
-        <FullScreenIcon />
-      </IconButton>
-      <Grid container>
-        <Grid item xs={4}>
-          <div>
-            <Typography color="textSecondary">Base name</Typography>
-            <Typography>
-              {result?._source?.base_name || result?._source?.title}
-            </Typography>
-          </div>
-        </Grid>
-        <Grid item xs={4}>
-          <div>
-            <Typography color="textSecondary">Base Code</Typography>
-            <Typography>{result?._source?.base_code}</Typography>
-          </div>
-        </Grid>
-        <Grid item xs={4}>
-          <div>
-            <Typography color="textSecondary">Score</Typography>
-            <Typography>{result?._score}</Typography>
-          </div>
-        </Grid>
-        <Grid item xs={12} style={{ marginTop: 15 }}>
-          <div className={classes.searchResultText}>
-            <Typography color="textSecondary">Short Description</Typography>
-            <Typography>
-              {result?._source?.short_description || "No description"}
-            </Typography>
-          </div>
-        </Grid>
-        <Grid item xs={8}>
-          <div>
-            <Typography color="textSecondary">Url</Typography>
-            <Typography>{result?._source?.url}</Typography>
-          </div>
-        </Grid>
-      </Grid>
+      <ResultCard
+        displayFields={project ? displayFields[project.id] ?? [] : []}
+        result={result?._source}
+      />
     </Paper>
   );
 
@@ -440,7 +404,6 @@ export default function Testbed({ rulesets }: Props) {
                 }}
                 multiple
                 onChange={(ev) => {
-                  console.log(ev);
                   setSelectedRulesetId(() => [
                     ...(ev.target.value as string[]),
                   ]);
@@ -473,22 +436,6 @@ export default function Testbed({ rulesets }: Props) {
         </Box>
       </Box>
       <Box display="flex" flexDirection="column" alignItems="center">
-        <Modal
-          open={resultModalOpen}
-          onClose={() => setExpandedResult(null)}
-          disableEnforceFocus
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Paper
-            style={{ height: 500, width: 500, padding: 10, overflow: "scroll" }}
-          >
-            <JSONTree data={expandedResult} theme={jsonTheme} />
-          </Paper>
-        </Modal>
         <Typography>Total results {totalResults}</Typography>
         {searchResults.map((result) => renderSearchResult(result))}
       </Box>

@@ -40,6 +40,7 @@ import {
   ExposedQueryTemplate,
   formatQueryTemplate,
 } from "../../lib/querytemplates";
+import { getSearchEndpoint } from "../../lib/searchendpoints";
 import NoExistingExcution from "components/lab/NoExistingExcution";
 
 const useStyles = makeStyles((theme) => ({
@@ -70,6 +71,7 @@ type Props = {
     sort: SortOptions;
   };
   page: number;
+  displayFields: Array<string>;
 };
 
 export const getServerSideProps = authenticatedPage<Props>(async (context) => {
@@ -140,6 +142,11 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
       }
     : null;
 
+  const searchEndpoint = await getSearchEndpoint(
+    context.user,
+    project.searchEndpointId!
+  );
+
   return {
     props: {
       searchConfiguration,
@@ -155,6 +162,7 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
         : undefined,
       displayOptions,
       page: page + 1,
+      displayFields: searchEndpoint?.displayFields || [],
     },
   };
 });
@@ -164,6 +172,7 @@ export default function Lab({
   searchPhrases,
   searchPhrasesTotal,
   rulesets,
+  displayFields,
   timings,
   ...props
 }: Props) {
@@ -284,6 +293,7 @@ export default function Lab({
                 <ResultList
                   searchPhrase={searchPhrase}
                   onClose={handleModalClose}
+                  displayFields={displayFields}
                 />
               </Grid>
             )}

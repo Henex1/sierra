@@ -1,23 +1,13 @@
 import React from "react";
-import {
-  Grid,
-  Paper,
-  Button,
-  IconButton,
-  Typography,
-  Box,
-  makeStyles,
-} from "@material-ui/core";
+import { Grid, Paper, Button, Box, makeStyles } from "@material-ui/core";
 import { Skeleton } from "@material-ui/lab";
-import CloseIcon from "@material-ui/icons/Close";
 import useSWR from "swr";
-
 import { ExposedSearchPhrase, MockSearchResult } from "../../lib/lab";
 
 import ResultScore from "./ResultScore";
 import ExplainBlock from "./ExplainBlock";
-import Link from "../common/Link";
 import Scrollable from "../common/Scrollable";
+import { ResultCard } from "./ResultCard";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -39,33 +29,16 @@ const useStyles = makeStyles((theme) => ({
   content: {
     paddingRight: theme.spacing(1),
   },
-  withLabel: {
-    "&:hover $label": {
-      display: "block",
-    },
-  },
-  label: {
-    display: "none",
-  },
-  tableRow: {
-    verticalAlign: "top",
-  },
-  tableCell: {
-    padding: theme.spacing(2, 1),
-  },
-  title: {
-    fontWeight: 500,
-  },
 }));
 
 type Props = {
   searchPhrase: ExposedSearchPhrase;
   onClose: () => void;
+  displayFields: string[];
 };
 
-export default function ResultList({ searchPhrase, onClose }: Props) {
+export default function ResultList({ displayFields, searchPhrase }: Props) {
   const classes = useStyles();
-
   const { data } = useSWR<MockSearchResult[]>(
     `/api/lab/searchResult?id=${searchPhrase.id}`
   );
@@ -114,61 +87,29 @@ export default function ResultList({ searchPhrase, onClose }: Props) {
         <Grid item>
           <Button variant="outlined">Explain missing documents</Button>
         </Grid>
-        <Grid item>
-          <IconButton aria-label="close" onClick={onClose}>
-            <CloseIcon />
-          </IconButton>
-        </Grid>
+        <Scrollable
+          maxHeight="calc(100vh - 350px)"
+          classes={{
+            root: classes.scrollable,
+          }}
+        >
+          {data.map((result) => (
+            <Paper key={result.id} className={classes.paper}>
+              <Grid container>
+                <Grid item xs={1}>
+                  <ResultScore score={result.score} />
+                </Grid>
+                <Grid item xs={8} className={classes.content}>
+                  <ResultCard displayFields={displayFields} result={result} />
+                </Grid>
+                <Grid item xs={3}>
+                  <ExplainBlock {...result.matches} />
+                </Grid>
+              </Grid>
+            </Paper>
+          ))}
+        </Scrollable>
       </Grid>
-      <Scrollable
-        maxHeight="calc(100vh - 350px)"
-        classes={{
-          root: classes.scrollable,
-        }}
-      >
-        {data.map((result) => (
-          <Paper key={result.id} className={classes.paper}>
-            <Grid container>
-              <Grid item xs={1}>
-                <ResultScore score={result.score} />
-              </Grid>
-              <Grid item xs={8} className={classes.content}>
-                <Box mb={1} className={classes.withLabel}>
-                  <Typography
-                    color="textSecondary"
-                    variant="caption"
-                    className={classes.label}
-                  >
-                    Base name
-                  </Typography>
-                  <Typography color="textPrimary" className={classes.title}>
-                    {result.url ? (
-                      <Link href={result.url}>{result.title}</Link>
-                    ) : (
-                      result.title
-                    )}
-                  </Typography>
-                </Box>
-                <Box className={classes.withLabel}>
-                  <Typography
-                    color="textSecondary"
-                    variant="caption"
-                    className={classes.label}
-                  >
-                    Short description
-                  </Typography>
-                  <Typography>
-                    {result.description || "No description"}
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={3}>
-                <ExplainBlock {...result.matches} />
-              </Grid>
-            </Grid>
-          </Paper>
-        ))}
-      </Scrollable>
     </div>
   );
 }

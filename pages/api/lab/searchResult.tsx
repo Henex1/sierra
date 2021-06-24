@@ -80,16 +80,32 @@ export default apiHandler(
 
     const iface = getQueryInterface(se);
     const docs = await iface.getDocumentsByID(docIds);
-    const byId = _.keyBy(docs, "_id");
+    const byId = _.keyBy(docs, se.resultId);
     const results = speResults.map((r) => ({
       id: r.id,
-      title: byId[r.id]?._source?.name ?? "Unavailable",
-      description: byId[r.id]?._source?.short_description ?? "Unavailable",
+      ...getValueByDisplayFields(byId[r.id]?._source, se.displayFields),
       score: scores.results.find((s) => s[0] === r.id)?.[1],
-      url: "https://example.com/products/0",
       matches: mockExplanation(r.explanation),
     }));
 
     return res.status(200).json(results);
   }
 );
+
+export type FieldObject = { [key: string]: string | number | boolean };
+
+function getValueByDisplayFields(
+  result: FieldObject,
+  displayFields: string[]
+): FieldObject {
+  const fields: FieldObject = {};
+  for (const field of displayFields) {
+    const prefixField = field.split(":");
+    if (prefixField.length > 1) {
+      fields[prefixField[1]] = result[prefixField[1]];
+    } else {
+      fields[field] = result[field];
+    }
+  }
+  return fields;
+}
