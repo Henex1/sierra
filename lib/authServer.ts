@@ -77,15 +77,46 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
+async function initAuth(req: IncomingMessage): Promise<UserSession | null> {
+  let session = (await getSession({ req })) as UserSession | null;
+
+  if (!session) {
+    console.log("NO SESSION - attempting to retrieve API Key");
+    // Attempt API Key authentication if there's no user session.
+    const apikey = String(req.headers["authorization"]);
+    if (!apikey) {
+      return null;
+    }
+    const apikeyObject = await prisma.apiKey.findFirst({
+      where: { apikey: apikey },
+    });
+    if (!apikeyObject) {
+      console.log("API Key not found: " + apikey);
+      return null;
+    }
+    const user = {
+      id: apikeyObject.userId,
+    };
+    session = {
+      user: user as User,
+    };
+  }
+
+  return session;
+}
+
 export async function getUser(req: IncomingMessage): Promise<UserSession> {
-  const session = (await getSession({ req })) as UserSession | null;
+  const session = await initAuth(req);
+
   if (!session) {
     return {};
   }
+
   const userId = session.user?.id;
   if (!userId) {
     return { session };
   }
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -95,6 +126,7 @@ export async function getUser(req: IncomingMessage): Promise<UserSession> {
   }
   if (!user.activeOrgId) {
     // We have to have a default Org or else we can't show any resources.
+    // Currently there's no way in UI to set user.activeOrgId, but it is required for apikey authentication to work
     user.activeOrgId = session.orgs?.[0]?.id ?? null;
     if (!user.activeOrgId) {
       throw new Error("User has no Orgs!");
