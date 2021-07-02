@@ -6,8 +6,15 @@ import { Card, CardContent, Grid, makeStyles } from "@material-ui/core";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 import UserProfileAvatar, { UserInfo } from "components/profile/UserAvatar";
+import ApiKeys from "components/profile/ApiKeys";
 import { useCallback, useEffect, useState } from "react";
 import { useSession } from "components/Session";
+import { authenticatedPage } from "../../lib/pageHelpers";
+import {
+  ExposedApiKey,
+  formatApiKey,
+  listApiKeys,
+} from "../../lib/users/apikey";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -30,7 +37,16 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Profile() {
+export const getServerSideProps = authenticatedPage(async (context) => {
+  const apikeys = (await listApiKeys(context.user)).map(formatApiKey);
+  return { props: { apikeys } };
+});
+
+type Props = {
+  apikeys: ExposedApiKey[];
+};
+
+export default function Profile({ apikeys }: Props) {
   const classes = useStyles();
 
   const { session } = useSession();
@@ -95,6 +111,13 @@ export default function Profile() {
                   <Typography component="h6">{userInfo.email}</Typography>
                 </Grid>
               </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} className={classes.profileSection}>
+          <Card className={classes.cardRoot}>
+            <CardContent>
+              <ApiKeys list={apikeys} />
             </CardContent>
           </Card>
         </Grid>
