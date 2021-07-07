@@ -11,6 +11,7 @@ import Box from "@material-ui/core/Box";
 import Divider from "@material-ui/core/Divider";
 import Typography from "@material-ui/core/Typography";
 import SaveIcon from "@material-ui/icons/Save";
+import FlashOnIcon from "@material-ui/icons/FlashOn";
 import DeleteIcon from "@material-ui/icons/Delete";
 
 import { ExposedSearchEndpoint } from "../../lib/searchendpoints";
@@ -18,6 +19,13 @@ import { SearchEndpointCredentials } from "../../lib/schema";
 
 import Whitelist from "./Whitelist";
 import DisplayFields from "./DisplayFields";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@material-ui/core";
 
 export const searchEndpointTypes = [
   {
@@ -54,7 +62,9 @@ export const searchEndpointTypes = [
 
 type FormValues = ExposedSearchEndpoint & {
   credentials?: SearchEndpointCredentials | null;
+  testConnection?: boolean | null;
 };
+
 export type FormProps = BaseFormProps<FormValues> & {
   formId?: string;
   onDelete?: () => void;
@@ -72,14 +82,22 @@ const useStyles = makeStyles(() => ({
   saveButton: {
     float: "right",
   },
+  testButton: {
+    float: "left",
+  },
 }));
 
 export default function SearchEndpointForm({
   formId,
   onDelete,
+  testResultModalOpen,
+  connectionTestResult,
+  setTestResultModalOpen,
   hideActions,
   ...rest
 }: FormProps) {
+  const [testConnection, setTestConnection] = React.useState(false);
+
   const classes = useStyles();
   const isNew = rest.initialValues?.id === undefined;
   if (rest.initialValues) {
@@ -110,7 +128,17 @@ export default function SearchEndpointForm({
     } else {
       delete payload.credentials;
     }
+    if (testConnection) {
+      payload.testConnection = true;
+    }
     return rest.onSubmit(payload, form, callback);
+  }
+
+  function handleClose(values: FormValues) {
+    setTestResultModalOpen(false);
+    if (isNew) {
+      (values.credentials as any).change = true;
+    }
   }
 
   return (
@@ -119,6 +147,32 @@ export default function SearchEndpointForm({
       onSubmit={handleSubmit}
       render={({ handleSubmit, form, submitting, values }) => (
         <form id={formId} onSubmit={handleSubmit}>
+          <Dialog
+            open={testResultModalOpen}
+            onClose={() => {
+              handleClose(values);
+            }}
+          >
+            <DialogTitle id="simple-dialog-title">Test Connection</DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                Connection
+                {connectionTestResult.success ? " successful." : " failed."}
+                {connectionTestResult.success ||
+                  " Error Message: " + connectionTestResult.message}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() => {
+                  handleClose(values);
+                }}
+                color="primary"
+              >
+                OK
+              </Button>
+            </DialogActions>
+          </Dialog>
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <TextField
@@ -280,6 +334,17 @@ export default function SearchEndpointForm({
                     Delete
                   </Button>
                 )}
+                <Button
+                  type="submit"
+                  className={classes.testButton}
+                  disabled={submitting}
+                  variant="contained"
+                  color="primary"
+                  onClick={() => setTestConnection(true)}
+                  startIcon={<FlashOnIcon />}
+                >
+                  Test Connection
+                </Button>
               </Grid>
             )}
           </Grid>

@@ -20,14 +20,34 @@ const useStyles = makeStyles(() => ({
 }));
 
 export default function CreateSearchEndpoint() {
+  const [testResultModalOpen, setTestResultModalOpen] = React.useState(false);
+  const [connectionTestResult, setConnectionTestResult] = React.useState(false);
   const classes = useStyles();
   const router = useRouter();
 
   async function onSubmit(values: ExposedSearchEndpoint) {
-    await create(values);
-    router.push("/searchendpoints");
-    // Keep the form stuck as pending
-    return new Promise(() => {});
+    if (values.testConnection) {
+      const newSearchEndpoint = {
+        ...values,
+        whitelist: values.whitelist ? values.whitelist : [],
+        displayFields: values.displayFields ? values.displayFields : [],
+        description: values.description ? values.description : "",
+      };
+
+      const result = await apiRequest(
+        `/api/searchendpoints/connection`,
+        newSearchEndpoint,
+        { method: "POST" }
+      );
+      setConnectionTestResult(result);
+      setTestResultModalOpen(true);
+      return false;
+    } else {
+      await create(values);
+      router.push("/searchendpoints");
+      // Keep the form stuck as pending
+      return new Promise(() => {});
+    }
   }
 
   return (
@@ -42,7 +62,12 @@ export default function CreateSearchEndpoint() {
         <Box mt={2} mb={4}>
           <Divider />
         </Box>
-        <Form onSubmit={onSubmit} />
+        <Form
+          onSubmit={onSubmit}
+          testResultModalOpen={testResultModalOpen}
+          connectionTestResult={connectionTestResult}
+          setTestResultModalOpen={setTestResultModalOpen}
+        />
       </Container>
     </div>
   );

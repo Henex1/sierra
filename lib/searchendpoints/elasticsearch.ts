@@ -3,7 +3,7 @@ import fetch, { RequestInit } from "node-fetch";
 import { SearchEndpoint } from "../prisma";
 import { ElasticsearchInfoSchema, SearchEndpointCredentials } from "../schema";
 import { ExpandedQuery } from "./queryexpander";
-import { getSearchEndpointCredentials } from "./index";
+import { getSearchEndpointCredentials, TestResult } from "./index";
 import {
   FieldsCapabilitiesFilters,
   QueryInterface,
@@ -73,6 +73,32 @@ export class ElasticsearchInterface implements QueryInterface {
     });
 
     return await response.json();
+  }
+
+  async testConnection(info: any): Promise<TestResult> {
+    const index = info.index;
+    const result = <TestResult>{
+      success: true,
+    };
+
+    try {
+      const query = JSON.stringify({
+        size: 0,
+        query: {
+          match_all: {},
+        },
+      });
+      const queryResult = await this.rawQuery(index + "/_search", query);
+      if (queryResult.error) {
+        result.success = false;
+        result.message = queryResult.error.root_cause[0].reason;
+      }
+    } catch (e) {
+      console.log(e);
+      result.success = false;
+      result.message = e.message;
+    }
+    return result;
   }
 
   async getFields(filters?: FieldsCapabilitiesFilters): Promise<string[]> {

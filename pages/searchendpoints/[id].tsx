@@ -37,19 +37,34 @@ const useStyles = makeStyles(() => ({
 }));
 
 export default function EditSearchEndpoint({ searchEndpoint }: Props) {
+  const [testResultModalOpen, setTestResultModalOpen] = React.useState(false);
+  const [connectionTestResult, setConnectionTestResult] = React.useState({});
+
   const classes = useStyles();
   const router = useRouter();
 
   async function onSubmit(values: ExposedSearchEndpoint) {
-    const { id, orgId, type, ...editableFields } = values;
-    await apiRequest(
-      `/api/searchendpoints/${searchEndpoint.id}`,
-      editableFields,
-      { method: "PATCH" }
-    );
-    router.push("/searchendpoints");
-    // Keep the form stuck as pending
-    return new Promise(() => {});
+    if (values.testConnection) {
+      const { id, ...editableFields } = values;
+      const result = await apiRequest(
+        `/api/searchendpoints/connection`,
+        editableFields,
+        { method: "POST" }
+      );
+      setConnectionTestResult(result);
+      setTestResultModalOpen(true);
+      return false;
+    } else {
+      const { id, orgId, type, ...editableFields } = values;
+      await apiRequest(
+        `/api/searchendpoints/${searchEndpoint.id}`,
+        editableFields,
+        { method: "PATCH" }
+      );
+      router.push("/searchendpoints");
+      // Keep the form stuck as pending
+      return new Promise(() => {});
+    }
   }
 
   async function onDelete() {
@@ -78,6 +93,9 @@ export default function EditSearchEndpoint({ searchEndpoint }: Props) {
         <Form
           onSubmit={onSubmit}
           onDelete={onDelete}
+          testResultModalOpen={testResultModalOpen}
+          connectionTestResult={connectionTestResult}
+          setTestResultModalOpen={setTestResultModalOpen}
           initialValues={searchEndpoint}
         />
       </Container>
