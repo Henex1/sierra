@@ -34,7 +34,9 @@ const selectKeys = {
 export type ExposedSearchEndpoint = Pick<
   SearchEndpoint,
   keyof typeof selectKeys
->;
+> & {
+  testConnection?: boolean | null;
+};
 
 export function userCanAccessSearchEndpoint(
   user: User,
@@ -113,6 +115,26 @@ export const createSearchEndpointSchema = SearchEndpointSchema.omit({
 });
 
 export type CreateSearchEndpoint = z.infer<typeof createSearchEndpointSchema>;
+
+export async function testSearchEndpointConnection(
+  user: User,
+  input: any
+): Promise<TestResult> {
+  if ("orgId" in input) {
+    const isValidOrg = await prisma.orgUser.findUnique({
+      where: {
+        userId_orgId: { userId: user.id, orgId: input.orgId! },
+      },
+    });
+    if (!isValidOrg) {
+      return Promise.reject(new HttpError(400, { error: "invalid org" }));
+    }
+  }
+
+  const q = getQueryInterface(input);
+  const result = q.testConnection(input.info);
+  return result;
+}
 
 export async function createSearchEndpoint(
   user: User,
@@ -225,11 +247,17 @@ export type QueryResult = {
   error?: string;
 };
 
+export type TestResult = {
+  success: boolean;
+  message?: string;
+};
+
 export interface QueryInterface {
   getFields(filters?: FieldsCapabilitiesFilters): Promise<string[]>;
   getFieldValues(fieldName: string, prefix?: string): Promise<string[]>;
   getDocumentsByID(ids: string[]): Promise<ElasticsearchResult[]>;
   executeQuery(query: ExpandedQuery): Promise<QueryResult>;
+  testConnection(info: any): Promise<TestResult>;
   // Issue a raw query to the _search endpoint in elasticsearch. This method is
   // only used for the testbed, and should be removed.
   handleQueryDEPRECATED<ResultType = any>(query: string): Promise<ResultType>;
@@ -248,7 +276,7 @@ export function getQueryInterface(
   }
 }
 
-function encryptCredentials(
+export function encryptCredentials(
   creds: SearchEndpointCredentials | null
 ): string | null {
   if (!creds) return null;
