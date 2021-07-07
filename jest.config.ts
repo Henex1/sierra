@@ -177,10 +177,12 @@ export default {
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
-  // transformIgnorePatterns: [
-  //   "/node_modules/",
-  //   "\\.pnp\\.[^\\/]+$"
-  // ],
+  transformIgnorePatterns: [
+    // We want babel to transpile d3-* & internmap packages because they use es6 syntax
+    // related issue https://gitlab.com/project-sierra/sierra/-/merge_requests/113
+    "/node_modules/(?!((d3-[^\\/]+|internmap)/src/[^.]+.js$))",
+    "\\.pnp\\.[^\\/]+$",
+  ],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
   // unmockedModulePathPatterns: undefined,
