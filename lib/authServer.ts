@@ -3,7 +3,7 @@ import { Session, NextAuthOptions } from "next-auth";
 import Providers from "next-auth/providers";
 import Adapters from "next-auth/adapters";
 import { getSession } from "next-auth/client";
-
+import { isExpired } from "./users/apikey";
 import prisma, { User, UserOrgRole } from "./prisma";
 import { requireEnv } from "./env";
 import { formatProject, listProjects, ExposedProject } from "./projects";
@@ -92,6 +92,10 @@ async function initAuth(req: IncomingMessage): Promise<UserSession | null> {
     });
     if (!apikeyObject) {
       console.log("API Key not found: " + apikey);
+      return null;
+    }
+    if (isExpired(apikeyObject)) {
+      console.log("API Key has expired");
       return null;
     }
     const user = {
