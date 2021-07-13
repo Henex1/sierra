@@ -1,6 +1,7 @@
 import { Grid, makeStyles } from "@material-ui/core";
-import React from "react";
+import React, { useState } from "react";
 import Button from "@material-ui/core/Button";
+import Tooltip from "@material-ui/core/Tooltip";
 import Typography from "@material-ui/core/Typography";
 import { apiRequest } from "../../lib/api";
 import { useRouter } from "next/router";
@@ -14,6 +15,12 @@ import TableContainer from "@material-ui/core/TableContainer";
 import Paper from "@material-ui/core/Paper";
 import Table from "@material-ui/core/Table";
 import TableHead from "@material-ui/core/TableHead";
+import TextField from "@material-ui/core/TextField";
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
 
 const useStyles = makeStyles(() => ({
   apiKey: {
@@ -44,11 +51,25 @@ type Props = {
 };
 
 const ApiKeys = ({ list }: Props) => {
+  const [aliasError, setAliasError] = useState(false);
+  const [alias, setAlias] = useState("");
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const classes = useStyles();
   const router = useRouter();
 
+  async function handleDialogOpen() {
+    setDialogOpen(true);
+  }
+
   async function handleAddApiKey() {
-    await apiRequest(`/api/users/apikey`, {}, { method: "POST" });
+    if (alias == null || alias == "") {
+      setAliasError(true);
+      return;
+    }
+    await apiRequest(`/api/users/apikey`, { alias: alias }, { method: "POST" });
+    setDialogOpen(false);
+    setAlias("");
     router.replace(router.asPath);
   }
 
@@ -60,66 +81,131 @@ const ApiKeys = ({ list }: Props) => {
 
   function handleClick(apiKey: string) {
     navigator.clipboard.writeText(apiKey);
+    setTooltipOpen(true);
+    setTimeout(handleTooltipClose, 600);
+  }
+
+  function handleTooltipClose() {
+    setTooltipOpen(false);
+  }
+
+  function handleDialogClose() {
+    setDialogOpen(false);
+  }
+
+  function handleAliasFieldChange(e: any) {
+    setAliasError(false);
+    setAlias(e.target.value);
   }
 
   return (
-    <Grid container spacing={3}>
-      <Grid item xs={12}>
-        <Typography gutterBottom variant="h5" component="h2">
-          API Keys
-        </Typography>
-      </Grid>
-      <Grid item xs={12}>
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>API Key</TableCell>
-                <TableCell></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {list.map((apikey) => (
-                <TableRow key={apikey.apikey}>
-                  <TableCell>
-                    <div
-                      className={classes.apiKey}
-                      onClick={() => handleClick(apikey.apikey)}
-                    >
-                      <span>{apikey.apikey}</span>{" "}
-                      <i>
-                        <AssignmentTurnedInOutlinedIcon />
-                      </i>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      href="#"
-                      onClick={(event: any) =>
-                        handleDelete(apikey.apikey, event)
-                      }
-                    >
-                      DELETE
-                    </Link>
-                  </TableCell>
+    <div>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Typography gutterBottom variant="h5" component="h2">
+            API Keys
+          </Typography>
+        </Grid>
+        <Grid item xs={12}>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>API Key</TableCell>
+                  <TableCell>Alias</TableCell>
+                  <TableCell>Expires</TableCell>
+                  <TableCell></TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {list.map((apikey) => (
+                  <TableRow key={apikey.apikey}>
+                    <TableCell>
+                      <div
+                        className={classes.apiKey}
+                        onClick={() => handleClick(apikey.apikey)}
+                      >
+                        <span>{apikey.apikey}</span>{" "}
+                        <i>
+                          <Tooltip
+                            PopperProps={{
+                              disablePortal: true,
+                            }}
+                            onClose={handleTooltipClose}
+                            open={tooltipOpen}
+                            disableFocusListener
+                            disableHoverListener
+                            disableTouchListener
+                            title="Copied to clipboard"
+                          >
+                            <AssignmentTurnedInOutlinedIcon />
+                          </Tooltip>
+                        </i>
+                      </div>
+                    </TableCell>
+                    <TableCell>{apikey.alias}</TableCell>
+                    <TableCell>{apikey.expirationDate}</TableCell>
+                    <TableCell>
+                      <Link
+                        href="#"
+                        onClick={(event: any) =>
+                          handleDelete(apikey.apikey, event)
+                        }
+                      >
+                        DELETE
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
+        <Grid item xs={12}>
+          <Button
+            type="submit"
+            disabled={false}
+            variant="contained"
+            color="primary"
+            onClick={handleDialogOpen}
+          >
+            Create API Key
+          </Button>
+        </Grid>
       </Grid>
-      <Grid item xs={12}>
-        <Button
-          type="submit"
-          disabled={false}
-          variant="contained"
-          color="primary"
-          onClick={handleAddApiKey}
-        >
-          Create API Key
-        </Button>
-      </Grid>
-    </Grid>
+      <Dialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">Create API Key</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Please provide an alias to remember what this API key is for
+          </DialogContentText>
+          <TextField
+            error={aliasError}
+            required
+            autoFocus
+            margin="dense"
+            id="name"
+            label="Alias"
+            type="text"
+            fullWidth
+            value={alias}
+            onChange={handleAliasFieldChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleAddApiKey} color="primary">
+            CREATE
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
   );
 };
 
