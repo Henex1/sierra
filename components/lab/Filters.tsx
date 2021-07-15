@@ -19,6 +19,8 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     minWidth: 140,
     minHeight: 24,
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
   },
   selectItemIcon: {
     marginLeft: theme.spacing(1),
@@ -124,7 +126,7 @@ export default function Filters({ filters, onFilterChange }: Props) {
   };
 
   return (
-    <Grid container justify="flex-end" spacing={2}>
+    <Grid container spacing={2}>
       <Grid item>
         <FormControl variant="outlined">
           <InputLabel id="filtersShowLabel">Show</InputLabel>

@@ -10,6 +10,7 @@ import { notAuthorized, notFound } from "../../../lib/errors";
 import { getUser, ValidUserSession } from "../../../lib/authServer";
 import { userCanAccessOrg } from "../../../lib/org";
 import { createSearchEndpoint } from "../../../lib/searchendpoints";
+import { createRuleset, createRulesetVersion } from "../../../lib/rulesets";
 import {
   createQueryTemplate,
   updateQueryTemplate,
@@ -101,18 +102,28 @@ async function handleSeed(
   const votes = parseVotesCsv(fs.readFileSync(seedJudgementFile, "utf-8"));
   await setVotes(judgement, votes);
 
-  const ruleset = await prisma.ruleset.create({
-    data: {
-      projectId: project.id,
-      name: "Dev Ruleset",
-      rulesetVersion: {
-        create: {
-          value: mockRuleset,
-        },
-      },
-    },
-    include: { rulesetVersion: true },
+  const ruleset = await createRuleset(project, {
+    name: "Dev Ruleset",
   });
+  let rvBase = await createRulesetVersion(ruleset, {
+    parentId: null,
+    value: mockRuleset,
+  });
+  const rulesetVersionId = rvBase.id;
+  // Fake a tree of rulesetVersions
+  for (let i = 0; i < 2; i++) {
+    rvBase = await createRulesetVersion(ruleset, {
+      parentId: rvBase.id,
+      value: mockRuleset,
+    });
+  }
+  const rvChildren = [rvBase, rvBase];
+  for (let i = 0; i < 2; i++) {
+    await createRulesetVersion(ruleset, {
+      parentId: rvChildren[i].id,
+      value: mockRuleset,
+    });
+  }
 
   let qtBase = await createQueryTemplate(project, {
     description: "Initial query template",
@@ -149,7 +160,7 @@ async function handleSeed(
       judgements: { create: [{ judgementId: judgement.id, weight: 1.0 }] },
       rulesets: {
         connect: {
-          id: ruleset.rulesetVersion[0].id,
+          id: rulesetVersionId,
         },
       },
     },

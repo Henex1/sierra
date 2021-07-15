@@ -253,7 +253,6 @@ export default function ConfigurationDrawer({
   }
 
   async function handleRulesetUpdate() {
-    console.log(searchConfiguration?.queryTemplate.id, rulesetIds);
     await apiRequest(`/api/searchconfigurations/update`, {
       id: searchConfiguration?.id,
       queryTemplateId: searchConfiguration?.queryTemplate.id,

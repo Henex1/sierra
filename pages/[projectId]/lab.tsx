@@ -9,6 +9,7 @@ import Filters from "../../components/lab/Filters";
 import SearchPhraseList from "../../components/lab/SearchPhraseList";
 import ResultList from "../../components/lab/ResultList";
 import ActionButtons from "../../components/lab/ActionButtons";
+import ExecutionSummary from "../../components/lab/ExecutionSummary";
 import { getProject } from "../../lib/projects";
 import {
   getActiveSearchConfiguration,
@@ -16,9 +17,13 @@ import {
   ExposedSearchConfiguration,
 } from "../../lib/searchconfigurations";
 import {
+  getExecution,
   getLatestExecution,
+  listExecutions,
   countSearchPhrases,
   getSearchPhrases,
+  ExposedExecution,
+  formatExecution,
 } from "../../lib/execution";
 import { ExposedSearchPhrase, ShowOptions, SortOptions } from "../../lib/lab";
 import {
@@ -28,8 +33,9 @@ import {
 } from "../../lib/pageHelpers";
 import {
   listRulesets,
+  listRulesetVersions,
   formatRuleset,
-  ExposedRuleset,
+  ExposedRulesetWithVersions,
   formatRulesetVersion,
   ExposedRulesetVersion,
   getRulesetsForSearchConfiguration,
@@ -37,6 +43,7 @@ import {
 import {
   QueryTemplate,
   getQueryTemplate,
+  listQueryTemplates,
   ExposedQueryTemplate,
   formatQueryTemplate,
 } from "../../lib/querytemplates";
@@ -49,11 +56,11 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(4),
   },
   listBorder: {
-    borderRight: "5px solid rgba(0, 0, 0, 0.08)",
+    borderRight: "1px solid rgba(0, 0, 0, 0.08)",
   },
 }));
 
-const pageSize = 20;
+const pageSize = 10;
 
 type Props = {
   searchConfiguration:
@@ -64,8 +71,11 @@ type Props = {
     | null;
   searchPhrases: ExposedSearchPhrase[];
   searchPhrasesTotal: number;
-  rulesets: ExposedRuleset[];
-  timings?: Record<"p50" | "p95" | "p99", number>;
+  rulesets: ExposedRulesetWithVersions[];
+  templates: ExposedQueryTemplate[];
+  executions: ExposedExecution[];
+  activeExecution: ExposedExecution | null; // execution being deployed
+  currentExecution: ExposedExecution | null; // execution being viewed/selected
   displayOptions: {
     show: ShowOptions;
     sort: SortOptions;
@@ -82,16 +92,21 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
   }
   const page = optionalNumberQuery(context, "page", 1) - 1;
   const sc = await getActiveSearchConfiguration(project);
-  const execution = sc ? await getLatestExecution(sc) : null;
-  const searchPhrasesTotal = execution
-    ? await countSearchPhrases(execution)
+  const currentExecutionId = context.query.execution;
+  const currentExecution = currentExecutionId
+    ? await getExecution(context.user, currentExecutionId as string)
+    : sc
+    ? await getLatestExecution(sc)
+    : null;
+  const searchPhrasesTotal = currentExecution
+    ? await countSearchPhrases(currentExecution)
     : 0;
   const displayOptions = {
     show: (context.query.show as ShowOptions) || "all",
     sort: (context.query.sort as SortOptions) || "score-desc",
   };
-  const searchPhrases = execution
-    ? await getSearchPhrases(execution, {
+  const searchPhrases = currentExecution
+    ? await getSearchPhrases(currentExecution, {
         skip: pageSize * page,
         take: pageSize,
         filter: displayOptions.show,
@@ -128,7 +143,6 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
       }
     }
   );
-  const rulesets = await listRulesets(context.user);
   const queryTemplate = sc
     ? await getQueryTemplate(context.user, sc.queryTemplateId)
     : null;
@@ -141,6 +155,18 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
         queryTemplate: formatQueryTemplate(queryTemplate as QueryTemplate),
       }
     : null;
+  const templates = await listQueryTemplates(project);
+  const rulesets = await listRulesets(context.user);
+  const rulesetVersions = await Promise.all(
+    rulesets.map((ruleset) => listRulesetVersions(ruleset))
+  );
+  const rulesetsWithVersions: ExposedRulesetWithVersions[] = rulesets.map(
+    (ruleset, i) => ({
+      ...formatRuleset(ruleset),
+      rulesetVersions: rulesetVersions[i].map(formatRulesetVersion),
+    })
+  );
+  const executions = sc ? await listExecutions(sc) : [];
 
   const searchEndpoint = await getSearchEndpoint(
     context.user,
@@ -152,14 +178,17 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
       searchConfiguration,
       searchPhrases: formattedPhrases,
       searchPhrasesTotal,
-      rulesets: rulesets.map(formatRuleset),
-      timings: execution
-        ? {
-            p50: (execution.meta as any).tookP50,
-            p95: (execution.meta as any).tookP95,
-            p99: (execution.meta as any).tookP99,
-          }
-        : undefined,
+      rulesets: rulesetsWithVersions,
+      templates: templates.map(formatQueryTemplate),
+      executions: executions.map(formatExecution),
+      // TODO: actual active execution
+      // currently it's just using the latest execution
+      activeExecution: executions.length
+        ? formatExecution(executions[0])
+        : null,
+      currentExecution: currentExecution
+        ? formatExecution(currentExecution)
+        : null,
       displayOptions,
       page: page + 1,
       displayFields: searchEndpoint?.displayFields || [],
@@ -172,15 +201,18 @@ export default function Lab({
   searchPhrases,
   searchPhrasesTotal,
   rulesets,
+  templates,
+  activeExecution,
+  currentExecution,
+  executions,
   displayFields,
-  timings,
   ...props
 }: Props) {
   const classes = useStyles();
   const router = useRouter();
   const [
-    searchPhrase,
-    setSearchPhrase,
+    activeSearchPhrase,
+    setActiveSearchPhrase,
   ] = React.useState<ExposedSearchPhrase | null>(null);
   const [displayOptions, setDisplayOptions] = React.useState<
     Props["displayOptions"]
@@ -188,27 +220,12 @@ export default function Lab({
     show: props.displayOptions.show,
     sort: props.displayOptions.sort,
   });
+  const [currentExecutionId, setCurrentExecutionId] = React.useState<
+    string | null
+  >(null);
   const [page, setPage] = React.useState(props.page);
   const [isTestRunning, setIsTestRunning] = React.useState(false);
   const searchConfigurationId = searchConfiguration?.id;
-
-  React.useEffect(() => {
-    if (searchPhrase) {
-      const padding = window.innerWidth - document.body.offsetWidth;
-      document.body.style.paddingRight = padding + "px";
-      document.body.style.overflow = "hidden";
-      document.querySelectorAll(".mui-fixed").forEach((item) => {
-        (item as any).style.paddingRight =
-          (parseInt(getComputedStyle(item).paddingRight) || 0) + padding + "px";
-      });
-    } else {
-      document.body.style.removeProperty("padding");
-      document.body.style.removeProperty("overflow");
-      document.querySelectorAll(".mui-fixed").forEach((item) => {
-        (item as any).style.removeProperty("padding");
-      });
-    }
-  }, [searchPhrase]);
 
   React.useEffect(() => {
     router.push({
@@ -217,10 +234,11 @@ export default function Lab({
         ...router.query,
         show: displayOptions.show,
         sort: displayOptions.sort,
+        execution: currentExecutionId,
         page,
       },
     });
-  }, [displayOptions, page]);
+  }, [displayOptions, page, currentExecutionId]);
 
   const handleFilterChange = useCallback(
     (key: "show" | "sort", value: ShowOptions | SortOptions) => {
@@ -232,7 +250,7 @@ export default function Lab({
     []
   );
 
-  const handleModalClose = useCallback(() => setSearchPhrase(null), []);
+  const handleModalClose = useCallback(() => setActiveSearchPhrase(null), []);
 
   const handleRun = useCallback(async () => {
     if (searchConfigurationId) {
@@ -250,63 +268,59 @@ export default function Lab({
     <div>
       {!!searchConfiguration && !isFirstQueryExcute ? (
         <div>
-          <Grid container justify="space-between">
-            {timings && (
-              <Grid item>
-                <Box mb={1}>
+          <Grid container spacing={4} className={classes.listContainer}>
+            <Grid item sm={4} className={classes.listBorder}>
+              <Box>
+                <Box mb={2}>
                   <Typography>
-                    Showing {searchPhrases.length} search phrases..
+                    Showing {searchPhrasesTotal} search phrases..
                   </Typography>
-                  <Box pt={1}>
-                    <Typography variant="body2" color="textSecondary">
-                      Latency Percentiles (ms):
-                      <br />
-                      50th percentile <b>{timings.p50.toFixed(0)}</b>, 95th
-                      percentile <b>{timings.p95.toFixed(0)}</b>, 99th
-                      percentile <b>{timings.p99.toFixed(0)}</b>
-                    </Typography>
-                  </Box>
                 </Box>
-              </Grid>
-            )}
-            <Grid item>
-              <Filters
-                filters={displayOptions}
-                onFilterChange={handleFilterChange}
-              />
-            </Grid>
-          </Grid>
-          <Grid container className={classes.listContainer}>
-            <Grid
-              item
-              sm={searchPhrase ? 3 : true}
-              className={searchPhrase ? classes.listBorder : undefined}
-            >
+                <Box mb={2}>
+                  <Filters
+                    filters={displayOptions}
+                    onFilterChange={handleFilterChange}
+                  />
+                </Box>
+              </Box>
               <SearchPhraseList
                 searchPhrases={searchPhrases}
-                activePhrase={searchPhrase}
-                setActivePhrase={setSearchPhrase}
+                activePhrase={activeSearchPhrase}
+                setActivePhrase={setActiveSearchPhrase}
               />
+              <Box mt={4} display="flex" justifyContent="center">
+                <Pagination
+                  page={page}
+                  count={Math.ceil(searchPhrasesTotal / pageSize)}
+                  onChange={(e: React.ChangeEvent<unknown>, value: number) =>
+                    setPage(value)
+                  }
+                />
+              </Box>
             </Grid>
-            {searchPhrase && (
-              <Grid item md={9}>
+            <Grid item md={8}>
+              {activeSearchPhrase ? (
                 <ResultList
-                  searchPhrase={searchPhrase}
+                  searchPhrase={activeSearchPhrase}
                   onClose={handleModalClose}
                   displayFields={displayFields}
                 />
-              </Grid>
-            )}
+              ) : (
+                <Box>
+                  {activeExecution && currentExecution && (
+                    <ExecutionSummary
+                      templates={templates}
+                      rulesets={rulesets}
+                      executions={executions}
+                      activeExecution={activeExecution}
+                      currentExecution={currentExecution}
+                      onSelected={(id: string) => setCurrentExecutionId(id)}
+                    />
+                  )}
+                </Box>
+              )}
+            </Grid>
           </Grid>
-          <Box mt={4} display="flex" justifyContent="center">
-            <Pagination
-              page={page}
-              count={Math.ceil(searchPhrasesTotal / pageSize)}
-              onChange={(e: React.ChangeEvent<unknown>, value: number) =>
-                setPage(value)
-              }
-            />
-          </Box>
         </div>
       ) : (
         <NoExistingExcution
