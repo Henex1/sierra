@@ -36,7 +36,7 @@ export function Item({ onClick, item, status }: Props): ReactElement {
       )}
     >
       <ListItemAvatar className={classes.avatarBox}>
-        <PhraseScore score={item.combinedScore} />
+        <PhraseScore score={item.combinedScore} tooltip="Sierra score" />
       </ListItemAvatar>
       <ListItemText
         primary={

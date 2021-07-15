@@ -1,12 +1,19 @@
 import React from "react";
-import { Grid, Paper, Button, Box, makeStyles } from "@material-ui/core";
+import {
+  Grid,
+  Paper,
+  Button,
+  Box,
+  IconButton,
+  makeStyles,
+} from "@material-ui/core";
+import CloseIcon from "@material-ui/icons/Close";
 import { Skeleton } from "@material-ui/lab";
 import useSWR from "swr";
 import { ExposedSearchPhrase, MockSearchResult } from "../../lib/lab";
 
 import ResultScore from "./ResultScore";
 import ExplainBlock from "./ExplainBlock";
-import Scrollable from "../common/Scrollable";
 import { ResultCard } from "./ResultCard";
 
 const useStyles = makeStyles((theme) => ({
@@ -15,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: "column",
     alignItems: "stretch",
   },
-  scrollable: {
+  container: {
     marginTop: theme.spacing(2),
     flex: "1 1 100%",
   },
@@ -37,7 +44,11 @@ type Props = {
   displayFields: string[];
 };
 
-export default function ResultList({ displayFields, searchPhrase }: Props) {
+export default function ResultList({
+  displayFields,
+  onClose,
+  searchPhrase,
+}: Props) {
   const classes = useStyles();
   const { data } = useSWR<MockSearchResult[]>(
     `/api/lab/searchResult?id=${searchPhrase.id}`
@@ -87,12 +98,12 @@ export default function ResultList({ displayFields, searchPhrase }: Props) {
         <Grid item>
           <Button variant="outlined">Explain missing documents</Button>
         </Grid>
-        <Scrollable
-          maxHeight="calc(100vh - 350px)"
-          classes={{
-            root: classes.scrollable,
-          }}
-        >
+        <Grid item>
+          <IconButton aria-label="close" onClick={onClose}>
+            <CloseIcon />
+          </IconButton>
+        </Grid>
+        <div className={classes.container}>
           {data.map((result) => (
             <Paper key={result.id} className={classes.paper}>
               <Grid container>
@@ -108,7 +119,7 @@ export default function ResultList({ displayFields, searchPhrase }: Props) {
               </Grid>
             </Paper>
           ))}
-        </Scrollable>
+        </div>
       </Grid>
     </div>
   );

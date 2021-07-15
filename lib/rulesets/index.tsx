@@ -40,6 +40,9 @@ export type ExposedRulesetVersion = Pick<
   RulesetVersion,
   keyof typeof versionSelectKeys
 >;
+export type ExposedRulesetWithVersions = ExposedRuleset & {
+  rulesetVersions: ExposedRulesetVersion[];
+};
 
 export function userCanAccessRuleset(
   user: User,
@@ -110,6 +113,15 @@ export async function getLatestRulesetVersion(
     orderBy: [{ updatedAt: "desc" }],
   });
   return version;
+}
+
+export async function listRulesetVersions(
+  ruleset: Ruleset
+): Promise<RulesetVersion[]> {
+  const result = await prisma.rulesetVersion.findMany({
+    where: { ruleset: { id: ruleset.id } },
+  });
+  return result;
 }
 
 export const createRulesetVersionSchema = z.object({

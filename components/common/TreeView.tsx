@@ -62,7 +62,7 @@ const useStyles = makeStyles(() => {
         },
         borderLeft: "solid 1px transparent",
         padding: 0,
-        "& > span": {
+        "& > div": {
           position: "relative",
           "&::before": {
             borderBottom: "solid 1px black",
@@ -79,7 +79,7 @@ const useStyles = makeStyles(() => {
     },
     root: {
       padding: 0,
-      "& > li > span::before": {
+      "& > li > div::before": {
         display: "none",
       },
     },
@@ -97,7 +97,7 @@ export function TreeView<T>({ roots, renderItem }: Props<T>) {
   function renderNode(node: Tree<T>) {
     return (
       <li key={node.id}>
-        <span>{renderItem(node.value)}</span>
+        <div>{renderItem(node.value)}</div>
         {node.children.length > 0 ? (
           <ul className={classes.children}>
             {node.children.map((n) => renderNode(n))}

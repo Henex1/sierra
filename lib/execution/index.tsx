@@ -31,9 +31,15 @@ const executionSelect = {
   meta: true,
   combinedScore: true,
   allScores: true,
+  createdAt: true,
 };
 
-export type ExposedExecution = Pick<Execution, keyof typeof executionSelect>;
+export type ExposedExecution = Omit<
+  Pick<Execution, keyof typeof executionSelect>,
+  "createdAt"
+> & {
+  createdAt: string;
+};
 
 const speSelect = {
   id: true,
@@ -51,7 +57,10 @@ export type ExposedSearchPhraseExecution = Pick<
 >;
 
 export function formatExecution(val: Execution): ExposedExecution {
-  return _.pick(val, _.keys(executionSelect)) as ExposedExecution;
+  return _.pick(
+    { ...val, createdAt: val.createdAt.toString() },
+    _.keys(executionSelect)
+  ) as ExposedExecution;
 }
 
 export function formatSearchPhraseExecution(

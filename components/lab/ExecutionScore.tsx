@@ -8,18 +8,18 @@ const colorScale = scaleLinear<string, string>()
   .range([colors.red[500], colors.yellow[500], colors.green[500]]);
 
 type Props = {
+  tooltip: React.ReactNode;
   score: number | null;
-  tooltip: string;
 };
 
-export default function PhraseScore({ score, tooltip }: Props) {
+export default function ExecutionScore({ tooltip, score }: Props) {
   const classes = useStyles();
 
   return (
-    <Tooltip title={tooltip}>
+    <Tooltip title={tooltip || ""}>
       <Avatar
-        variant="rounded"
-        className={classes.scoreBoxAvatar}
+        variant="circle"
+        className={classes.executionScore}
         style={{
           background: score !== null ? colorScale(score) : undefined,
         }}

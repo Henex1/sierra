@@ -27,6 +27,7 @@ export const useStyles = makeStyles((theme) => ({
   },
   phrase: {
     display: "inline",
+    lineHeight: 1.25,
   },
   took: {
     marginLeft: theme.spacing(1),
@@ -36,6 +37,12 @@ export const useStyles = makeStyles((theme) => ({
   },
   scoreBoxAvatar: {
     width: 60,
+    fontSize: "18px",
+    color: "#111",
+  },
+  executionScore: {
+    width: 50,
+    height: 50,
     fontSize: "18px",
     color: "#111",
   },

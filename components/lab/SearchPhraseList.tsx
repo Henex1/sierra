@@ -39,7 +39,7 @@ export default function SearchPhraseList({
   return (
     <>
       <List className={classes.list}>
-        {searchPhrases.slice(0, 10).map(
+        {searchPhrases.map(
           (item): ReactElement => {
             switch (item.__type) {
               case "FailedSearchPhraseExecution":
