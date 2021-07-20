@@ -16,6 +16,7 @@ import Paper from "@material-ui/core/Paper";
 import Table from "@material-ui/core/Table";
 import TableHead from "@material-ui/core/TableHead";
 import TextField from "@material-ui/core/TextField";
+import Checkbox from "@material-ui/core/Checkbox";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -98,6 +99,15 @@ const ApiKeys = ({ list }: Props) => {
     setAlias(e.target.value);
   }
 
+  async function handleApiKeyEnabledClick(apikey: ExposedApiKey) {
+    await apiRequest(
+      `/api/users/apikey`,
+      { id: apikey.apikey, disabled: !apikey.disabled },
+      { method: "PATCH" }
+    );
+    router.replace(router.asPath);
+  }
+
   return (
     <div>
       <Grid container spacing={3}>
@@ -114,6 +124,7 @@ const ApiKeys = ({ list }: Props) => {
                   <TableCell>API Key</TableCell>
                   <TableCell>Alias</TableCell>
                   <TableCell>Expires</TableCell>
+                  <TableCell>Enabled</TableCell>
                   <TableCell></TableCell>
                 </TableRow>
               </TableHead>
@@ -145,6 +156,12 @@ const ApiKeys = ({ list }: Props) => {
                     </TableCell>
                     <TableCell>{apikey.alias}</TableCell>
                     <TableCell>{apikey.expirationDate}</TableCell>
+                    <TableCell>
+                      <Checkbox
+                        checked={!apikey.disabled}
+                        onChange={() => handleApiKeyEnabledClick(apikey)}
+                      />
+                    </TableCell>
                     <TableCell>
                       <Link
                         href="#"

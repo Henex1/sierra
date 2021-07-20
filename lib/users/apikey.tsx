@@ -11,6 +11,7 @@ const dateFns = new DateFnsAdapter();
 // by default.
 const selectKeys = {
   apikey: true,
+  disabled: true,
   alias: true,
 };
 
@@ -44,6 +45,7 @@ export async function listApiKeys(user: User): Promise<ApiKey[]> {
     where: {
       userId: user.id,
     },
+    orderBy: [{ createdAt: "desc" }],
   });
   return apikeys;
 }
@@ -54,6 +56,19 @@ export async function createApiKey(user: User, alias: string): Promise<void> {
       apikey: generateUniqueId(),
       alias: alias,
       userId: user.id,
+    },
+  });
+}
+
+export async function updateApiKey(
+  user: User,
+  apiKey: string,
+  disabled: boolean
+): Promise<void> {
+  await prisma.apiKey.updateMany({
+    where: { apikey: apiKey, userId: user.id },
+    data: {
+      disabled: disabled,
     },
   });
 }
