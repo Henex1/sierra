@@ -98,6 +98,10 @@ async function initAuth(req: IncomingMessage): Promise<UserSession | null> {
       console.log("API Key has expired");
       return null;
     }
+    if (apikeyObject.disabled) {
+      console.log("API Key is disabled");
+      return null;
+    }
     const user = {
       id: apikeyObject.userId,
     };
