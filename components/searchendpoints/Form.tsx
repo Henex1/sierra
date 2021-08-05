@@ -44,20 +44,20 @@ export const searchEndpointTypes = [
     label: "Solr",
     value: "SOLR",
     imageSrc: "/images/solr.png",
-    enabled: true,
-  },
-  {
-    label: "Vespa",
-    value: "VESPA",
-    imageSrc: "/images/vespa.png",
     enabled: false,
   },
-  {
-    label: "RediSearch",
-    value: "REDIS_SEARCH",
-    imageSrc: "/images/redisearch.png",
-    enabled: false,
-  },
+  // {
+  //   label: "Vespa",
+  //   value: "VESPA",
+  //   imageSrc: "/images/vespa.png",
+  //   enabled: false,
+  // },
+  // {
+  //   label: "RediSearch",
+  //   value: "REDIS_SEARCH",
+  //   imageSrc: "/images/redisearch.png",
+  //   enabled: false,
+  // },
 ];
 
 type FormValues = ExposedSearchEndpoint & {
