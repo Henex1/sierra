@@ -1,4 +1,43 @@
-# Sierra Developer Guide
+# Project Sierra
+
+Project Sierra is about perfecting search engine relevance using bleeding edge technologies and methodologies.
+
+There are many companies and organizations who have implemented their own search engine internally, or as part of their product - usually by integrating Elasticsearch, OpenSearch or Solr. Attorney offices, websites with a lot of content, and most notably e-commerce websites - all have one thing in common: a lot of data to be searched and the requirement for having search be as fast, effective and relevant as possible. For them, to make data accessible is important because it can improve overall user experience, make users more effective, and in the e-commerce case - make more money.
+
+Project Sierra is the ultimate tool for improving search relevance and results ranking in search engine technologies that are powering search in most organizations today. In most cases a search engine like Solr and Elasticsearch is installed and then just used. There are so many knowledge gaps, but more often than not - just lack of tooling and methodologies to make it really work well for organizations.
+
+This is why we created Project Sierra.
+
+## Purpose
+
+* Improving search relevance for Solr, Elasticsearch and Vespa based search services.
+* Collecting judgments for measuring search relevance performance
+* Allowing quick iterations for improving full-text search queries
+* Managing and measuring search expansion rule systems (synonyms etc)
+* Establishing and maintaining performance baseline, and allowing to iterate from there
+* Comparing various approaches to search by evaluating different branches
+* Canary and A/B testing of search approaches
+* Support Machine-Learning based search (Learning To Rank and others)
+* Regression testing for CI/CD and production system
+* Alerting when desired search performance is degraded.
+
+## How does this work?
+
+We use bleeding edge methods and technologies, and rely on a lot of academic research and our expertise in search relevance engineering.
+
+At the heart of the process is the concept of Judgments. In order to measure how your search engine is doing, we need to somehow tell if the results that are shown are correct and relevant (“precision”), are in the right order (“relevance”), and whether there are better results that are not shown (“recall”).
+
+There are several types of Judgments -
+
+1. Manual and systematic - done by analysts, end users, project managers and other search stakeholders. Since this is highly subjective, ideally we would like to have multiple people rating search results.
+2. Feedback loops - allowing feedback from end users like thumbs up / thumbs down etc. This could work at scale, but will be more partial and biased than Manual.
+3. Automatic and inferred from search logs and click streams.
+
+Given enough judgments of hopefully more than one type and source, we are able to allow an iterative process of improving the query, configurations, search expansion rules, and so on. “Improving” a search engine in this context would be optimizing select parameters, usually the order of results that we know are good (based on judgments), but can also be conversion, margins in the e-commerce case, and so on.
+
+Based on those judgements we can create a well-defined iterative process that can show when there's progress and alert when there's regression. Then we can safely iterate on index mapping, query json, knobs, rulesets, synonyms and more.
+
+# Developer Guide
 
 ## Overview
 
