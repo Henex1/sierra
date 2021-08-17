@@ -13,6 +13,7 @@ const withTM = require("next-transpile-modules")([
 // This causes the bundler to skip test files.
 // https://nextjs.org/docs/api-reference/next.config.js/custom-webpack-config
 module.exports = withTM({
+  webpack5: false,
   webpack: (config, { webpack }) => {
     // Note: we provide webpack above so you should not `require` it
 

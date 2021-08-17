@@ -38,3 +38,6 @@ yarn-error.log*
 # WebStorm
 .idea
 .eslintcache
+
+#prisma
+/prisma/
