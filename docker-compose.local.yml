@@ -22,9 +22,11 @@ services:
       - 9200:9200
 
   query_expander:
-    image: registry.gitlab.com/project-sierra/sierra-query-expander:2021-05-31-1650-d2eca8799
+    image: registry.gitlab.com/project-sierra/sierra-query-expander:2d37e05fe0bb9c97f20e8f4f126986185496a447
     ports:
       - 8080:8080
+    environment:
+      - SIERRA_LICENSE=eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9.eyJwcm9kdWN0Ijoic2llcnJhIiwidmVyc2lvbiI6MSwiaWF0IjoxNjI4NzA4NTAwLCJleHAiOjE2MzI5NDkyMDAsIm93bmVyIjoiZnF1bGY4MThhY3QiLCJtYXhfcHJvamVjdHMiOjEwMH0.APlOGNKLytih8rYWElV5hvNsSgLQHMnPy-iIcAuiMZOwfjTXEpovUMh3uauBY3fv8zlQnFACExochSJwZLZ_FtVFADzpj-53rZ17WV1H0a6dtlnkcFjwyv49MRyxeF08QiuYzlLSI32IXPX47PqHhySnukrR8swqsNQhBk7TKbM5kCFR
 
 #  adminer:
 #    image: adminer
