@@ -18,6 +18,7 @@ import {
 import { getRuleset, getLatestRulesetVersion } from "../../../lib/rulesets";
 import { RulesetVersion } from "../../../lib/prisma";
 import { getJudgementForSearchConfiguration } from "../../../lib/judgements";
+import { addTask, removeTask } from "../../../lib/runningTasks";
 
 export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
@@ -85,7 +86,19 @@ export const handleExecute = apiHandler(async (req, res) => {
   if (!sc) {
     throw new HttpError(404, { error: "search configuration not found" });
   }
+
+  const taskName = "Search Configuration Execution";
+  const socketIO = req.io;
+
+  // Add task to running tasks list
+  const tasks = await addTask(taskName);
+  socketIO.emit("running_tasks", { tasks });
+
   const execution = await createExecution(sc);
+
+  // Remove task from running tasks list
+  await removeTask(taskName);
+
   res.status(200).json({ execution: formatExecution(execution) });
 });
 

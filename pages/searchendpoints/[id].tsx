@@ -54,17 +54,17 @@ export default function EditSearchEndpoint({ searchEndpoint }: Props) {
       setConnectionTestResult(result);
       setTestResultModalOpen(true);
       return false;
-    } else {
-      const { id, orgId, type, ...editableFields } = values;
-      await apiRequest(
-        `/api/searchendpoints/${searchEndpoint.id}`,
-        editableFields,
-        { method: "PATCH" }
-      );
-      router.push("/searchendpoints");
-      // Keep the form stuck as pending
-      return new Promise(() => {});
     }
+
+    const { id, orgId, type, ...editableFields } = values;
+    await apiRequest(
+      `/api/searchendpoints/${searchEndpoint.id}`,
+      editableFields,
+      { method: "PATCH" }
+    );
+    router.push("/searchendpoints");
+    // Keep the form stuck as pending
+    return new Promise(() => {});
   }
 
   async function onDelete() {

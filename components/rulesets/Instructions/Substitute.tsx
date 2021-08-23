@@ -3,7 +3,7 @@ import { InstructionFieldProps } from "./types";
 import { SubstituteInstruction } from "../../../lib/rulesets/rules";
 import { useForm } from "react-final-form";
 import Grid from "@material-ui/core/Grid";
-import { useDebouncedChange } from "../../../utils/react/hooks";
+import { useDebouncedChange } from "../../../utils/react/hooks/hooks";
 import { TextField } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 

@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextApiResponse } from "next";
 import * as z from "zod";
 
 import {
@@ -6,6 +6,7 @@ import {
   requireUser,
   requireQuery,
   HttpError,
+  SierraApiRequest,
 } from "../../../lib/apiServer";
 import {
   getRuleset,
@@ -62,7 +63,7 @@ export async function getRulesetEditorProps(id: string, user: User) {
 }
 
 export default apiHandler(
-  async (req: NextApiRequest, res: NextApiResponse): Promise<any> => {
+  async (req: SierraApiRequest, res: NextApiResponse): Promise<any> => {
     const user = requireUser(req);
     const { id } = requireQuery(req, z.object({ id: z.string() }));
 

@@ -28,7 +28,7 @@ export function ResultCard({ displayFields, result }: Props) {
   const image = getField(fieldByPrefix("image", displayFields), result);
 
   return (
-    <Grid container justify="space-between">
+    <Grid container justify="space-between" wrap="nowrap">
       <Grid item>
         {title ? (
           <Title

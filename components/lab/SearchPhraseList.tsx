@@ -17,14 +17,10 @@ export default function SearchPhraseList({
   setActivePhrase,
 }: Props) {
   const classes = useStyles();
+
   const handleClick = useCallback(
-    (item: ExposedSearchPhrase) => {
-      if (activePhrase?.id !== item.id) {
-        setActivePhrase(item);
-      } else {
-        setActivePhrase(null);
-      }
-    },
+    (item: ExposedSearchPhrase) =>
+      setActivePhrase(activePhrase?.id !== item.id ? item : null),
     [activePhrase]
   );
 
@@ -41,20 +37,33 @@ export default function SearchPhraseList({
       <List className={classes.list}>
         {searchPhrases.map(
           (item): ReactElement => {
+            let content = null;
+
             switch (item.__type) {
               case "FailedSearchPhraseExecution":
-                return <ErrorItem item={item} />;
+                content = <ErrorItem key={item.id} item={item} />;
+                break;
               case "ScoredSearchPhraseExecution": {
-                const itemStatus = !activePhrase
-                  ? "normal"
-                  : activePhrase.id === item.id
-                  ? "active"
-                  : "inactive";
-                return (
-                  <Item onClick={handleClick} item={item} status={itemStatus} />
+                let itemStatus = "inactive";
+
+                if (!activePhrase) {
+                  itemStatus = "normal";
+                } else if (activePhrase.id === item.id) {
+                  itemStatus = "active";
+                }
+
+                content = (
+                  <Item
+                    key={item.id}
+                    onClick={handleClick}
+                    item={item}
+                    status={itemStatus as "active" | "inactive" | "normal"}
+                  />
                 );
               }
             }
+
+            return <React.Fragment key={item.id}>{content}</React.Fragment>;
           }
         )}
       </List>
