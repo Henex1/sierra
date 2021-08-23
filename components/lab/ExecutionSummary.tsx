@@ -61,6 +61,12 @@ export default function ExecutionSummary({
     setModalOpen(false);
   };
 
+  const executionTime = `${new Date(
+    currentExecution.createdAt
+  ).toLocaleDateString("en-US")} ${new Date(
+    currentExecution.createdAt
+  ).toLocaleTimeString("en-US")}`;
+
   return (
     <Box>
       <Typography variant="h5">Executions</Typography>
@@ -102,11 +108,7 @@ export default function ExecutionSummary({
       <Box>
         <Typography>
           {"Executed on "}
-          <strong>{`${new Date(
-            currentExecution.createdAt
-          ).toLocaleDateString()} ${new Date(
-            currentExecution.createdAt
-          ).toLocaleTimeString()}`}</strong>
+          <strong>{executionTime}</strong>
         </Typography>
       </Box>
       <Box mb={4}>

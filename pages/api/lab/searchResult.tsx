@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextApiResponse } from "next";
 import * as z from "zod";
 
 import {
@@ -7,6 +7,7 @@ import {
   HttpError,
   requireUser,
   requireQuery,
+  SierraApiRequest,
 } from "../../../lib/apiServer";
 import {
   SearchPhraseExecutionResults,
@@ -50,7 +51,7 @@ function mockExplanation(explanation: any) {
 }
 
 export default apiHandler(
-  async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
+  async (req: SierraApiRequest, res: NextApiResponse): Promise<void> => {
     const { id } = requireQuery(req, z.object({ id: z.number() }), (query) => ({
       id: parseInt(query.id as string),
     }));

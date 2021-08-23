@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextApiResponse } from "next";
 import * as z from "zod";
 import { notFound } from "../../../lib/errors";
 import {
@@ -10,10 +10,11 @@ import {
   requireBody,
   requireMethod,
   requireUser,
+  SierraApiRequest,
 } from "../../../lib/apiServer";
 
 export default apiHandler(async function getFields(
-  req: NextApiRequest,
+  req: SierraApiRequest,
   res: NextApiResponse
 ): Promise<void> {
   requireMethod(req, "POST");

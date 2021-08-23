@@ -79,7 +79,7 @@ async function handleSeed(
     description: "Elasticsearch instance on localhost.",
     whitelist: [],
     resultId: "_id",
-    displayFields: [],
+    displayFields: ["title:title", "short_description", "image:img_thumb"],
     type: "ELASTICSEARCH",
     info: { endpoint: "http://localhost:9200/", index: "icecat" },
     credentials: null,

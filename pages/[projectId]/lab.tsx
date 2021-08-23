@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import { apiRequest } from "../../lib/api";
 import Filters from "../../components/lab/Filters";
 import SearchPhraseList from "../../components/lab/SearchPhraseList";
-import ResultList from "../../components/lab/ResultList";
+import { ResultList } from "../../components/lab/ResultList";
 import ActionButtons from "../../components/lab/ActionButtons";
 import ExecutionSummary from "../../components/lab/ExecutionSummary";
 import { getProject } from "../../lib/projects";
@@ -242,6 +242,7 @@ export default function Lab({
 
   const handleFilterChange = useCallback(
     (key: "show" | "sort", value: ShowOptions | SortOptions) => {
+      handleModalClose();
       setDisplayOptions({
         ...displayOptions,
         [key]: value,
@@ -273,7 +274,7 @@ export default function Lab({
               <Box>
                 <Box mb={2}>
                   <Typography>
-                    Showing {searchPhrasesTotal} search phrases..
+                    Showing {searchPhrasesTotal} search phrases
                   </Typography>
                 </Box>
                 <Box mb={2}>

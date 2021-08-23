@@ -44,11 +44,7 @@ type Props = {
   displayFields: string[];
 };
 
-export default function ResultList({
-  displayFields,
-  onClose,
-  searchPhrase,
-}: Props) {
+export function ResultList({ displayFields, onClose, searchPhrase }: Props) {
   const classes = useStyles();
   const { data } = useSWR<MockSearchResult[]>(
     `/api/lab/searchResult?id=${searchPhrase.id}`

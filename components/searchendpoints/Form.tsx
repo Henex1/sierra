@@ -136,6 +136,7 @@ export default function SearchEndpointForm({
 
   function handleClose(values: FormValues) {
     setTestResultModalOpen(false);
+    setTestConnection(false);
     if (isNew) {
       (values.credentials as any).change = true;
     }
@@ -145,7 +146,7 @@ export default function SearchEndpointForm({
     <Form
       {...rest}
       onSubmit={handleSubmit}
-      render={({ handleSubmit, form, submitting, values }) => (
+      render={({ handleSubmit, submitting, values }) => (
         <form id={formId} onSubmit={handleSubmit}>
           <Dialog
             open={testResultModalOpen}

@@ -1,4 +1,7 @@
-export type { ExposedSearchPhrase } from "../execution/ExposedSearchPhrase";
+export type {
+  ExposedSearchPhrase,
+  FailedSearchPhraseExecution,
+} from "../execution/ExposedSearchPhrase";
 
 export type MockSearchResult = {
   id: number;

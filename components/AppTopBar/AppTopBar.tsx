@@ -1,5 +1,6 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { signIn } from "next-auth/client";
+import io from "socket.io-client";
 
 import { AppBar, Box, Typography, Button } from "@material-ui/core";
 import HomeOutlinedIcon from "@material-ui/icons/HomeOutlined";
@@ -12,14 +13,23 @@ import SettingsMenu from "./SettingsMenu";
 import ResourcesMenu from "./ResourcesMenu";
 import UserMenu from "./UserMenu";
 import ProjectsMenu from "./ProjectsMenu";
+import { RunningTasksSpinner } from "./RunningTasksSpinner";
 
 export default function AppTopBar() {
+  const [tasks, setTasks] = useState([]);
   const classes = useStyles();
   const { session } = useSession();
   const { project } = useActiveProject();
   const { activeOrg } = useActiveOrg();
 
   const activeProjectId = project?.id ?? 0;
+
+  useEffect(() => {
+    const socket = io();
+    socket.on("running_tasks", ({ tasks: newTasks }) => {
+      setTasks(newTasks);
+    });
+  }, []);
 
   const handleUserLoginClick = useCallback(() => {
     return signIn();
@@ -53,6 +63,7 @@ export default function AppTopBar() {
           <ResourcesMenu />
         </Box>
         <Box className={classes.rightWrapper}>
+          <RunningTasksSpinner tasks={tasks} />
           <ProjectsMenu />
           <SettingsMenu />
           {session.user ? (
