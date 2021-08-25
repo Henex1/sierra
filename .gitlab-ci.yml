@@ -28,6 +28,8 @@ stages:
   - build
   - dockerize
   - deploy_dev
+  - deploy_staging
+
 
 deps:
   stage: deps
@@ -78,16 +80,26 @@ dockerize:
     - master
 
 deploy_dev:
+  stage: deploy_dev
   variables:
     ARGO_APP_NAME: sierra-app
     RELEASE_IMAGE: $RELEASE_IMAGE
     PARENT_PATH: $CI_PROJECT_PATH
     ENVIRONMENT: dev
-  stage: deploy
   trigger:
     project: project-sierra/sierra-manifests
-  only:
-    - master
-  depends_on:
+  needs:
     - dockerize
+  when: manual
 
+deploy_staging:
+  stage: deploy_staging
+  variables:
+    ARGO_APP_NAME: sierra-app
+    RELEASE_IMAGE: $RELEASE_IMAGE
+    PARENT_PATH: $CI_PROJECT_PATH
+    ENVIRONMENT: staging
+  trigger:
+    project: project-sierra/sierra-manifests
+  needs:
+    - dockerize
