@@ -27,6 +27,7 @@ stages:
   - test
   - build
   - dockerize
+  - deploy_dev
 
 deps:
   stage: deps
@@ -75,3 +76,18 @@ dockerize:
     - apk add --update curl && curl -XPOST -H "Content-type:application/json" --data "{\"text\":\"$CI_PROJECT_NAME $RELEASE_IMAGE is ready!\"}" "https://hooks.slack.com/services/$SLACK_HOOK"
   only:
     - master
+
+deploy_dev:
+  variables:
+    ARGO_APP_NAME: sierra-app
+    RELEASE_IMAGE: $RELEASE_IMAGE
+    PARENT_PATH: $CI_PROJECT_PATH
+    ENVIRONMENT: dev
+  stage: deploy
+  trigger:
+    project: project-sierra/sierra-manifests
+  only:
+    - master
+  depends_on:
+    - dockerize
+
