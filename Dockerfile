@@ -40,6 +40,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/pages ./pages
+COPY --from=builder /app/server.js ./server.js
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
