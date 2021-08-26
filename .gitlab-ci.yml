@@ -28,8 +28,8 @@ stages:
   - test
   - build
   - dockerize
-  - deploy_dev
   - deploy_staging
+  - deploy_dev
 
 
 deps:
@@ -41,14 +41,8 @@ deps:
           --build-arg BUILDKIT_INLINE_CACHE=1 . | sh
     - docker push -q $DEPS_IMAGE
   only:
-    refs:
-      - branches
-    changes:
-      - package.json
-      - yarn.lock
-      - eslint/*
-      - patches/*
-
+  - merge_requests
+  
 generate_schema:
   stage: generate_schema
   script:
@@ -58,15 +52,8 @@ generate_schema:
           --build-arg BUILDKIT_INLINE_CACHE=1 . | sh
     - docker push -q $SCHEMA_IMAGE
   only:
-    refs:
-      - branches
-    changes:
-      - prisma/*
-      - package.json
-      - yarn.lock
-      - eslint/*
-      - patches/*
-
+  - merge_requests
+  
 build:
   stage: build
   script:
@@ -100,8 +87,7 @@ test:
     - yarn prisma migrate reset -f
     - yarn test
   only:
-  # - merge_requests
-  - fake
+  - merge_requests
 
 dockerize:
   stage: dockerize
@@ -114,11 +100,8 @@ dockerize:
     - docker push -q $RELEASE_IMAGE
     - apk add --update curl && curl -XPOST -H "Content-type:application/json" --data "{\"text\":\"$CI_PROJECT_NAME $RELEASE_IMAGE is ready!\"}" "https://hooks.slack.com/services/$SLACK_HOOK"
     - echo "RELEASE_IMAGE=$RELEASE_IMAGE" >> build.env
-
-  only: 
-  - merge_requests
-  # only:
-  #   - master
+  only:
+    - master
 
 deploy_dev:
   stage: deploy_dev
@@ -131,7 +114,7 @@ deploy_dev:
     project: project-sierra/sierra-manifests
   when: manual
   only:
-  - merge_requests
+  - master
 
 deploy_staging:
   stage: deploy_staging
@@ -142,7 +125,5 @@ deploy_staging:
     ENVIRONMENT: staging
   trigger:
     project: project-sierra/sierra-manifests
-  needs:
-    - dockerize
   only:
     - master
