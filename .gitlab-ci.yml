@@ -40,14 +40,6 @@ deps:
           --target deps --tag $DEPS_IMAGE \
           --build-arg BUILDKIT_INLINE_CACHE=1 . | sh
     - docker push -q $DEPS_IMAGE
-  only:
-    refs:
-      - branches
-    changes:
-      - package.json
-      - yarn.lock
-      - eslint/*
-      - patches/*
 
 generate_schema:
   stage: generate_schema
@@ -57,15 +49,6 @@ generate_schema:
           --target schema --tag $SCHEMA_IMAGE \
           --build-arg BUILDKIT_INLINE_CACHE=1 . | sh
     - docker push -q $SCHEMA_IMAGE
-  only:
-    refs:
-      - branches
-    changes:
-      - prisma/*
-      - package.json
-      - yarn.lock
-      - eslint/*
-      - patches/*
 
 build:
   stage: build
