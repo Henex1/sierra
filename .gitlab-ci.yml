@@ -10,20 +10,21 @@ variables:
   GOOGLE_ID: "unset_google_id"
   GOOGLE_SECRET: "unset_google_secret"
   DEPS_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}-deps
+  SCHEMA_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}-schema
   BUILDER_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}-builder
   LATEST_IMAGE: ${CI_REGISTRY_IMAGE}:latest
+  DOCKER_BUILDKIT: 1
+  BUILDKIT_PROGRESS: plain
 
 services:
   - docker:20.10.6-dind
 
 before_script:
   - echo "$CI_BUILD_TOKEN" | docker login -u gitlab-ci-token --password-stdin $STAGING_REGISTRY
-  - docker pull -q $LATEST_IMAGE || true
-  - docker pull -q $DEPS_IMAGE || true
-
 
 stages:
   - deps
+  - generate_schema
   - test
   - build
   - dockerize
@@ -34,21 +35,54 @@ stages:
 deps:
   stage: deps
   script:
-    - docker build --cache-from $DEPS_IMAGE --cache-from $LATEST_IMAGE --tag $DEPS_IMAGE --target deps .
+    - echo docker build \
+          --cache-from $DEPS_IMAGE \
+          --target deps --tag $DEPS_IMAGE \
+          --build-arg BUILDKIT_INLINE_CACHE=1 . | sh
     - docker push -q $DEPS_IMAGE
+  only:
+    refs:
+      - branches
+    changes:
+      - package.json
+      - yarn.lock
+      - eslint/*
+      - patches/*
 
+generate_schema:
+  stage: generate_schema
+  script:
+    - echo docker build \
+          --cache-from $SCHEMA_IMAGE --cache-from $DEPS_IMAGE \
+          --target schema --tag $SCHEMA_IMAGE \
+          --build-arg BUILDKIT_INLINE_CACHE=1 . | sh
+    - docker push -q $SCHEMA_IMAGE
+  only:
+    refs:
+      - branches
+    changes:
+      - prisma/*
+      - package.json
+      - yarn.lock
+      - eslint/*
+      - patches/*
 
 build:
   stage: build
   script:
-    - docker build --cache-from $BUILDER_IMAGE --cache-from $DEPS_IMAGE --cache-from $LATEST_IMAGE --tag $BUILDER_IMAGE .
+    - echo docker build \
+          --cache-from $BUILDER_IMAGE --cache-from $SCHEMA_IMAGE --cache-from $DEPS_IMAGE \
+          --tag $BUILDER_IMAGE \
+          --build-arg BUILDKIT_INLINE_CACHE=1 . | sh
     - docker push -q $BUILDER_IMAGE
+  only:
+    - master
 
 
 test:
   stage: test
   image:
-    name: $DEPS_IMAGE
+    name: $SCHEMA_IMAGE
     entrypoint: ["/usr/bin/env"]
   before_script: []
   services:
@@ -59,47 +93,56 @@ test:
     POSTGRES_PASSWORD: "example"
     POSTGRES_HOST_AUTH_METHOD: trust
   script:
-    - cd /app
+    - cp -r /app/node_modules ./
     - yarn ts-node eslint/test.js
     - yarn lint
     - yarn tsc -b .
     - yarn prisma migrate reset -f
     - yarn test
+  only:
+  # - merge_requests
+  - fake
 
 dockerize:
   stage: dockerize
   script:
     - docker pull -q $BUILDER_IMAGE || true
-    - RELEASE_IMAGE=$CI_REGISTRY_IMAGE:`date '+%Y-%m-%d-%H%M'`-${CI_COMMIT_SHA:0:9}
+    - RELEASE_IMAGE=$CI_REGISTRY_IMAGE:${CI_COMMIT_SHA:0:9}
     - docker tag $BUILDER_IMAGE  $LATEST_IMAGE
     - docker tag $BUILDER_IMAGE  $RELEASE_IMAGE
     - docker push -q $LATEST_IMAGE
     - docker push -q $RELEASE_IMAGE
     - apk add --update curl && curl -XPOST -H "Content-type:application/json" --data "{\"text\":\"$CI_PROJECT_NAME $RELEASE_IMAGE is ready!\"}" "https://hooks.slack.com/services/$SLACK_HOOK"
-  only:
-    - master
+    - echo "RELEASE_IMAGE=$RELEASE_IMAGE" >> build.env
+
+  only: 
+  - merge_requests
+  # only:
+  #   - master
 
 deploy_dev:
   stage: deploy_dev
   variables:
     ARGO_APP_NAME: sierra-app
-    RELEASE_IMAGE: $RELEASE_IMAGE
+    RELEASE_IMAGE: "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}"
     PARENT_PATH: $CI_PROJECT_PATH
     ENVIRONMENT: dev
   trigger:
     project: project-sierra/sierra-manifests
-  needs:
-    - dockerize
   when: manual
+  only:
+  - merge_requests
 
 deploy_staging:
   stage: deploy_staging
   variables:
     ARGO_APP_NAME: sierra-app
-    RELEASE_IMAGE: $RELEASE_IMAGE
+    RELEASE_IMAGE: "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}"
     PARENT_PATH: $CI_PROJECT_PATH
     ENVIRONMENT: staging
   trigger:
     project: project-sierra/sierra-manifests
   needs:
     - dockerize
+  only:
+    - master
