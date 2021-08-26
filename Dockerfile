@@ -2,12 +2,19 @@ FROM node:15.14.0 AS deps
 
 #### Install dependencies
 WORKDIR /app
-COPY package.json yarn.lock eslint ./
+COPY package.json yarn.lock ./
+COPY eslint ./eslint
+COPY patches/ patches
 RUN yarn --frozen-lockfile
 
-#### Install dependencies again
-COPY . ./
-RUN yarn --frozen-lockfile && yarn prisma generate
+
+FROM node:15.14.0 AS schema
+
+WORKDIR /app
+COPY --from=deps /app ./
+COPY . .
+
+RUN yarn prisma generate
 
 FROM node:15.14.0 AS builder
 #### Build
@@ -22,12 +29,9 @@ ENV DATABASE_URL=postgresql://postgres:example@postgres:5432/postgres?schema=pub
     NODE_ENV=production
 
 WORKDIR /app
-COPY --from=deps /app ./
+COPY --from=schema /app ./
 
-# This tsc command isn't strictly necessary for the build, but yarn build will
-# only show one single error and tsc will show all of them, and is faster than
-# yarn build.
-RUN yarn tsc -b . && yarn build
+RUN yarn build
 
 
 FROM node:15.14.0-alpine
