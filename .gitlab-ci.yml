@@ -40,7 +40,9 @@ deps:
           --target deps --tag $DEPS_IMAGE \
           --build-arg BUILDKIT_INLINE_CACHE=1 . | sh
     - docker push -q $DEPS_IMAGE
-
+  only:
+  - merge_requests
+  
 generate_schema:
   stage: generate_schema
   script:
@@ -49,7 +51,9 @@ generate_schema:
           --target schema --tag $SCHEMA_IMAGE \
           --build-arg BUILDKIT_INLINE_CACHE=1 . | sh
     - docker push -q $SCHEMA_IMAGE
-
+  only:
+  - merge_requests
+  
 build:
   stage: build
   script:
