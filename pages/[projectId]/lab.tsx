@@ -1,8 +1,8 @@
 import _ from "lodash";
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Grid, Typography, Box, makeStyles } from "@material-ui/core";
 import { Pagination } from "@material-ui/lab";
-import { useRouter } from "next/router";
+import Router, { useRouter } from "next/router";
 
 import { apiRequest } from "../../lib/api";
 import Filters from "../../components/lab/Filters";
@@ -49,6 +49,7 @@ import {
 } from "../../lib/querytemplates";
 import { getSearchEndpoint } from "../../lib/searchendpoints";
 import NoExistingExcution from "components/lab/NoExistingExcution";
+import { BackdropLoadingSpinner } from "../../components/common/BackdropLoadingSpinner";
 
 const useStyles = makeStyles((theme) => ({
   listContainer: {
@@ -210,6 +211,24 @@ export default function Lab({
 }: Props) {
   const classes = useStyles();
   const router = useRouter();
+  const [propsLoading, setPropsLoading] = useState(false);
+
+  useEffect(() => {
+    // Add backdrop with loading spinner while getting server side props
+    const start = () => setPropsLoading(true);
+    const end = () => setPropsLoading(false);
+
+    Router.events.on("routeChangeStart", start);
+    Router.events.on("routeChangeComplete", end);
+    Router.events.on("routeChangeError", end);
+
+    return () => {
+      Router.events.off("routeChangeStart", start);
+      Router.events.off("routeChangeComplete", end);
+      Router.events.off("routeChangeError", end);
+    };
+  }, []);
+
   const [
     activeSearchPhrase,
     setActiveSearchPhrase,
@@ -266,76 +285,79 @@ export default function Lab({
   const isFirstQueryExcute = searchPhrases.length == 0;
 
   return (
-    <div>
-      {!!searchConfiguration && !isFirstQueryExcute ? (
-        <div>
-          <Grid container spacing={4} className={classes.listContainer}>
-            <Grid item sm={4} className={classes.listBorder}>
-              <Box>
-                <Box mb={2}>
-                  <Typography>
-                    Showing {searchPhrasesTotal} search phrases
-                  </Typography>
+    <>
+      <BackdropLoadingSpinner open={propsLoading} />
+      <div>
+        {!!searchConfiguration && !isFirstQueryExcute ? (
+          <div>
+            <Grid container spacing={4} className={classes.listContainer}>
+              <Grid item sm={4} className={classes.listBorder}>
+                <Box>
+                  <Box mb={2}>
+                    <Typography>
+                      Showing {searchPhrasesTotal} search phrases
+                    </Typography>
+                  </Box>
+                  <Box mb={2}>
+                    <Filters
+                      filters={displayOptions}
+                      onFilterChange={handleFilterChange}
+                    />
+                  </Box>
                 </Box>
-                <Box mb={2}>
-                  <Filters
-                    filters={displayOptions}
-                    onFilterChange={handleFilterChange}
+                <SearchPhraseList
+                  searchPhrases={searchPhrases}
+                  activePhrase={activeSearchPhrase}
+                  setActivePhrase={setActiveSearchPhrase}
+                />
+                <Box mt={4} display="flex" justifyContent="center">
+                  <Pagination
+                    page={page}
+                    count={Math.ceil(searchPhrasesTotal / pageSize)}
+                    onChange={(e: React.ChangeEvent<unknown>, value: number) =>
+                      setPage(value)
+                    }
                   />
                 </Box>
-              </Box>
-              <SearchPhraseList
-                searchPhrases={searchPhrases}
-                activePhrase={activeSearchPhrase}
-                setActivePhrase={setActiveSearchPhrase}
-              />
-              <Box mt={4} display="flex" justifyContent="center">
-                <Pagination
-                  page={page}
-                  count={Math.ceil(searchPhrasesTotal / pageSize)}
-                  onChange={(e: React.ChangeEvent<unknown>, value: number) =>
-                    setPage(value)
-                  }
-                />
-              </Box>
+              </Grid>
+              <Grid item md={8}>
+                {activeSearchPhrase ? (
+                  <ResultList
+                    searchPhrase={activeSearchPhrase}
+                    onClose={handleModalClose}
+                    displayFields={displayFields}
+                  />
+                ) : (
+                  <Box>
+                    {activeExecution && currentExecution && (
+                      <ExecutionSummary
+                        templates={templates}
+                        rulesets={rulesets}
+                        executions={executions}
+                        activeExecution={activeExecution}
+                        currentExecution={currentExecution}
+                        onSelected={(id: string) => setCurrentExecutionId(id)}
+                      />
+                    )}
+                  </Box>
+                )}
+              </Grid>
             </Grid>
-            <Grid item md={8}>
-              {activeSearchPhrase ? (
-                <ResultList
-                  searchPhrase={activeSearchPhrase}
-                  onClose={handleModalClose}
-                  displayFields={displayFields}
-                />
-              ) : (
-                <Box>
-                  {activeExecution && currentExecution && (
-                    <ExecutionSummary
-                      templates={templates}
-                      rulesets={rulesets}
-                      executions={executions}
-                      activeExecution={activeExecution}
-                      currentExecution={currentExecution}
-                      onSelected={(id: string) => setCurrentExecutionId(id)}
-                    />
-                  )}
-                </Box>
-              )}
-            </Grid>
-          </Grid>
-        </div>
-      ) : (
-        <NoExistingExcution
-          isSearchConfig={!!searchConfiguration}
-          isRunQuery={isFirstQueryExcute}
+          </div>
+        ) : (
+          <NoExistingExcution
+            isSearchConfig={!!searchConfiguration}
+            isRunQuery={isFirstQueryExcute}
+          />
+        )}
+        <ActionButtons
+          searchConfiguration={searchConfiguration}
+          rulesets={rulesets}
+          canRun={searchConfiguration !== null}
+          isRunning={isTestRunning}
+          onRun={handleRun}
         />
-      )}
-      <ActionButtons
-        searchConfiguration={searchConfiguration}
-        rulesets={rulesets}
-        canRun={searchConfiguration !== null}
-        isRunning={isTestRunning}
-        onRun={handleRun}
-      />
-    </div>
+      </div>
+    </>
   );
 }
