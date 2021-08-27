@@ -93,7 +93,7 @@ dockerize:
   stage: dockerize
   script:
     - docker pull -q $BUILDER_IMAGE || true
-    - RELEASE_IMAGE=$CI_REGISTRY_IMAGE:${CI_COMMIT_SHA:0:9}
+    - RELEASE_IMAGE=$CI_REGISTRY_IMAGE:${CI_COMMIT_SHA}
     - docker tag $BUILDER_IMAGE  $LATEST_IMAGE
     - docker tag $BUILDER_IMAGE  $RELEASE_IMAGE
     - docker push -q $LATEST_IMAGE
