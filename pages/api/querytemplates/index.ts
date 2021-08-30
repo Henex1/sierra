@@ -41,7 +41,9 @@ export const handleUpdateQueryTemplate = apiHandler(async (req, res) => {
   const user = requireUser(req);
   const input = requireBody(
     req,
-    updateQueryTemplateSchema.merge(z.object({ parentId: z.string() }))
+    updateQueryTemplateSchema.merge(
+      z.object({ parentId: z.string(), projectId: z.string() })
+    )
   );
 
   const queryTemplate = await getQueryTemplate(user, input.parentId);

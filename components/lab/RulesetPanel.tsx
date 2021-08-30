@@ -8,6 +8,7 @@ import {
   Chip,
   makeStyles,
 } from "@material-ui/core";
+import { Form } from "react-final-form";
 import useSWR from "swr";
 import { useRouter } from "next/router";
 import CheckIcon from "@material-ui/icons/Check";
@@ -148,7 +149,14 @@ export default function RulesetPanel({
         />
       ) : rulesetSelected ? (
         <LoadingContent />
-      ) : null}
+      ) : (
+        <Form
+          onSubmit={onSubmit}
+          render={({ handleSubmit }) => (
+            <form id={formId} onSubmit={handleSubmit} />
+          )}
+        />
+      )}
     </div>
   );
 }
