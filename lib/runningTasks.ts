@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const { getAsync, setAsync } = require("./redis");
+import { getAsync, setAsync } from "./redis";
 
-const getTasks = async () => {
-  const data = await getAsync("running_tasks");
+export const getTasks = async (): Promise<Array<string>> => {
+  const data = (await getAsync("running_tasks")) || "";
   return JSON.parse(data) || [];
 };
 
-const addTask = async (task) => {
+export const addTask = async (task: string) => {
   // Get currently running tasks
   const runningTasks = await getTasks();
 
@@ -19,7 +18,7 @@ const addTask = async (task) => {
   return newRunningTasks;
 };
 
-const removeTask = async (task) => {
+export const removeTask = async (task: string) => {
   // Get currently running tasks
   const runningTasks = await getTasks();
 
@@ -33,5 +32,3 @@ const removeTask = async (task) => {
 
   return newRunningTasks;
 };
-
-module.exports = { addTask, removeTask, getTasks };
