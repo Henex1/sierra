@@ -27,7 +27,7 @@ import { useRouter } from "next/router";
 import { ExposedSearchConfiguration } from "../../lib/searchconfigurations";
 import { ExposedRuleset, ExposedRulesetVersion } from "../../lib/rulesets";
 import { ExposedQueryTemplate } from "../../lib/querytemplates";
-import QueryPanel from "./QueryPanel";
+import QueryPanel, { QueryPanelValues } from "./QueryPanel";
 import RulesetPanel from "./RulesetPanel";
 import LoadingContent from "../common/LoadingContent";
 import Scrollable from "../common/Scrollable";
@@ -170,7 +170,7 @@ type Props = {
   handleClose: () => void;
   canRun: boolean;
   isRunning: boolean;
-  onRun: () => void;
+  onRun: (id: string) => void;
 };
 
 export default function ConfigurationDrawer({
@@ -188,6 +188,12 @@ export default function ConfigurationDrawer({
   const [activeTab, setActiveTab] = React.useState(0);
   const [isResizing, setIsResizing] = React.useState(false);
   const [rulesetIds, setRulesetIds] = React.useState<string[]>([]);
+  const [queryPanelData, setQueryPanelData] = React.useState<QueryPanelValues>({
+    query: searchConfiguration?.queryTemplate.query || "",
+    knobs: (searchConfiguration?.queryTemplate.knobs || {}) as {
+      [key: string]: any;
+    },
+  });
 
   React.useEffect(() => {
     if (searchConfiguration) {
@@ -248,6 +254,7 @@ export default function ConfigurationDrawer({
     await apiRequest(`/api/searchconfigurations/update`, {
       id: searchConfiguration?.id,
       queryTemplateId,
+      rulesetIds,
     });
     router.replace(router.asPath);
   }
@@ -260,6 +267,36 @@ export default function ConfigurationDrawer({
     });
     router.replace(router.asPath);
   }
+
+  const handleQueryPanelChange = (data: QueryPanelValues) =>
+    setQueryPanelData(data);
+
+  const updateQueryTemplate = async ({ query, knobs }: QueryPanelValues) => {
+    const newQueryTemplates: {
+      queryTemplate: ExposedQueryTemplate;
+    } = await apiRequest(`/api/querytemplates/update`, {
+      parentId: searchConfiguration?.queryTemplate.id,
+      description: searchConfiguration?.queryTemplate.description || "",
+      projectId: searchConfiguration?.queryTemplate.projectId,
+      query,
+      knobs: knobs
+        ? Object.entries(knobs).reduce(
+            (result: { [key: string]: number }, item) => {
+              result[item[0]] = parseFloat(item[1]) || 10;
+              return result;
+            },
+            {}
+          )
+        : {},
+    });
+
+    return newQueryTemplates;
+  };
+
+  const handleRun = async () => {
+    const { queryTemplate } = await updateQueryTemplate(queryPanelData);
+    onRun(queryTemplate.id);
+  };
 
   return (
     <Drawer
@@ -335,6 +372,8 @@ export default function ConfigurationDrawer({
                     formId={formId}
                     queryTemplate={searchConfiguration.queryTemplate}
                     onUpdate={handleQueryTemplateUpdate}
+                    updateQueryTemplate={updateQueryTemplate}
+                    onFormValuesChange={handleQueryPanelChange}
                   />
                 </TabPanel>
                 <TabPanel value={activeTab} index={1}>
@@ -361,7 +400,7 @@ export default function ConfigurationDrawer({
                 <Fab
                   color="primary"
                   variant="extended"
-                  onClick={onRun}
+                  onClick={handleRun}
                   disabled={!canRun || isRunning}
                   className={classes.saveAndRunButton}
                   size="medium"

@@ -50,7 +50,7 @@ type Props = {
   rulesets: ExposedRuleset[];
   canRun: boolean;
   isRunning: boolean;
-  onRun: () => void;
+  onRun: (id: string) => void;
 };
 
 export default function ActionButtons({

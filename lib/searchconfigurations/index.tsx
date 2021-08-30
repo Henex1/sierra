@@ -26,6 +26,13 @@ export type ExposedSearchConfiguration = Pick<
   keyof typeof scSelect
 > & { tags: string[] };
 
+type UpdateSearchConfigurationInput = {
+  id: string;
+  queryTemplate: QueryTemplate;
+  rulesets: Array<RulesetVersion>;
+  tags?: Array<string>;
+};
+
 export function userCanAccessSearchConfiguration(
   user: User,
   rest?: Prisma.SearchConfigurationWhereInput
@@ -97,6 +104,41 @@ export async function listSearchConfigurations(
 
 // [Judgement, weight]
 export type WeightedJudgement = [Judgement, number];
+
+export async function updateSearchConfiguration({
+  id,
+  queryTemplate,
+  rulesets,
+  tags,
+}: UpdateSearchConfigurationInput): Promise<SearchConfiguration> {
+  const sc = await prisma.searchConfiguration.update({
+    where: { id: id },
+    data: {
+      queryTemplate: {
+        connect: { id: queryTemplate.id },
+      },
+      rulesets: rulesets?.length
+        ? {
+            connect: rulesets.map((rsv) => ({
+              id: rsv.id,
+            })),
+          }
+        : { set: [] },
+    },
+    include: {
+      tags: true,
+    },
+  });
+
+  if (tags) {
+    await prisma.$transaction(
+      tags.map((tag) =>
+        upsertSearchConfigurationTag(queryTemplate.projectId, sc, tag)
+      )
+    );
+  }
+  return sc;
+}
 
 export async function createSearchConfiguration(
   queryTemplate: QueryTemplate,

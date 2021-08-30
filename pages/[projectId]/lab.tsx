@@ -272,15 +272,30 @@ export default function Lab({
 
   const handleModalClose = useCallback(() => setActiveSearchPhrase(null), []);
 
-  const handleRun = useCallback(async () => {
-    if (searchConfigurationId) {
+  const handleRun = useCallback(
+    async (queryTemplateId) => {
+      if (!searchConfigurationId) return;
+
       setIsTestRunning(true);
-      await apiRequest("/api/searchconfigurations/execute", {
-        id: searchConfigurationId,
-      });
-      location.reload();
-    }
-  }, [searchConfigurationId]);
+
+      try {
+        await apiRequest("/api/searchconfigurations/update", {
+          id: searchConfigurationId,
+          queryTemplateId,
+        });
+
+        await apiRequest("/api/searchconfigurations/execute", {
+          id: searchConfigurationId,
+        });
+
+        setIsTestRunning(false);
+        location.reload();
+      } catch (err) {
+        setIsTestRunning(false);
+      }
+    },
+    [searchConfigurationId]
+  );
 
   const isFirstQueryExcute = searchPhrases.length == 0;
 

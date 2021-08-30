@@ -16,7 +16,6 @@ import { OnChange } from "react-final-form-listeners";
 import uniq from "lodash/uniq";
 import { useRouter } from "next/router";
 
-import { apiRequest } from "../../lib/api";
 import { ExposedQueryTemplate } from "../../lib/querytemplates";
 import JsonEditor from "../JsonEditor";
 import ResizeObserver from "../common/Resizable";
@@ -94,34 +93,33 @@ type Props = {
   queryTemplate: ExposedQueryTemplate;
   formId: string;
   onUpdate: (id: string) => void;
+  onFormValuesChange: (data: QueryPanelValues) => void;
+  updateQueryTemplate: (
+    data: QueryPanelValues
+  ) => Promise<{ queryTemplate: ExposedQueryTemplate }>;
+};
+
+export type QueryPanelValues = {
+  query: string;
+  knobs: { [key: string]: any };
 };
 
 export default function QueryTemplateEditor({
   queryTemplate,
   formId,
   onUpdate,
+  onFormValuesChange,
+  updateQueryTemplate,
 }: Props) {
   const classes = useStyles();
   const router = useRouter();
 
   async function onSubmit(value: ExposedQueryTemplate) {
-    const newQueryTemplates: {
-      queryTemplate: ExposedQueryTemplate;
-    } = await apiRequest(`/api/querytemplates/update`, {
-      parentId: queryTemplate.id,
-      description: queryTemplate.description || "",
-      projectId: queryTemplate.projectId,
+    const newQueryTemplates = await updateQueryTemplate({
       query: value.query,
-      knobs: value.knobs
-        ? Object.entries(value.knobs).reduce(
-            (result: { [key: string]: number }, item) => {
-              result[item[0]] = parseFloat(item[1]) || 10;
-              return result;
-            },
-            {}
-          )
-        : {},
+      knobs: value.knobs as Record<string, undefined>,
     });
+
     await onUpdate(newQueryTemplates.queryTemplate.id);
     router.replace(router.asPath);
     return Promise.resolve();
@@ -159,6 +157,11 @@ export default function QueryTemplateEditor({
               newKnobsVars.forEach((varName) => {
                 newKnobs[varName] = oldKnobs[varName] || KNOB_DEFAULT_VALUE;
               });
+
+              // Pass changed knobs to parent
+              onFormValuesChange({ query: value, knobs: newKnobs });
+
+              // Change form knobs value
               form.change("knobs", newKnobs);
             }}
           </OnChange>
@@ -248,9 +251,8 @@ function extractParam(match: string) {
   const matchedParam = paramSingle.exec(match);
   if (matchedParam && matchedParam.length >= 2) {
     return matchedParam[1];
-  } else {
-    return null;
   }
+  return null;
 }
 
 function extract(query: string) {
