@@ -12,7 +12,10 @@ export function requireEnv(name: string): string {
 }
 
 // Get the value of an environment variable with a default value.
-export function optionalEnv(name: string, def = ""): string {
+export function optionalEnv(
+  name: string,
+  def: string | number = ""
+): string | number {
   if (name in process.env) {
     return process.env[name]!;
   } else {

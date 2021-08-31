@@ -1,7 +1,7 @@
 import { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
 import { Session } from "next-auth";
 import * as z from "zod";
-import { Server } from "socket.io";
+import { Socket } from "socket.io";
 
 import prisma, { User, Org } from "./prisma";
 import { getUser } from "./authServer";
@@ -9,7 +9,7 @@ import { getUser } from "./authServer";
 export type SierraApiRequest = NextApiRequest & {
   session?: Session;
   user?: User;
-  io: Server;
+  io: Socket;
 };
 
 export type SierraApiHandler = (
