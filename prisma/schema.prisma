@@ -7,7 +7,7 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl"]
 }
 
@@ -29,8 +29,8 @@ model User {
   orgs      OrgUser[]
   activeOrg Org?      @relation(fields: [activeOrgId], references: [id])
 
-  @@map("users")
   ApiKey ApiKey[]
+  @@map("users")
 }
 
 // UserSiteRole dictates permissions outside of all orgs. ADMIN allows
@@ -156,6 +156,7 @@ model Project {
   searchConfigurationTags SearchConfigurationTag[]
   searchEndpoint          SearchEndpoint           @relation(fields: [searchEndpointId], references: [id])
   queryTemplateTags       QueryTemplateTag[]
+  Execution               Execution[]
 }
 
 // A QueryTemplate is an immutable backend query that can be populated combined
@@ -290,6 +291,7 @@ model Execution {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
   searchConfigurationId String
+  projectId             String
   // Meta tracks information about the datasource, like number of documents,
   // segments, shards; the index maapping; and so on. Standard keys:
   // tookP50, tookP95, tookP99: percentile timing metrics
@@ -300,6 +302,7 @@ model Execution {
 
   phrases             SearchPhraseExecution[]
   searchConfiguration SearchConfiguration     @relation(fields: [searchConfigurationId], references: [id])
+  project             Project                 @relation(fields: [projectId], references: [id])
 }
 
 // A SearchPhraseExecution is a single phrase which was executed and scored as
@@ -358,12 +361,12 @@ model RulesetVersion {
 
 // API Keys used as an alternative way to authenticate an API call
 model ApiKey {
-  apikey      String @id
-  userId      String
-  alias       String
-  disabled    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  apikey    String   @id
+  userId    String
+  alias     String
+  disabled  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 

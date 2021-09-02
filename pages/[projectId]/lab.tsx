@@ -18,12 +18,12 @@ import {
 } from "../../lib/searchconfigurations";
 import {
   getExecution,
-  getLatestExecution,
   listExecutions,
   countSearchPhrases,
   getSearchPhrases,
   ExposedExecution,
   formatExecution,
+  getLatestExecution,
 } from "../../lib/execution";
 import { ExposedSearchPhrase, ShowOptions, SortOptions } from "../../lib/lab";
 import {
@@ -92,19 +92,40 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
     return { notFound: true };
   }
   const page = optionalNumberQuery(context, "page", 1) - 1;
-  const sc = await getActiveSearchConfiguration(project);
-  const currentExecutionId = context.query.execution;
-  const currentExecution = currentExecutionId
-    ? await getExecution(context.user, currentExecutionId as string)
-    : sc
-    ? await getLatestExecution(sc)
-    : null;
+
+  // Get all executions for selected project
+  const executions = projectId ? await listExecutions(projectId) : [];
+
+  // Query parameters
+  const {
+    execution: currentExecutionId,
+    show = "all",
+    sort = "score-desc",
+  } = context.query;
+
+  // Active search configuration for current execution
+  const activeSearchConfiguration = await getActiveSearchConfiguration(
+    project,
+    currentExecutionId as string
+  );
+
+  // Current execution
+  let currentExecution = null;
+  if (currentExecutionId) {
+    currentExecution = await getExecution(
+      context.user,
+      currentExecutionId as string
+    );
+  } else if (activeSearchConfiguration) {
+    currentExecution = await getLatestExecution(activeSearchConfiguration);
+  }
+
   const searchPhrasesTotal = currentExecution
     ? await countSearchPhrases(currentExecution)
     : 0;
   const displayOptions = {
-    show: (context.query.show as ShowOptions) || "all",
-    sort: (context.query.sort as SortOptions) || "score-desc",
+    show: show as ShowOptions,
+    sort: sort as SortOptions,
   };
   const searchPhrases = currentExecution
     ? await getSearchPhrases(currentExecution, {
@@ -144,15 +165,18 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
       }
     }
   );
-  const queryTemplate = sc
-    ? await getQueryTemplate(context.user, sc.queryTemplateId)
+  const queryTemplate = activeSearchConfiguration
+    ? await getQueryTemplate(
+        context.user,
+        activeSearchConfiguration.queryTemplateId
+      )
     : null;
-  const searchConfiguration = sc
+  const searchConfiguration = activeSearchConfiguration
     ? {
-        ...formatSearchConfiguration(sc),
-        rulesets: (await getRulesetsForSearchConfiguration(sc)).map(
-          formatRulesetVersion
-        ),
+        ...formatSearchConfiguration(activeSearchConfiguration),
+        rulesets: (
+          await getRulesetsForSearchConfiguration(activeSearchConfiguration)
+        ).map(formatRulesetVersion),
         queryTemplate: formatQueryTemplate(queryTemplate as QueryTemplate),
       }
     : null;
@@ -167,7 +191,6 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
       rulesetVersions: rulesetVersions[i].map(formatRulesetVersion),
     })
   );
-  const executions = sc ? await listExecutions(sc) : [];
 
   const searchEndpoint = await getSearchEndpoint(
     context.user,
@@ -282,6 +305,7 @@ export default function Lab({
         await apiRequest("/api/searchconfigurations/update", {
           id: searchConfigurationId,
           queryTemplateId,
+          executionId: currentExecution?.id,
         });
 
         await apiRequest("/api/searchconfigurations/execute", {
@@ -371,6 +395,7 @@ export default function Lab({
           canRun={searchConfiguration !== null}
           isRunning={isTestRunning}
           onRun={handleRun}
+          executionId={currentExecution?.id}
         />
       </div>
     </>

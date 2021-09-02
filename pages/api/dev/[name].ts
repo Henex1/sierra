@@ -166,7 +166,7 @@ async function handleSeed(
     },
   });
 
-  await createExecution(sc);
+  await createExecution(sc, project.id);
 
   return res.status(200).json({ success: true });
 }

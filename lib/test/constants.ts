@@ -7,6 +7,7 @@ import {
   SearchEndpoint,
   Judgement,
   SearchConfiguration,
+  JudgementSearchConfiguration,
   Execution,
   QueryTemplate,
   Ruleset,
@@ -21,6 +22,7 @@ export const TEST_ORG_ID = "c111111110000orga00000000";
 export const TEST_PROJECT_ID = "c111111110000proj00000000";
 export const TEST_SEARCHENDPOINT_ID = "c111111110000dsrc00000000";
 export const TEST_JUDGEMENT_ID = "c111111110000judg00000000";
+export const TEST_SEARCHCONFIGURATION_JUDGEMENT_ID = 1;
 export const TEST_RULESET_ID = "c111111110000rset00000000";
 export const TEST_SEARCHCONFIGURATION_ID = "c111111110000scfg00000000";
 export const TEST_EXECUTION_ID = "c111111110000exec00000000";
@@ -75,6 +77,13 @@ export const TEST_JUDGEMENT: NoTimestamps<Judgement> = {
   projectId: TEST_PROJECT_ID,
 };
 
+export const TEST_SEARCHCONFIGURATION_JUDGEMENT: NoTimestamps<JudgementSearchConfiguration> = {
+  id: TEST_SEARCHCONFIGURATION_JUDGEMENT_ID,
+  judgementId: TEST_JUDGEMENT_ID,
+  searchConfigurationId: TEST_SEARCHCONFIGURATION_ID,
+  weight: 1,
+};
+
 export const TEST_SEARCHCONFIGURATION: NoTimestamps<SearchConfiguration> = {
   id: TEST_SEARCHCONFIGURATION_ID,
   queryTemplateId: TEST_QUERYTEMPLATE_ID,
@@ -82,6 +91,7 @@ export const TEST_SEARCHCONFIGURATION: NoTimestamps<SearchConfiguration> = {
 
 export const TEST_EXECUTION: NoTimestamps<Execution> = {
   id: TEST_EXECUTION_ID,
+  projectId: TEST_PROJECT_ID,
   searchConfigurationId: TEST_SEARCHCONFIGURATION_ID,
   meta: {},
   combinedScore: 0.5,
@@ -89,7 +99,7 @@ export const TEST_EXECUTION: NoTimestamps<Execution> = {
 };
 
 export const TEST_QUERYTEMPLATE: NoTimestamps<QueryTemplate> = {
-  id: TEST_EXECUTION_ID,
+  id: TEST_QUERYTEMPLATE_ID,
   projectId: TEST_PROJECT_ID,
   parentId: "TEST_PARENT_QT_123123123123",
   query: "test query",

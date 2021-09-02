@@ -15,6 +15,7 @@ import { userCanAccessProject } from "../projects";
 
 export interface SearchConfiguration extends PrismaSearchConfiguration {
   tags: PrismaSearchConfigurationTag[];
+  queryTemplate?: QueryTemplate;
 }
 
 const scSelect = {
@@ -30,6 +31,14 @@ type UpdateSearchConfigurationInput = {
   id: string;
   queryTemplate: QueryTemplate;
   rulesets: Array<RulesetVersion>;
+  tags?: Array<string>;
+};
+
+type CreateSearchConfigurationInput = {
+  queryTemplateId: string;
+  projectId: string;
+  rulesets: RulesetVersion[];
+  judgements: WeightedJudgement[];
   tags?: Array<string>;
 };
 
@@ -65,16 +74,23 @@ export async function getSearchConfiguration(
   // on the associated QueryTemplate.
   const sc = await prisma.searchConfiguration.findFirst({
     where: userCanAccessSearchConfiguration(user, { id }),
-    include: { tags: true },
+    include: {
+      tags: true,
+      queryTemplate: true,
+    },
   });
   return sc;
 }
 
 export async function getActiveSearchConfiguration(
-  project: Project
+  project: Project,
+  executionId?: string
 ): Promise<SearchConfiguration | null> {
   const sc = await prisma.searchConfiguration.findFirst({
-    where: { queryTemplate: { projectId: project.id } },
+    where: {
+      queryTemplate: { projectId: project.id },
+      executions: { some: { id: executionId } },
+    },
     orderBy: [{ updatedAt: "desc" }],
     include: { tags: true },
   });
@@ -140,16 +156,17 @@ export async function updateSearchConfiguration({
   return sc;
 }
 
-export async function createSearchConfiguration(
-  queryTemplate: QueryTemplate,
-  rulesets: RulesetVersion[],
-  judgements: WeightedJudgement[],
-  tags?: string[]
-): Promise<SearchConfiguration> {
+export async function createSearchConfiguration({
+  queryTemplateId,
+  projectId,
+  rulesets,
+  judgements,
+  tags,
+}: CreateSearchConfigurationInput): Promise<SearchConfiguration> {
   const sc = await prisma.searchConfiguration.create({
     data: {
       queryTemplate: {
-        connect: { id: queryTemplate.id },
+        connect: { id: queryTemplateId },
       },
       judgements: {
         create: judgements.map(([judgement, weight]) => ({
@@ -167,9 +184,7 @@ export async function createSearchConfiguration(
   });
   if (tags) {
     await prisma.$transaction(
-      tags.map((tag) =>
-        upsertSearchConfigurationTag(queryTemplate.projectId, sc, tag)
-      )
+      tags.map((tag) => upsertSearchConfigurationTag(projectId, sc, tag))
     );
   }
   return sc;

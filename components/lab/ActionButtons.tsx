@@ -51,6 +51,7 @@ type Props = {
   canRun: boolean;
   isRunning: boolean;
   onRun: (id: string) => void;
+  executionId?: string | null;
 };
 
 export default function ActionButtons({
@@ -59,6 +60,7 @@ export default function ActionButtons({
   canRun,
   isRunning,
   onRun,
+  executionId,
 }: Props) {
   const [open, setOpen] = React.useState(false);
   const [drawerWidth, setDrawerWidth] = React.useState(600);
@@ -94,6 +96,7 @@ export default function ActionButtons({
                   searchConfiguration={searchConfiguration}
                   rulesets={rulesets}
                   handleClose={handleClose}
+                  executionId={executionId as string}
                 />
               )}
             </Portal>

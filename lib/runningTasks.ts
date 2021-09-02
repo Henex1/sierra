@@ -1,8 +1,8 @@
 import { getAsync, setAsync } from "./redis";
 
 export const getTasks = async (): Promise<Array<string>> => {
-  const data = (await getAsync("running_tasks")) || "";
-  return JSON.parse(data) || [];
+  const data = await getAsync("running_tasks");
+  return data ? JSON.parse(data) : [];
 };
 
 export const addTask = async (task: string) => {
