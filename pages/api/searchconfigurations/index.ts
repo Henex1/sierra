@@ -6,6 +6,7 @@ import {
   getSearchConfiguration,
   formatSearchConfiguration,
   updateSearchConfiguration,
+  getActiveSearchConfiguration,
 } from "../../../lib/searchconfigurations";
 import { getQueryTemplate } from "../../../lib/querytemplates";
 import {
@@ -14,10 +15,30 @@ import {
   requireMethod,
   requireUser,
   requireBody,
+  requireQuery,
 } from "../../../lib/apiServer";
 import { getRuleset, getLatestRulesetVersion } from "../../../lib/rulesets";
 import { RulesetVersion } from "../../../lib/prisma";
 import { addTask, removeTask } from "../../../lib/runningTasks";
+import { getProject } from "../../../lib/projects";
+
+export const fetchActiveSearchConfiguration = apiHandler(async (req, res) => {
+  requireMethod(req, "GET");
+  const user = requireUser(req);
+  const { projectId } = requireQuery(req, z.object({ projectId: z.string() }));
+  const project = await getProject(user, projectId);
+  if (!project) {
+    throw new HttpError(404, { error: "Project not found" });
+  }
+  const sc = await getActiveSearchConfiguration(project);
+  if (sc == null) {
+    throw new HttpError(404, {
+      error: `No active search configuration found for projectId ${projectId}`,
+    });
+  }
+
+  return res.status(200).json(formatSearchConfiguration(sc));
+});
 
 export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
