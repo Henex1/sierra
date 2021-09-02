@@ -89,11 +89,9 @@ export async function getLatestExecution(
   return execution;
 }
 
-export async function listExecutions(
-  sc: SearchConfiguration
-): Promise<Execution[]> {
+export async function listExecutions(projectId: string): Promise<Execution[]> {
   const execution = await prisma.execution.findMany({
-    where: { searchConfigurationId: sc.id },
+    where: { projectId },
     orderBy: [{ createdAt: "desc" }],
     take: 10,
   });
@@ -226,8 +224,23 @@ function mean(input: [number, ...number[]]): number {
   return input.reduce((a, b) => a + b) / input.length;
 }
 
+export async function updateExecution(
+  id: string,
+  searchConfigurationId: string
+) {
+  const updated = await prisma.execution.update({
+    where: { id },
+    data: {
+      searchConfigurationId,
+    },
+  });
+
+  return updated;
+}
+
 export async function createExecution(
-  config: SearchConfiguration
+  config: SearchConfiguration,
+  projectId: string
 ): Promise<Execution> {
   const tpl = (await prisma.queryTemplate.findFirst({
     where: { searchConfigurations: { some: { id: config.id } } },
@@ -269,6 +282,7 @@ export async function createExecution(
   const execution = await prisma.execution.create({
     data: {
       searchConfigurationId: config.id,
+      projectId,
       meta: { tookP50, tookP95, tookP99 },
       combinedScore,
       allScores,

@@ -26,6 +26,8 @@ loadEnvConfig(path.dirname(__filename), true, {
   },
 });
 
+jest.mock("redis", () => jest.requireActual("redis-mock"));
+
 jest.mock("./components/Session", () => {
   return {
     SessionProvider: ({ children }: any) => children,

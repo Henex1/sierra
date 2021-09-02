@@ -2,9 +2,9 @@ import express from "express";
 import { createServer } from "http";
 import next from "next";
 import { Server, Socket } from "socket.io";
-import { getAsync } from "../lib/redis";
 import { SierraApiRequest } from "../lib/apiServer";
 import { optionalEnv } from "../lib/env";
+import { getTasks } from "../lib/runningTasks";
 
 const dev = process.env.NODE_ENV !== "production";
 const nextApp = next({ dev });
@@ -22,8 +22,7 @@ nextApp.prepare().then(() => {
 
   io.on("connection", async (clientSocket: Socket) => {
     // Set running tasks on connected
-    const data = (await getAsync("running_tasks")) || "";
-    const tasks = JSON.parse(data);
+    const tasks = await getTasks();
 
     socket = clientSocket;
     clientSocket.emit("running_tasks", { tasks });

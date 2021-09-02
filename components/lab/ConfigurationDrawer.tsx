@@ -171,6 +171,7 @@ type Props = {
   canRun: boolean;
   isRunning: boolean;
   onRun: (id: string) => void;
+  executionId: string | null;
 };
 
 export default function ConfigurationDrawer({
@@ -182,6 +183,7 @@ export default function ConfigurationDrawer({
   canRun,
   isRunning,
   onRun,
+  executionId,
 }: Props) {
   const classes = useStyles({ width });
   const router = useRouter();
@@ -255,6 +257,7 @@ export default function ConfigurationDrawer({
       id: searchConfiguration?.id,
       queryTemplateId,
       rulesetIds,
+      executionId,
     });
     router.replace(router.asPath);
   }
