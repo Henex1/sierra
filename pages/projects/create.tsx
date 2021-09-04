@@ -32,7 +32,7 @@ export default function CreateProject({ searchEndpoints }: Props) {
   const onSubmit = React.useCallback(
     async (values: NewProject) => {
       let searchEndpointId = values.searchEndpointId;
-      if (values.searchEndpointId === "" && values.searchEndpoint) {
+      if (values.searchEndpointId === "-1" && values.searchEndpoint) {
         const { searchEndpoint } = await createSearchEndpoint(
           values.searchEndpoint
         );
