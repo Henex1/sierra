@@ -158,9 +158,9 @@ export default function SearchEndpointForm({
             <DialogContent>
               <DialogContentText id="alert-dialog-description">
                 Connection
-                {connectionTestResult.success ? " successful." : " failed."}
-                {connectionTestResult.success ||
-                  " Error Message: " + connectionTestResult.message}
+                {connectionTestResult?.success ? " successful." : " failed."}
+                {connectionTestResult?.success ||
+                  " Error Message: " + connectionTestResult?.message}
               </DialogContentText>
             </DialogContent>
             <DialogActions>
