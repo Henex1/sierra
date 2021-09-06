@@ -12,9 +12,9 @@ import ActionButtons from "../../components/lab/ActionButtons";
 import ExecutionSummary from "../../components/lab/ExecutionSummary";
 import { getProject } from "../../lib/projects";
 import {
-  getActiveSearchConfiguration,
   formatSearchConfiguration,
   ExposedSearchConfiguration,
+  getActiveSearchConfiguration,
 } from "../../lib/searchconfigurations";
 import {
   getExecution,
@@ -103,7 +103,7 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
     sort = "score-desc",
   } = context.query;
 
-  // Active search configuration for current execution
+  // Get active search configuration
   const activeSearchConfiguration = await getActiveSearchConfiguration(
     project,
     currentExecutionId as string

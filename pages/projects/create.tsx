@@ -12,7 +12,7 @@ import { create as createSearchEndpoint } from "../searchendpoints/create";
 import { authenticatedPage } from "../../lib/pageHelpers";
 import { apiRequest } from "../../lib/api";
 import { useSession } from "../../components/Session";
-import Form, { NewProject } from "../../components/projects/Form";
+import { NewProject, ProjectForm } from "../../components/projects/Form";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
@@ -60,7 +60,7 @@ export default function CreateProject({ searchEndpoints }: Props) {
         <Typography>New Project</Typography>
       </BreadcrumbsButtons>
       <Container maxWidth="sm">
-        <Form onSubmit={onSubmit} endpoints={searchEndpoints} />
+        <ProjectForm onSubmit={onSubmit} endpoints={searchEndpoints} />
       </Container>
     </div>
   );

@@ -166,6 +166,14 @@ async function handleSeed(
     },
   });
 
+  // Set sc as active for this project
+  await prisma.project.update({
+    where: { id: project.id },
+    data: {
+      activeSearchConfigurationId: sc.id,
+    },
+  });
+
   await createExecution(sc, project.id);
 
   return res.status(200).json({ success: true });

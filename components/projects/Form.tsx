@@ -11,6 +11,9 @@ import Grid from "@material-ui/core/Grid";
 import { ExposedProject } from "../../lib/projects";
 import { ExposedSearchEndpoint } from "../../lib/searchendpoints";
 import SearchEndpointForm from "../searchendpoints/Form";
+import { useEffect, useState } from "react";
+import { apiRequest } from "../../lib/api";
+import { ProjectSearchConfigurationsSelect } from "./ProjectSearchConfigurationsSelect";
 
 export type NewProject = ExposedProject & {
   searchEndpoint: ExposedSearchEndpoint;
@@ -21,13 +24,38 @@ export type FormProps = BaseFormProps<NewProject> & {
   endpoints: ExposedSearchEndpoint[];
 };
 
-export default function ProjectForm({
+export function ProjectForm({
   onDelete,
   endpoints,
   mutators = {},
   ...rest
 }: FormProps) {
+  const [searchConfigurations, setSearchConfigurations] = useState([]);
   const isNew = rest.initialValues?.id === undefined;
+
+  useEffect(() => {
+    // Get list of project search configurations
+    const getSearchConfigurations = async () => {
+      if (!rest?.initialValues?.id) return;
+
+      const { searchConfigurations } = await apiRequest(
+        "/api/searchconfigurations",
+        {
+          projectId: rest.initialValues.id,
+        }
+      );
+
+      return searchConfigurations;
+    };
+
+    getSearchConfigurations()
+      .then((scs) => {
+        if (scs?.length) {
+          setSearchConfigurations(scs);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <Form
@@ -95,6 +123,13 @@ export default function ProjectForm({
                     handleSubmit();
                   }}
                   hideActions
+                />
+              </Box>
+            )}
+            {searchConfigurations?.length > 0 && (
+              <Box pb={2}>
+                <ProjectSearchConfigurationsSelect
+                  searchConfigurations={searchConfigurations}
                 />
               </Box>
             )}

@@ -1,3 +1,3 @@
-import { handleExecute } from "./index";
+import { handleExecuteSearchConfiguration } from "./index";
 
-export default handleExecute;
+export default handleExecuteSearchConfiguration;
