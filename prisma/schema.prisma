@@ -142,21 +142,23 @@ enum SearchEndpointType {
 
 // A Project is a group of search phrases which are being optimized.
 model Project {
-  id               String   @id @default(cuid())
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  orgId            String
-  searchEndpointId String
-  name             String
+  id                          String   @id @default(cuid())
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+  orgId                       String
+  searchEndpointId            String
+  name                        String
+  activeSearchConfigurationId String?
 
-  judgements              Judgement[]
-  org                     Org                      @relation(fields: [orgId], references: [id])
-  queryTemplates          QueryTemplate[]
-  rulesets                Ruleset[]
-  searchConfigurationTags SearchConfigurationTag[]
-  searchEndpoint          SearchEndpoint           @relation(fields: [searchEndpointId], references: [id])
-  queryTemplateTags       QueryTemplateTag[]
-  Execution               Execution[]
+  judgements                Judgement[]
+  org                       Org                      @relation(fields: [orgId], references: [id])
+  queryTemplates            QueryTemplate[]
+  rulesets                  Ruleset[]
+  searchConfigurationTags   SearchConfigurationTag[]
+  searchEndpoint            SearchEndpoint           @relation(fields: [searchEndpointId], references: [id])
+  queryTemplateTags         QueryTemplateTag[]
+  Execution                 Execution[]
+  activeSearchConfiguration SearchConfiguration?     @relation(fields: [activeSearchConfigurationId], references: [id])
 }
 
 // A QueryTemplate is an immutable backend query that can be populated combined
@@ -257,6 +259,7 @@ model SearchConfiguration {
   rulesets      RulesetVersion[]
   // All of the tags which this SearchConfiguration has
   tags          SearchConfigurationTag[]
+  Project       Project[]
 }
 
 // A SearchConfigurationTag allows us to assign a unique label per project to

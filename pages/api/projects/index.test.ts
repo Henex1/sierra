@@ -9,6 +9,7 @@ import {
   TEST_ORG,
   TEST_SEARCHENDPOINT,
   TEST_PROJECT,
+  TEST_SEARCHCONFIGURATION_ID,
 } from "../../../lib/test";
 import { defaultQueryTemplate } from "../../../lib/querytemplates";
 
@@ -47,6 +48,7 @@ describe("api/projects", () => {
       id: TEST_PROJECT.id,
       orgId: TEST_ORG.id,
       searchEndpointId: TEST_SEARCHENDPOINT.id,
+      activeSearchConfigurationId: TEST_SEARCHCONFIGURATION_ID,
       name: "Initial Name",
     };
     mockModels("project")

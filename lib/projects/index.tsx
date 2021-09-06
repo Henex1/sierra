@@ -15,7 +15,10 @@ import {
   defaultQueryTemplate,
   getLatestQueryTemplates,
 } from "../querytemplates";
-import { getActiveSearchConfiguration } from "../searchconfigurations";
+import {
+  getActiveSearchConfiguration,
+  SearchConfiguration,
+} from "../searchconfigurations";
 import { getLatestExecution } from "../execution";
 import { getSearchEndpoint } from "../searchendpoints";
 import {
@@ -32,6 +35,7 @@ const selectKeys = {
   orgId: true,
   searchEndpointId: true,
   name: true,
+  activeSearchConfigurationId: true,
 };
 
 export type ExposedProject = Pick<Project, keyof typeof selectKeys>;
@@ -115,6 +119,7 @@ export async function createProject(
 export const updateProjectSchema = z
   .object({
     name: z.string(),
+    activeSearchConfigurationId: z.string(),
   })
   .partial();
 
@@ -128,7 +133,12 @@ export async function updateProject(
 ): Promise<Project> {
   const updated = await prisma.project.update({
     where: { id: project.id },
-    data: { ...input, searchEndpointId: searchEndpoint?.id || undefined },
+    data: {
+      ...input,
+      activeSearchConfigurationId:
+        input.activeSearchConfigurationId || undefined,
+      searchEndpointId: searchEndpoint?.id || undefined,
+    },
   });
   return updated;
 }
@@ -156,6 +166,16 @@ export async function countProjects(org: Org): Promise<number> {
     where: { orgId: org.id },
   });
 }
+
+export const getProjectActiveSearchConfiguration = async ({
+  activeSearchConfigurationId,
+}: Project): Promise<SearchConfiguration | null> => {
+  const activeSearchConfiguration = await prisma.searchConfiguration.findFirst({
+    where: { id: activeSearchConfigurationId || undefined },
+    include: { tags: true },
+  });
+  return activeSearchConfiguration;
+};
 
 export async function getRecentProject(
   project: Project,
@@ -185,6 +205,7 @@ export async function getRecentProject(
     id: project.id,
     orgId: project.orgId,
     searchEndpointId: project.searchEndpointId,
+    activeSearchConfigurationId: project.activeSearchConfigurationId,
     name: project.name,
     combinedScore: Math.round(combinedScore * 100),
     searchEndpointName,

@@ -13,7 +13,10 @@ import {
   TEST_SEARCHCONFIGURATION_JUDGEMENT,
   TEST_SEARCHENDPOINT,
 } from "../../../lib/test";
-import { handleExecute, handleUpdateSearchConfiguration } from "./index";
+import {
+  handleExecuteSearchConfiguration,
+  handleUpdateSearchConfiguration,
+} from "./index";
 
 describe("api/searchconfigurations", () => {
   it("/update", async () => {
@@ -197,7 +200,7 @@ SELECT JP."phrase", V."documentId", SUM(JSC."weight" * V."score") / SUM(JSC."wei
       .resolvesTo(newExecution);
 
     const { execution } = await getApiRoute(
-      handleExecute,
+      handleExecuteSearchConfiguration,
       { id: TEST_SEARCHCONFIGURATION_ID },
       { method: "POST" }
     );

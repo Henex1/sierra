@@ -1,4 +1,3 @@
-import { NextApiRequest, NextApiResponse } from "next";
 import * as z from "zod";
 
 import {
@@ -11,7 +10,7 @@ import {
   formatSearchConfiguration,
   createSearchConfiguration,
   WeightedJudgement,
-  getActiveSearchConfiguration,
+  listSearchConfigurations,
 } from "../../../lib/searchconfigurations";
 import {
   createQueryTemplate,
@@ -31,18 +30,15 @@ import { addTask, removeTask } from "../../../lib/runningTasks";
 import { getProject } from "../../../lib/projects";
 import { getJudgementForSearchConfiguration } from "../../../lib/judgements";
 
-export const fetchActiveSearchConfiguration = apiHandler(async (req, res) => {
+export const handleGetSearchConfigurationById = apiHandler(async (req, res) => {
   requireMethod(req, "GET");
   const user = requireUser(req);
-  const { projectId } = requireQuery(req, z.object({ projectId: z.string() }));
-  const project = await getProject(user, projectId);
-  if (!project) {
-    throw new HttpError(404, { error: "Project not found" });
-  }
-  const sc = await getActiveSearchConfiguration(project);
+  const { id } = requireQuery(req, z.object({ id: z.string() }));
+
+  const sc = await getSearchConfiguration(user, id);
   if (sc == null) {
     throw new HttpError(404, {
-      error: `No active search configuration found for projectId ${projectId}`,
+      error: `No search configuration found with this id: ${id}`,
     });
   }
 
@@ -146,7 +142,7 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
   });
 });
 
-export const handleExecute = apiHandler(async (req, res) => {
+export const handleExecuteSearchConfiguration = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
   const user = requireUser(req);
   const input = requireBody(req, z.object({ id: z.string() }));
@@ -189,9 +185,17 @@ export const handleExecute = apiHandler(async (req, res) => {
   }
 });
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  return res.status(404).json({ error: "not found" });
-}
+export default apiHandler(async (req, res) => {
+  requireMethod(req, "POST");
+  const user = requireUser(req);
+  const { projectId } = requireBody(req, z.object({ projectId: z.string() }));
+
+  const project = await getProject(user, projectId);
+  if (!project) {
+    throw new Error("project not found");
+  }
+
+  const searchConfigurations = await listSearchConfigurations(project);
+
+  return res.status(200).json({ searchConfigurations });
+});

@@ -9,6 +9,7 @@ import {
   updateProjectSchema,
   updateProject,
   deleteProject,
+  getProjectActiveSearchConfiguration,
 } from "../../../lib/projects";
 import { getSearchEndpoint } from "../../../lib/searchendpoints";
 import {
@@ -18,7 +19,9 @@ import {
   requireUser,
   requireOnlyOrg,
   requireBody,
+  requireQuery,
 } from "../../../lib/apiServer";
+import { formatSearchConfiguration } from "../../../lib/searchconfigurations";
 
 export const handleCreateProject = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
@@ -46,6 +49,7 @@ export const handleUpdateProject = apiHandler(async (req, res) => {
     updateProjectSchema.extend({
       id: z.string(),
       searchEndpointId: z.string().optional(),
+      activeSearchConfigurationId: z.string().optional(),
     })
   );
   const project = await getProject(user, input.id);
@@ -73,6 +77,32 @@ export const handleDeleteProject = apiHandler(async (req, res) => {
   await deleteProject(project);
   return res.status(200).json({ success: true });
 });
+
+export const handleGetProjectActiveSearchConfiguration = apiHandler(
+  async (req, res) => {
+    requireMethod(req, "GET");
+    const user = requireUser(req);
+    const { projectId } = requireQuery(
+      req,
+      z.object({ projectId: z.string() })
+    );
+
+    const project = await getProject(user, projectId);
+    if (!project) {
+      throw new Error("project not found");
+    }
+
+    const activeSearchConfiguration = await getProjectActiveSearchConfiguration(
+      project
+    );
+
+    return res.status(200).json({
+      activeSearchConfiguration: activeSearchConfiguration
+        ? formatSearchConfiguration(activeSearchConfiguration)
+        : null,
+    });
+  }
+);
 
 export default async function handler(
   req: NextApiRequest,

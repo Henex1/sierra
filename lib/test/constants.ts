@@ -32,6 +32,7 @@ export const TEST_PROJECT: NoTimestamps<Project> = {
   id: TEST_PROJECT_ID,
   orgId: TEST_ORG_ID,
   searchEndpointId: TEST_SEARCHENDPOINT_ID,
+  activeSearchConfigurationId: TEST_SEARCHCONFIGURATION_ID,
   name: "Test Project",
 };
 

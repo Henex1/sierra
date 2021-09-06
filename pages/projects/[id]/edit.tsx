@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import Typography from "@material-ui/core/Typography";
 import Container from "@material-ui/core/Container";
 
-import Form from "../../../components/projects/Form";
+import { ProjectForm } from "../../../components/projects/Form";
 import { authenticatedPage, requireParam } from "../../../lib/pageHelpers";
 import { apiRequest } from "../../../lib/api";
 import {
@@ -71,7 +71,7 @@ export default function EditProject({ project, searchEndpoints }: Props) {
         <Typography>Edit</Typography>
       </BreadcrumbsButtons>
       <Container maxWidth="sm">
-        <Form
+        <ProjectForm
           endpoints={searchEndpoints}
           onSubmit={onSubmit}
           onDelete={onDelete}
