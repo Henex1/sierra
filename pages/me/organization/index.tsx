@@ -72,14 +72,21 @@ export default function Index({ orgs }: Props) {
           <Typography variant="h5">{activeOrg?.name}</Typography>
         </Grid>
         <Grid item xs={12} style={{ display: "flex", alignItems: "center" }}>
-          <div>
-            <Typography variant="overline">Image</Typography>
-            <Typography variant="h5">{activeOrg?.image}</Typography>
-          </div>
-          <img
-            src={activeOrg?.image ? activeOrg.image : ""}
-            alt="Organization image"
-          />
+          {activeOrg?.image ? (
+            <>
+              <div>
+                <Typography variant="overline">Image</Typography>
+                <Typography variant="h5">{activeOrg?.image}</Typography>
+              </div>
+              <img src={activeOrg.image} alt="Organization image" />
+            </>
+          ) : (
+            <img
+              width={150}
+              src={"/images/no-image.svg"}
+              alt="Organization image"
+            />
+          )}
         </Grid>
       </Grid>
     </div>
