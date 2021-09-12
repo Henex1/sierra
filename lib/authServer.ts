@@ -7,7 +7,7 @@ import { isExpired } from "./users/apikey";
 import prisma, { User, UserOrgRole } from "./prisma";
 import { requireEnv } from "./env";
 import { formatProject, listProjects, ExposedProject } from "./projects";
-import { formatOrg, userCanAccessOrg, ExposedOrg } from "./org";
+import { formatOrg, userCanAccessOrg, ExposedOrg, listOrgs } from "./org";
 
 export type ValidUserSession = {
   session: Session;
@@ -105,8 +105,11 @@ async function initAuth(req: IncomingMessage): Promise<UserSession | null> {
     const user = {
       id: apikeyObject.userId,
     };
+    // Temp hack to find orgs for a user connecting via api key
+    const orgs = await listOrgs(user as User);
     session = {
       user: user as User,
+      orgs: orgs,
     };
   }
 
