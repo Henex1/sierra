@@ -75,8 +75,7 @@ export class ElasticsearchInterface implements QueryInterface {
     return await response.json();
   }
 
-  async testConnection(info: any): Promise<TestResult> {
-    const index = info.index;
+  async testConnection(): Promise<TestResult> {
     const result = <TestResult>{
       success: true,
     };
@@ -88,7 +87,7 @@ export class ElasticsearchInterface implements QueryInterface {
           match_all: {},
         },
       });
-      const queryResult = await this.rawQuery(index + "/_search", query);
+      const queryResult = await this.rawQuery("/_search", query);
       if (queryResult.error) {
         result.success = false;
         result.message = queryResult.error.root_cause[0].reason;

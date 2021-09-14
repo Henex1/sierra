@@ -132,8 +132,7 @@ export async function testSearchEndpointConnection(
   }
 
   const q = getQueryInterface(input);
-  const result = q.testConnection(input.info);
-  return result;
+  return q.testConnection();
 }
 
 export async function createSearchEndpoint(
@@ -257,7 +256,7 @@ export interface QueryInterface {
   getFieldValues(fieldName: string, prefix?: string): Promise<string[]>;
   getDocumentsByID(ids: string[]): Promise<ElasticsearchResult[]>;
   executeQuery(query: ExpandedQuery): Promise<QueryResult>;
-  testConnection(info: any): Promise<TestResult>;
+  testConnection(): Promise<TestResult>;
   // Issue a raw query to the _search endpoint in elasticsearch. This method is
   // only used for the testbed, and should be removed.
   handleQueryDEPRECATED<ResultType = any>(query: string): Promise<ResultType>;
