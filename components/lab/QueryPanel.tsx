@@ -150,7 +150,7 @@ export default function QueryTemplateEditor({
             </ResizeObserver>
           </div>
           <OnChange name="query">
-            {(value) => {
+            {(value: string) => {
               const oldKnobs = values.knobs as Record<string, unknown>;
               const newKnobs: { [key: string]: any } = {};
               const newKnobsVars = extract(value);
@@ -247,7 +247,7 @@ export default function QueryTemplateEditor({
 }
 
 function extractParam(match: string) {
-  const paramSingle = /##([^#]*)##/;
+  const paramSingle = /##([^#|$]*)##/;
   const matchedParam = paramSingle.exec(match);
   if (matchedParam && matchedParam.length >= 2) {
     return matchedParam[1];
@@ -259,9 +259,9 @@ function extract(query: string) {
   const varNames: string[] = [];
 
   // strip query var
-  const strippedQuery = query.replace(/##\$query##/g, "");
+  const strippedQuery = query.replace(/#\$query#/g, "");
 
-  const varsRegex = /##[^#]*?##/g;
+  const varsRegex = /##[^#|$]*?##/g;
   const matches = strippedQuery.match(varsRegex);
 
   if (matches) {
