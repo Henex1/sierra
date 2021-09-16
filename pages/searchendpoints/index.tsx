@@ -20,7 +20,6 @@ import {
   ExposedSearchEndpoint,
 } from "../../lib/searchendpoints";
 
-import { useActiveProject } from "../../components/Session";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 import { searchEndpointTypes } from "../../components/searchendpoints/Form";
@@ -67,7 +66,6 @@ const useStyles = makeStyles((theme) => ({
 export default function SearchEndpoints({ searchEndpoints }: Props) {
   const classes = useStyles();
   const router = useRouter();
-  const { project } = useActiveProject();
 
   const handleAddNewSearchEndpoint = () => {
     router.push("/searchendpoints/create");
@@ -83,63 +81,52 @@ export default function SearchEndpoints({ searchEndpoints }: Props) {
         <Grid item xs={12}>
           <Typography variant="h4">Search Endpoints</Typography>
         </Grid>
-        {!project && (
-          <Grid item xs={6} style={{ margin: "0 auto", textAlign: "center" }}>
-            <Typography variant="h6">No project is active</Typography>
-            <Typography variant="subtitle1">
-              You must setup or activate project first
-            </Typography>
+
+        <Grid item xs={12}>
+          <Button
+            type="submit"
+            variant="outlined"
+            startIcon={<AddIcon />}
+            size="medium"
+            onClick={handleAddNewSearchEndpoint}
+          >
+            Add New Search Endpoint
+          </Button>
+        </Grid>
+        <Grid item xs={12}>
+          <Grid container spacing={2} alignItems="stretch">
+            {searchEndpoints.map((item) => {
+              const found = searchEndpointTypes.find(
+                (o) => o.value === item.type
+              );
+              return (
+                <Grid key={item.id} item xs={3}>
+                  <Card className={classes.card}>
+                    <CardHeader title={item.name} />
+                    <CardMedia
+                      className={classes.cardMedia}
+                      image={found?.imageSrc}
+                      title={found?.label}
+                    />
+                    <CardContent className={classes.cardContent}>
+                      <Typography>{item.description}</Typography>
+                    </CardContent>
+                    <CardActions className={classes.cardActions}>
+                      <Link
+                        href={`/searchendpoints/${item.id}`}
+                        className={classes.editButton}
+                      >
+                        <IconButton aria-label="Edit">
+                          <EditIcon />
+                        </IconButton>
+                      </Link>
+                    </CardActions>
+                  </Card>
+                </Grid>
+              );
+            })}
           </Grid>
-        )}
-        {project && (
-          <>
-            <Grid item xs={12}>
-              <Button
-                type="submit"
-                variant="outlined"
-                startIcon={<AddIcon />}
-                size="medium"
-                onClick={handleAddNewSearchEndpoint}
-              >
-                Add New Search Endpoint
-              </Button>
-            </Grid>
-            <Grid item xs={12}>
-              <Grid container spacing={2} alignItems="stretch">
-                {searchEndpoints.map((item) => {
-                  const found = searchEndpointTypes.find(
-                    (o) => o.value === item.type
-                  );
-                  return (
-                    <Grid key={item.id} item xs={3}>
-                      <Card className={classes.card}>
-                        <CardHeader title={item.name} />
-                        <CardMedia
-                          className={classes.cardMedia}
-                          image={found?.imageSrc}
-                          title={found?.label}
-                        />
-                        <CardContent className={classes.cardContent}>
-                          <Typography>{item.description}</Typography>
-                        </CardContent>
-                        <CardActions className={classes.cardActions}>
-                          <Link
-                            href={`/searchendpoints/${item.id}`}
-                            className={classes.editButton}
-                          >
-                            <IconButton aria-label="Edit">
-                              <EditIcon />
-                            </IconButton>
-                          </Link>
-                        </CardActions>
-                      </Card>
-                    </Grid>
-                  );
-                })}
-              </Grid>
-            </Grid>
-          </>
-        )}
+        </Grid>
       </Grid>
     </div>
   );
