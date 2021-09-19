@@ -10,6 +10,7 @@ import prisma, {
   QueryTemplate,
   RulesetVersion,
   Judgement,
+  SearchEndpointType,
 } from "../prisma";
 import { userCanAccessProject } from "../projects";
 
@@ -25,7 +26,7 @@ const scSelect = {
 export type ExposedSearchConfiguration = Pick<
   SearchConfiguration,
   keyof typeof scSelect
-> & { tags: string[] };
+> & { tags: string[]; search_endpoint_type: SearchEndpointType };
 
 type CreateSearchConfigurationInput = {
   queryTemplateId: string;
@@ -49,13 +50,15 @@ export function userCanAccessSearchConfiguration(
 }
 
 export function formatSearchConfiguration(
-  val: SearchConfiguration
+  val: SearchConfiguration,
+  type: SearchEndpointType
 ): ExposedSearchConfiguration {
   const formatted = (_.pick(
     val,
     _.keys(scSelect)
   ) as unknown) as ExposedSearchConfiguration;
   formatted.tags = val.tags.map((t) => t.name);
+  formatted.search_endpoint_type = type;
   return formatted;
 }
 

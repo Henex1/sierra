@@ -91,6 +91,15 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
   if (!project) {
     return { notFound: true };
   }
+
+  const searchEndpoint = await getSearchEndpoint(
+    context.user,
+    project.searchEndpointId
+  );
+  if (!searchEndpoint) {
+    return { notFound: true };
+  }
+
   const page = optionalNumberQuery(context, "page", 1) - 1;
 
   // Get all executions for selected project
@@ -173,7 +182,10 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
     : null;
   const searchConfiguration = activeSearchConfiguration
     ? {
-        ...formatSearchConfiguration(activeSearchConfiguration),
+        ...formatSearchConfiguration(
+          activeSearchConfiguration,
+          searchEndpoint.type
+        ),
         rulesets: (
           await getRulesetsForSearchConfiguration(activeSearchConfiguration)
         ).map(formatRulesetVersion),
@@ -190,11 +202,6 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
       ...formatRuleset(ruleset),
       rulesetVersions: rulesetVersions[i].map(formatRulesetVersion),
     })
-  );
-
-  const searchEndpoint = await getSearchEndpoint(
-    context.user,
-    project.searchEndpointId!
   );
 
   return {
@@ -215,7 +222,7 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
         : null,
       displayOptions,
       page: page + 1,
-      displayFields: searchEndpoint?.displayFields || [],
+      displayFields: searchEndpoint.displayFields,
     },
   };
 });

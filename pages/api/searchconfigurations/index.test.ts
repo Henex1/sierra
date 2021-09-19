@@ -12,6 +12,7 @@ import {
   TEST_SEARCHCONFIGURATION_ID,
   TEST_SEARCHCONFIGURATION_JUDGEMENT,
   TEST_SEARCHENDPOINT,
+  TEST_SEARCHENDPOINT_ID,
 } from "../../../lib/test";
 import {
   handleExecuteSearchConfiguration,
@@ -66,6 +67,11 @@ describe("api/searchconfigurations", () => {
       .action("findFirst")
       .with({ where: { AND: { id: TEST_PROJECT_ID } } })
       .resolvesTo(TEST_PROJECT);
+
+    mockModels("searchEndpoint")
+      .action("findFirst")
+      .with({ where: { AND: { id: TEST_SEARCHENDPOINT_ID } } })
+      .resolvesTo(TEST_SEARCHENDPOINT);
 
     mockModels("queryTemplate")
       .action("create")
