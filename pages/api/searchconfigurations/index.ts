@@ -29,6 +29,7 @@ import { RulesetVersion } from "../../../lib/prisma";
 import { addTask, removeTask } from "../../../lib/runningTasks";
 import { getProject } from "../../../lib/projects";
 import { getJudgementForSearchConfiguration } from "../../../lib/judgements";
+import { getSearchEndpoint } from "../../../lib/searchendpoints";
 
 export const handleGetSearchConfigurationById = apiHandler(async (req, res) => {
   requireMethod(req, "GET");
@@ -36,13 +37,34 @@ export const handleGetSearchConfigurationById = apiHandler(async (req, res) => {
   const { id } = requireQuery(req, z.object({ id: z.string() }));
 
   const sc = await getSearchConfiguration(user, id);
-  if (sc == null) {
+  if (!sc || !sc.queryTemplate) {
     throw new HttpError(404, {
       error: `No search configuration found with this id: ${id}`,
     });
   }
 
-  return res.status(200).json(formatSearchConfiguration(sc));
+  const project = await getProject(user, sc.queryTemplate.projectId);
+
+  if (!project) {
+    throw new HttpError(404, {
+      error: `No search configuration found with this id: ${id}`,
+    });
+  }
+
+  const searchEndPoint = await getSearchEndpoint(
+    user,
+    project.searchEndpointId
+  );
+
+  if (!searchEndPoint) {
+    throw new HttpError(404, {
+      error: `No search configuration found with this id: ${id}`,
+    });
+  }
+
+  return res
+    .status(200)
+    .json(formatSearchConfiguration(sc, searchEndPoint.type));
 });
 
 export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
@@ -115,6 +137,14 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
     throw new Error("project not found");
   }
 
+  const searchEndpoint = await getSearchEndpoint(
+    user,
+    currentProject.searchEndpointId
+  );
+  if (!searchEndpoint) {
+    throw new Error("Search Endpoint not found");
+  }
+
   // Create new version of query template
   const createdQueryTemplate = await createQueryTemplate(currentProject, {
     ...queryTemplateInput,
@@ -137,7 +167,10 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
   );
 
   return res.status(200).json({
-    searchConfiguration: formatSearchConfiguration(createdSearchConfiguration),
+    searchConfiguration: formatSearchConfiguration(
+      createdSearchConfiguration,
+      searchEndpoint.type
+    ),
     execution: updatedExecution,
   });
 });

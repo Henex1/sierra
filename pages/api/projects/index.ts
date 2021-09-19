@@ -92,13 +92,24 @@ export const handleGetProjectActiveSearchConfiguration = apiHandler(
       throw new Error("project not found");
     }
 
+    const searchEndpoint = await getSearchEndpoint(
+      user,
+      project.searchEndpointId
+    );
+    if (!searchEndpoint) {
+      throw new Error("search endpoint not found");
+    }
+
     const activeSearchConfiguration = await getProjectActiveSearchConfiguration(
       project
     );
 
     return res.status(200).json({
       activeSearchConfiguration: activeSearchConfiguration
-        ? formatSearchConfiguration(activeSearchConfiguration)
+        ? formatSearchConfiguration(
+            activeSearchConfiguration,
+            searchEndpoint.type
+          )
         : null,
     });
   }
