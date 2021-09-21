@@ -6,6 +6,7 @@ import {
 } from "../../../../lib/apiServer";
 import { createApiKey, updateApiKey } from "../../../../lib/users/apikey";
 import * as z from "zod";
+import { listOrgs } from "../../../../lib/org";
 
 const apiKeyCreate = z.object({
   alias: z.string(),
@@ -20,7 +21,13 @@ const handleCreateApiKey = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
   const user = requireUser(req);
   const body = requireBody(req, apiKeyCreate);
-  await createApiKey(user, body.alias);
+  const org = await listOrgs(user).then(([x]) => x);
+
+  if (!org) {
+    return res.status(500).json({ error: "Could find user organization" });
+  }
+
+  await createApiKey(user, org, body.alias);
   res.status(200).json({ success: true });
 });
 

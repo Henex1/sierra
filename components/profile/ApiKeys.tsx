@@ -124,6 +124,7 @@ const ApiKeys = ({ list }: Props) => {
                   <TableCell>API Key</TableCell>
                   <TableCell>Alias</TableCell>
                   <TableCell>Expires</TableCell>
+                  <TableCell>Organization</TableCell>
                   <TableCell>Enabled</TableCell>
                   <TableCell></TableCell>
                 </TableRow>
@@ -156,6 +157,7 @@ const ApiKeys = ({ list }: Props) => {
                     </TableCell>
                     <TableCell>{apikey.alias}</TableCell>
                     <TableCell>{apikey.expirationDate}</TableCell>
+                    <TableCell>{apikey}</TableCell>
                     <TableCell>
                       <Checkbox
                         checked={!apikey.disabled}

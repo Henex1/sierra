@@ -1,6 +1,6 @@
 import _ from "lodash";
 import DateFnsAdapter from "@date-io/date-fns";
-import prisma, { User, ApiKey } from "../prisma";
+import prisma, { User, ApiKey, Org } from "../prisma";
 import { generateUniqueId } from "../common";
 
 export const APIKEY_EXPIRATION_PERIOD = 20;
@@ -50,12 +50,17 @@ export async function listApiKeys(user: User): Promise<ApiKey[]> {
   return apikeys;
 }
 
-export async function createApiKey(user: User, alias: string): Promise<void> {
+export async function createApiKey(
+  user: User,
+  org: Org,
+  alias: string
+): Promise<void> {
   await prisma.apiKey.create({
     data: {
       apikey: generateUniqueId(),
       alias: alias,
       userId: user.id,
+      orgId: org.id,
     },
   });
 }
