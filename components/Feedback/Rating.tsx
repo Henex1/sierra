@@ -57,15 +57,15 @@ export const Rating = ({ onSubmit, submitting }: Props): ReactElement => {
         disabled={submitting}
         value={rating}
         onChange={handleRating}
-        size={"large"}
+        size="large"
         className={C.stars}
       />
       <Space />
       <span className={C.label}>Additional comments</span>
       <TextField
         disabled={submitting}
-        placeholder={"Additional comments"}
-        size={"small"}
+        placeholder="Additional comments"
+        size="small"
         multiline
         rows={15}
         variant="outlined"

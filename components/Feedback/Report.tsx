@@ -2,7 +2,6 @@ import React, {
   ChangeEventHandler,
   ReactElement,
   useCallback,
-  useMemo,
   useState,
 } from "react";
 import { TextField } from "@material-ui/core";
@@ -18,7 +17,6 @@ export const Report = ({ onSubmit, submitting }: Props): ReactElement => {
   // region Styles
   const C = useRatingStyles();
   const input = useTextareaStyles();
-  const textareaProps = useMemo(() => ({ className: input.input }), [input]);
   // endregion
 
   // region Values
@@ -48,7 +46,7 @@ export const Report = ({ onSubmit, submitting }: Props): ReactElement => {
         variant="outlined"
         value={comment}
         onChange={handleComment}
-        InputProps={textareaProps}
+        InputProps={{ className: input.input }}
       />
     </Form>
   );
