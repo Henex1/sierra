@@ -83,9 +83,12 @@ async function initAuth(req: IncomingMessage): Promise<UserSession | null> {
   if (!session) {
     console.log("NO SESSION - attempting to retrieve API Key");
     // Attempt API Key authentication if there's no user session.
-    const apikey = String(req.headers["authorization"]);
+    let apikey = String(req.headers["authorization"]);
     if (!apikey) {
       return null;
+    }
+    if (apikey.startsWith("Bearer ")) {
+      apikey = apikey.substr(7).trim();
     }
     const apikeyObject = await prisma.apiKey.findFirst({
       where: { apikey: apikey },
