@@ -14,6 +14,7 @@ import ResourcesMenu from "./ResourcesMenu";
 import UserMenu from "./UserMenu";
 import ProjectsMenu from "./ProjectsMenu";
 import { RunningTasksSpinner } from "./RunningTasksSpinner";
+import { FeedbackMenu } from "./FeedbackMenu";
 
 export default function AppTopBar() {
   const [tasks, setTasks] = useState([]);
@@ -66,6 +67,7 @@ export default function AppTopBar() {
           <RunningTasksSpinner tasks={tasks} />
           <ProjectsMenu />
           <SettingsMenu />
+          <FeedbackMenu />
           {session.user ? (
             <UserMenu
               user={{

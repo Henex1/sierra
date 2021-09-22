@@ -17,7 +17,6 @@ export default makeStyles((theme) => ({
   },
   topButton: {
     textTransform: "capitalize",
-    margin: theme.spacing(0, 1),
   },
   dropMenu: {
     marginTop: theme.spacing(5),

@@ -24,8 +24,13 @@ export class HttpError<T extends any> extends Error {
   }
 }
 
-export function apiHandler(handler: SierraApiHandler): NextApiHandler {
-  return async (nextReq: NextApiRequest, res: NextApiResponse) => {
+interface Err {
+  error: string;
+}
+export function apiHandler<T>(
+  handler: SierraApiHandler
+): NextApiHandler<T | Err> {
+  return async (nextReq: NextApiRequest, res: NextApiResponse<T | Err>) => {
     const userSession = await getUser(nextReq);
     const req: SierraApiRequest = nextReq as SierraApiRequest;
     Object.assign(req, userSession);
