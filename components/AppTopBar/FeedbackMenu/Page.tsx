@@ -20,13 +20,26 @@ export interface Props {
 
 const request = (type: Feedback.Feedback): Promise<void> => {
   const value = omit(type, "__type");
-  switch (type.__type) {
-    case Type.Rating:
-      return apiRequest("api/feedback/rate", value);
-    case Type.Report:
-      return apiRequest("api/feedback/report", value);
-    case Type.Request:
-      return apiRequest("api/feedback/request", value);
+  const requestTypes = {
+    [Type.Rating]: "rate",
+    [Type.Report]: "report",
+    [Type.Request]: "request",
+  };
+
+  return apiRequest(`api/feedback/${requestTypes[type.__type]}`, value);
+};
+
+const toggleFeedback = (type: Type): Feedback.Feedback => {
+  switch (type) {
+    case Type.Rating: {
+      return Feedback.rating(0, "");
+    }
+    case Type.Report: {
+      return Feedback.report("");
+    }
+    case Type.Request: {
+      return Feedback.request("", "");
+    }
   }
 };
 
@@ -43,23 +56,9 @@ export const Page = ({ onClose }: Props): ReactElement => {
     [submitting, setSubmitting, setType]
   );
   const handleType = useCallback(
-    (v: Type): Feedback.Feedback => {
-      if (submitting || v === type.__type) {
-        return type;
-      }
-      switch (v) {
-        case Type.Rating: {
-          setType(Feedback.rating(0, ""));
-          return type;
-        }
-        case Type.Report: {
-          setType(Feedback.report(""));
-          return type;
-        }
-        case Type.Request: {
-          setType(Feedback.request("", ""));
-          return type;
-        }
+    (v: Type): void => {
+      if (!submitting && v !== type.__type) {
+        setType(toggleFeedback(v));
       }
     },
     [type, setType]
