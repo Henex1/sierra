@@ -2,6 +2,8 @@ import fetch from "node-fetch";
 
 import { SearchEndpoint, QueryTemplate, RulesetVersion } from "../prisma";
 import { requireEnv } from "../env";
+import { ErrorMessage } from "../errors/constants";
+import { HttpError } from "../apiServer";
 
 declare const queryWasExpanded: unique symbol;
 
@@ -20,10 +22,8 @@ export async function expandQuery(
   phrase: string
 ): Promise<ExpandedQuery> {
   try {
-    if (endpoint.type !== "ELASTICSEARCH" && endpoint.type !== "OPEN_SEARCH") {
-      throw new Error(
-        `Search endpoint type ${endpoint.type} cannot be expanded`
-      );
+    if (!["ELASTICSEARCH", "OPEN_SEARCH"].includes(endpoint.type)) {
+      throw new HttpError(405, ErrorMessage.UnsupportedSearchEndpointType);
     }
     const config: Record<string, unknown> = {};
     Object.entries(tpl.knobs as Record<string, unknown>).forEach(([k, v]) => {
@@ -46,7 +46,7 @@ export async function expandQuery(
       }
     );
     return await response.json();
-  } catch (e) {
-    throw new Error(`Failed to expand query ${e}`);
+  } catch (err) {
+    throw new HttpError(500, ErrorMessage.FailedToExpandQuery);
   }
 }

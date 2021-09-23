@@ -174,7 +174,12 @@ async function handleSeed(
     },
   });
 
-  await createExecution(sc, project.id);
+  try {
+    await createExecution(sc, project.id);
+  } catch (error) {
+    const { statusCode = 500, data } = error;
+    res.status(statusCode).json({ error: data });
+  }
 
   return res.status(200).json({ success: true });
 }
@@ -203,7 +208,7 @@ export default async function mutate(
   const func = routes[name as string];
   if (func) {
     return func(session as ValidUserSession, req, res);
-  } else {
-    return notFound(res);
   }
+
+  return notFound(res);
 }

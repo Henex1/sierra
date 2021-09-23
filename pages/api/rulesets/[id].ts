@@ -5,7 +5,6 @@ import {
   apiHandler,
   requireUser,
   requireQuery,
-  HttpError,
   SierraApiRequest,
 } from "../../../lib/apiServer";
 import {
@@ -20,6 +19,8 @@ import {
   getQueryInterface,
 } from "../../../lib/searchendpoints";
 import { User } from "../../../lib/prisma";
+import { notFound } from "../../../lib/errors";
+import { ErrorMessage } from "../../../lib/errors/constants";
 
 export async function getRulesetEditorProps(id: string, user: User) {
   const ruleset = await getRuleset(user, id);
@@ -69,7 +70,7 @@ export default apiHandler(
 
     const props = await getRulesetEditorProps(id, user);
     if (props.notFound) {
-      throw new HttpError(404, { error: "ruleset not found " });
+      return notFound(res, ErrorMessage.RulesetNotFound);
     }
     res.status(200).json({ ...props });
   }

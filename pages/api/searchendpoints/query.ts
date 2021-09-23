@@ -9,8 +9,9 @@ import {
   requireBody,
   requireMethod,
   apiHandler,
-  HttpError,
 } from "../../../lib/apiServer";
+import { notFound } from "../../../lib/errors";
+import { ErrorMessage } from "../../../lib/errors/constants";
 
 export default apiHandler(async (req, res) => {
   requireMethod(req, "POST");
@@ -24,7 +25,7 @@ export default apiHandler(async (req, res) => {
   );
   const searchEndpoint = await getSearchEndpoint(user, searchEndpointId);
   if (!searchEndpoint) {
-    throw new HttpError(401, { error: "search endpoint not found" });
+    return notFound(res, ErrorMessage.SearchEndpointNotFound);
   }
   const iface = getQueryInterface(searchEndpoint);
   const result = await iface.handleQueryDEPRECATED(query);

@@ -5,7 +5,6 @@ import { apiHandler, requireMethod } from "../../../lib/apiServer";
 export const handleCreateOrganization = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
   // Todo
-  console.log(req.body);
   res.status(200).send({});
 });
 

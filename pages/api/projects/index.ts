@@ -14,7 +14,6 @@ import {
 import { getSearchEndpoint } from "../../../lib/searchendpoints";
 import {
   apiHandler,
-  HttpError,
   requireMethod,
   requireUser,
   requireOnlyOrg,
@@ -22,6 +21,8 @@ import {
   requireQuery,
 } from "../../../lib/apiServer";
 import { formatSearchConfiguration } from "../../../lib/searchconfigurations";
+import { ErrorMessage } from "../../../lib/errors/constants";
+import { notFound } from "../../../lib/errors";
 
 export const handleCreateProject = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
@@ -35,7 +36,7 @@ export const handleCreateProject = apiHandler(async (req, res) => {
   );
   const searchEndpoint = await getSearchEndpoint(user, input.searchEndpointId);
   if (!searchEndpoint) {
-    throw new HttpError(404, { error: "search endpoint not found" });
+    return notFound(res, ErrorMessage.SearchEndpointNotFound);
   }
   const project = await createProject(org, searchEndpoint, input);
   res.status(200).json({ project: formatProject(project) });
@@ -54,13 +55,13 @@ export const handleUpdateProject = apiHandler(async (req, res) => {
   );
   const project = await getProject(user, input.id);
   if (!project) {
-    throw new HttpError(404, { error: "project not found" });
+    return notFound(res, ErrorMessage.ProjectNotFound);
   }
   const searchEndpoint = input.searchEndpointId
     ? await getSearchEndpoint(user, input.searchEndpointId)
     : null;
   if (input.searchEndpointId && !searchEndpoint) {
-    throw new HttpError(404, { error: "search endpoint not found" });
+    return notFound(res, ErrorMessage.SearchEndpointNotFound);
   }
   const updated = await updateProject(user, project, searchEndpoint, input);
   return res.status(200).json({ project: formatProject(updated) });
@@ -72,7 +73,7 @@ export const handleDeleteProject = apiHandler(async (req, res) => {
   const input = requireBody(req, z.object({ id: z.string() }));
   const project = await getProject(user, input.id);
   if (!project) {
-    throw new HttpError(404, { error: "project not found" });
+    return notFound(res, ErrorMessage.ProjectNotFound);
   }
   await deleteProject(project);
   return res.status(200).json({ success: true });
@@ -89,7 +90,7 @@ export const handleGetProjectActiveSearchConfiguration = apiHandler(
 
     const project = await getProject(user, projectId);
     if (!project) {
-      throw new Error("project not found");
+      return notFound(res, ErrorMessage.ProjectNotFound);
     }
 
     const searchEndpoint = await getSearchEndpoint(
@@ -97,7 +98,7 @@ export const handleGetProjectActiveSearchConfiguration = apiHandler(
       project.searchEndpointId
     );
     if (!searchEndpoint) {
-      throw new Error("search endpoint not found");
+      return notFound(res, ErrorMessage.SearchEndpointNotFound);
     }
 
     const activeSearchConfiguration = await getProjectActiveSearchConfiguration(

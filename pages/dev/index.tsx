@@ -9,18 +9,20 @@ import TableRow from "@material-ui/core/TableRow";
 
 import { authenticatedPage } from "../../lib/pageHelpers";
 import { apiRequest } from "../../lib/api";
+import { useAlertsContext } from "../../utils/react/hooks/useAlertsContext";
 
 export const getServerSideProps = authenticatedPage();
 
 export default function Dev() {
+  const { addErrorAlert } = useAlertsContext();
+
   async function doMutate(name: string) {
     try {
       await apiRequest(`/api/dev/${name}`, {});
       // Full page reload because it's easy and this is dev.
       window.location.reload();
     } catch (err) {
-      alert("Action failed, check console.");
-      throw err;
+      addErrorAlert(err);
     }
   }
   return (

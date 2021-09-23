@@ -93,7 +93,6 @@ export class ElasticsearchInterface implements QueryInterface {
         result.message = queryResult.error.root_cause[0].reason;
       }
     } catch (e) {
-      console.log(e);
       result.success = false;
       result.message = e.message;
     }

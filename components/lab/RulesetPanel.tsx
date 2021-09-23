@@ -20,6 +20,7 @@ import RulesetEditor from "../rulesets/RulesetEditor";
 import { Props as RulesetEditorProps } from "../../pages/rulesets/[id]";
 import { RulesetVersionValue } from "lib/rulesets/rules";
 import LoadingContent from "../common/LoadingContent";
+import { useAlertsContext } from "../../utils/react/hooks/useAlertsContext";
 
 const useStyles = makeStyles((theme) => ({
   dropdown: {
@@ -60,6 +61,7 @@ export default function RulesetPanel({
   const classes = useStyles();
   const router = useRouter();
   const [rulesetId, setRulesetId] = React.useState<string>("");
+  const { addErrorAlert } = useAlertsContext();
 
   React.useEffect(() => {
     if (!activeRulesetIds.length) {
@@ -76,12 +78,16 @@ export default function RulesetPanel({
 
   async function onSubmit(value: RulesetVersionValue) {
     if (data) {
-      await apiRequest(`/api/rulesets/createVersion`, {
-        value,
-        rulesetId: rulesetId,
-        parentId: data.version.id,
-      });
-      router.push(router.asPath);
+      try {
+        await apiRequest(`/api/rulesets/createVersion`, {
+          value,
+          rulesetId: rulesetId,
+          parentId: data.version.id,
+        });
+        router.push(router.asPath);
+      } catch (error) {
+        addErrorAlert(error);
+      }
     }
     onUpdate();
     return;

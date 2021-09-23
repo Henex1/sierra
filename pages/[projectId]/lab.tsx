@@ -50,6 +50,7 @@ import {
 import { getSearchEndpoint } from "../../lib/searchendpoints";
 import NoExistingExcution from "components/lab/NoExistingExcution";
 import { BackdropLoadingSpinner } from "../../components/common/BackdropLoadingSpinner";
+import { useAlertsContext } from "../../utils/react/hooks/useAlertsContext";
 
 const useStyles = makeStyles((theme) => ({
   listContainer: {
@@ -242,6 +243,7 @@ export default function Lab({
   const classes = useStyles();
   const router = useRouter();
   const [propsLoading, setPropsLoading] = useState(false);
+  const { addErrorAlert } = useAlertsContext();
 
   useEffect(() => {
     // Add backdrop with loading spinner while getting server side props
@@ -322,6 +324,7 @@ export default function Lab({
         setIsTestRunning(false);
         location.reload();
       } catch (err) {
+        addErrorAlert(err);
         setIsTestRunning(false);
       }
     },

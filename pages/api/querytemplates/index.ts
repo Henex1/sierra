@@ -15,8 +15,9 @@ import {
   requireBody,
   requireMethod,
   apiHandler,
-  HttpError,
 } from "../../../lib/apiServer";
+import { notFound } from "../../../lib/errors";
+import { ErrorMessage } from "../../../lib/errors/constants";
 
 export const handleCreateQueryTemplate = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
@@ -28,7 +29,7 @@ export const handleCreateQueryTemplate = apiHandler(async (req, res) => {
 
   const project = await getProject(user, projectId);
   if (!project) {
-    throw new HttpError(404, { error: "project not found" });
+    return notFound(res, ErrorMessage.ProjectNotFound);
   }
   const queryTemplate = await createQueryTemplate(project, input);
   return res
@@ -48,7 +49,7 @@ export const handleUpdateQueryTemplate = apiHandler(async (req, res) => {
 
   const queryTemplate = await getQueryTemplate(user, input.parentId);
   if (!queryTemplate) {
-    throw new HttpError(404, { error: "query template not found" });
+    return notFound(res, ErrorMessage.QueryTemplateNotFound);
   }
 
   const updated = await updateQueryTemplate(queryTemplate, input);
@@ -59,5 +60,5 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  return res.status(404).json({ error: "not found" });
+  return notFound(res);
 }

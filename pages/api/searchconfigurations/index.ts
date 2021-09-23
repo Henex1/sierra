@@ -30,6 +30,8 @@ import { addTask, removeTask } from "../../../lib/runningTasks";
 import { getProject } from "../../../lib/projects";
 import { getJudgementForSearchConfiguration } from "../../../lib/judgements";
 import { getSearchEndpoint } from "../../../lib/searchendpoints";
+import { ErrorMessage } from "../../../lib/errors/constants";
+import { notFound } from "../../../lib/errors";
 
 export const handleGetSearchConfigurationById = apiHandler(async (req, res) => {
   requireMethod(req, "GET");
@@ -38,17 +40,13 @@ export const handleGetSearchConfigurationById = apiHandler(async (req, res) => {
 
   const sc = await getSearchConfiguration(user, id);
   if (!sc || !sc.queryTemplate) {
-    throw new HttpError(404, {
-      error: `No search configuration found with this id: ${id}`,
-    });
+    return notFound(res, ErrorMessage.SearchConfigurationNotFound);
   }
 
   const project = await getProject(user, sc.queryTemplate.projectId);
 
   if (!project) {
-    throw new HttpError(404, {
-      error: `No search configuration found with this id: ${id}`,
-    });
+    return notFound(res, ErrorMessage.ProjectNotFound);
   }
 
   const searchEndPoint = await getSearchEndpoint(
@@ -57,9 +55,7 @@ export const handleGetSearchConfigurationById = apiHandler(async (req, res) => {
   );
 
   if (!searchEndPoint) {
-    throw new HttpError(404, {
-      error: `No search configuration found with this id: ${id}`,
-    });
+    return notFound(res, ErrorMessage.SearchEndpointNotFound);
   }
 
   return res
@@ -85,7 +81,7 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
     input.id
   );
   if (!currentSearchConfiguration) {
-    throw new Error("search configuration not found");
+    return notFound(res, ErrorMessage.SearchConfigurationNotFound);
   }
 
   // Current query template
@@ -94,7 +90,7 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
     input.queryTemplateId
   );
   if (!currentQueryTemplate) {
-    throw new Error("query template not found");
+    return notFound(res, ErrorMessage.QueryTemplateNotFound);
   }
 
   const { id, tags, description, ...queryTemplateInput } = currentQueryTemplate;
@@ -107,15 +103,13 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
         input.rulesetIds.map((id) => getRuleset(user, id))
       );
       if (rulesetVersions.includes(null)) {
-        throw new HttpError(404, {
-          error: "one or more rulesets not found",
-        });
+        return notFound(res, ErrorMessage.RulesetsNotFound);
       }
       rulesets = await Promise.all(
         rulesetVersions.map(async (rs) => (await getLatestRulesetVersion(rs!))!)
       );
     } catch (err) {
-      throw new HttpError(404, { error: "ruleset not found" });
+      return notFound(res, ErrorMessage.RulesetNotFound);
     }
   }
 
@@ -134,7 +128,7 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
 
   const currentProject = await getProject(user, currentQueryTemplate.projectId);
   if (!currentProject) {
-    throw new Error("project not found");
+    return notFound(res, ErrorMessage.ProjectNotFound);
   }
 
   const searchEndpoint = await getSearchEndpoint(
@@ -142,7 +136,7 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
     currentProject.searchEndpointId
   );
   if (!searchEndpoint) {
-    throw new Error("Search Endpoint not found");
+    return notFound(res, ErrorMessage.SearchEndpointNotFound);
   }
 
   // Create new version of query template
@@ -195,7 +189,7 @@ export const handleExecuteSearchConfiguration = apiHandler(async (req, res) => {
       input.id
     );
     if (!currentSearchConfiguration?.queryTemplate?.projectId) {
-      throw new Error("search configuration not found");
+      return notFound(res, ErrorMessage.SearchConfigurationNotFound);
     }
 
     const execution = await createExecution(
@@ -225,7 +219,7 @@ export default apiHandler(async (req, res) => {
 
   const project = await getProject(user, projectId);
   if (!project) {
-    throw new Error("project not found");
+    return notFound(res, ErrorMessage.ProjectNotFound);
   }
 
   const searchConfigurations = await listSearchConfigurations(project);
