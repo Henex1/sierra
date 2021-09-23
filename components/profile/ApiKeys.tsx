@@ -121,16 +121,17 @@ const ApiKeys = ({ list }: Props) => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>API Key</TableCell>
                   <TableCell>Alias</TableCell>
+                  <TableCell>API Key</TableCell>
                   <TableCell>Expires</TableCell>
-                  <TableCell>Organization</TableCell>
-                  <TableCell>Enabled</TableCell>
+                  <TableCell>Enabled?</TableCell>
+                  <TableCell></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {list.map((apikey) => (
                   <TableRow key={apikey.apikey}>
+                    <TableCell>{apikey.alias}</TableCell>
                     <TableCell>
                       <div
                         className={classes.apiKey}
@@ -154,7 +155,6 @@ const ApiKeys = ({ list }: Props) => {
                         </i>
                       </div>
                     </TableCell>
-                    <TableCell>{apikey.alias}</TableCell>
                     <TableCell>{apikey.expirationDate}</TableCell>
                     <TableCell>
                       <Checkbox
