@@ -44,7 +44,7 @@ export type RecentProject = ExposedProject & {
   updatedAt: number;
   searchEndpointName: string;
   searchEndpointType: string;
-  combinedScore: number;
+  combinedScore: number | null;
   //Id to name of the projects recently updated judgements and rulesets
   latestJudgements: ExposedJudgement[];
   latestRulesets: ExposedRuleset[];
@@ -192,7 +192,11 @@ export async function getRecentProject(
   );
   const searchEndpointName = searchEndpoint?.name || "";
   const searchEndpointType = searchEndpoint?.type || "";
-  const combinedScore = lastExecution?.combinedScore || 0;
+  console.log(lastExecution);
+  const combinedScore =
+    typeof lastExecution?.combinedScore === "number"
+      ? Math.round(lastExecution.combinedScore * 100)
+      : null;
 
   const updatedAt = Math.max(
     project.updatedAt.valueOf(),
@@ -207,7 +211,7 @@ export async function getRecentProject(
     searchEndpointId: project.searchEndpointId,
     activeSearchConfigurationId: project.activeSearchConfigurationId,
     name: project.name,
-    combinedScore: Math.round(combinedScore * 100),
+    combinedScore,
     searchEndpointName,
     searchEndpointType,
     updatedAt,
