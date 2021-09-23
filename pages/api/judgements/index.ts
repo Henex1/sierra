@@ -17,11 +17,12 @@ import {
 } from "../../../lib/judgements";
 import {
   apiHandler,
-  HttpError,
   requireMethod,
   requireUser,
   requireBody,
 } from "../../../lib/apiServer";
+import { notFound } from "../../../lib/errors";
+import { ErrorMessage } from "../../../lib/errors/constants";
 
 export const handleCreateJudgement = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
@@ -34,7 +35,7 @@ export const handleCreateJudgement = apiHandler(async (req, res) => {
   );
   const project = await getProject(user, projectId);
   if (!project) {
-    throw new HttpError(404, { error: "project not found" });
+    return notFound(res, ErrorMessage.ProjectNotFound);
   }
   const judgement = await createJudgement(project, input);
   res.status(200).json({ judgement: formatJudgement(judgement) });
@@ -51,7 +52,7 @@ export const handleUpdateJudgement = apiHandler(async (req, res) => {
   );
   const judgement = await getJudgement(user, id);
   if (!judgement) {
-    throw new HttpError(404, { error: "judgement not found" });
+    return notFound(res, ErrorMessage.JudgementNotFound);
   }
   const updated = await updateJudgement(judgement, input);
   res.status(200).json({ judgement: formatJudgement(updated) });
@@ -69,7 +70,7 @@ export const handleSetVotes = apiHandler(async (req, res) => {
   );
   const judgement = await getJudgement(user, id);
   if (!judgement) {
-    throw new HttpError(404, { error: "judgement not found" });
+    return notFound(res, ErrorMessage.JudgementNotFound);
   }
   await setVotes(judgement, votes);
   res.status(200).json({ success: true });
@@ -101,7 +102,7 @@ export const handleImport = apiHandler(async (req, res) => {
   const user = requireUser(req);
   const project = await getProject(user, data.projectId);
   if (!project) {
-    throw new HttpError(404, { error: "project not found" });
+    return notFound(res, ErrorMessage.ProjectNotFound);
   }
   const judgement = await createJudgement(project, { name: data.name });
   await setVotes(judgement, data.fileContent);

@@ -32,6 +32,7 @@ import RulesetPanel from "./RulesetPanel";
 import LoadingContent from "../common/LoadingContent";
 import Scrollable from "../common/Scrollable";
 import { apiRequest } from "../../lib/api";
+import { useAlertsContext } from "../../utils/react/hooks/useAlertsContext";
 
 type TabPanelProps = {
   index: number;
@@ -73,90 +74,6 @@ const menu = [
 ];
 const formId = "searchConfigurationForm";
 
-const useStyles = makeStyles<Theme, { width?: number }>((theme) => ({
-  drawer: (props) => ({
-    width: props.width,
-  }),
-  drawerPaper: (props) => ({
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "stretch",
-    width: props.width,
-    overflowY: "auto",
-    overflowX: "hidden",
-  }),
-  drawerContent: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "stretch",
-  },
-  withToolbar: theme.mixins.withToolbar(theme),
-  scrollContainer: {
-    height: "100%",
-    overflowX: "hidden",
-  },
-  resizer: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    bottom: 0,
-    width: 8,
-    cursor: "ew-resize",
-    zIndex: 1000000,
-    "&:hover": {
-      background: "rgba(0,0,0,0.1)",
-    },
-  },
-  title: {
-    flex: "none",
-  },
-  menuButton: {
-    marginLeft: "auto",
-  },
-  menuIcon: {
-    minWidth: 40,
-  },
-  closeButton: {
-    marginLeft: theme.spacing(2),
-  },
-  label: {
-    marginBottom: theme.spacing(1),
-  },
-  tabPanel: {
-    minHeight: "100%",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "stretch",
-    padding: theme.spacing(1, 0),
-  },
-  hidden: {
-    display: "none",
-  },
-  actions: {
-    display: "flex",
-    justifyContent: "flex-end",
-    borderTop: "1px solid rgba(0,0,0,0.12)",
-    boxShadow:
-      "0px 2px 4px -1px rgb(0 0 0 / 20%), 0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%)",
-  },
-  saveButton: {
-    borderRadius: 9999,
-    paddingTop: 7,
-    paddingBottom: 7,
-    marginRight: theme.spacing(1),
-  },
-  saveAndRunButton: {
-    boxShadow: "none",
-  },
-  saveAndRunButtonText: {
-    marginLeft: theme.spacing(1),
-  },
-  fabProgress: {
-    color: colors.blue[500],
-  },
-}));
-
 type Props = {
   searchConfiguration:
     | (ExposedSearchConfiguration & {
@@ -196,6 +113,7 @@ export default function ConfigurationDrawer({
       [key: string]: any;
     },
   });
+  const { addErrorAlert } = useAlertsContext();
 
   React.useEffect(() => {
     if (searchConfiguration) {
@@ -253,22 +171,30 @@ export default function ConfigurationDrawer({
   };
 
   async function handleQueryTemplateUpdate(queryTemplateId: string) {
-    await apiRequest(`/api/searchconfigurations/update`, {
-      id: searchConfiguration?.id,
-      queryTemplateId,
-      rulesetIds,
-      executionId,
-    });
-    router.replace(router.asPath);
+    try {
+      await apiRequest(`/api/searchconfigurations/update`, {
+        id: searchConfiguration?.id,
+        queryTemplateId,
+        rulesetIds,
+        executionId,
+      });
+      router.replace(router.asPath);
+    } catch (err) {
+      addErrorAlert(err);
+    }
   }
 
   async function handleRulesetUpdate() {
-    await apiRequest(`/api/searchconfigurations/update`, {
-      id: searchConfiguration?.id,
-      queryTemplateId: searchConfiguration?.queryTemplate.id,
-      rulesetIds,
-    });
-    router.replace(router.asPath);
+    try {
+      await apiRequest(`/api/searchconfigurations/update`, {
+        id: searchConfiguration?.id,
+        queryTemplateId: searchConfiguration?.queryTemplate.id,
+        rulesetIds,
+      });
+      router.replace(router.asPath);
+    } catch (err) {
+      addErrorAlert(err);
+    }
   }
 
   const handleQueryPanelChange = (data: QueryPanelValues) =>
@@ -428,3 +354,87 @@ export default function ConfigurationDrawer({
     </Drawer>
   );
 }
+
+const useStyles = makeStyles<Theme, { width?: number }>((theme) => ({
+  drawer: (props) => ({
+    width: props.width,
+  }),
+  drawerPaper: (props) => ({
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "stretch",
+    width: props.width,
+    overflowY: "auto",
+    overflowX: "hidden",
+  }),
+  drawerContent: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "stretch",
+  },
+  withToolbar: theme.mixins.withToolbar(theme),
+  scrollContainer: {
+    height: "100%",
+    overflowX: "hidden",
+  },
+  resizer: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: 8,
+    cursor: "ew-resize",
+    zIndex: 1000000,
+    "&:hover": {
+      background: "rgba(0,0,0,0.1)",
+    },
+  },
+  title: {
+    flex: "none",
+  },
+  menuButton: {
+    marginLeft: "auto",
+  },
+  menuIcon: {
+    minWidth: 40,
+  },
+  closeButton: {
+    marginLeft: theme.spacing(2),
+  },
+  label: {
+    marginBottom: theme.spacing(1),
+  },
+  tabPanel: {
+    minHeight: "100%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "stretch",
+    padding: theme.spacing(1, 0),
+  },
+  hidden: {
+    display: "none",
+  },
+  actions: {
+    display: "flex",
+    justifyContent: "flex-end",
+    borderTop: "1px solid rgba(0,0,0,0.12)",
+    boxShadow:
+      "0px 2px 4px -1px rgb(0 0 0 / 20%), 0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%)",
+  },
+  saveButton: {
+    borderRadius: 9999,
+    paddingTop: 7,
+    paddingBottom: 7,
+    marginRight: theme.spacing(1),
+  },
+  saveAndRunButton: {
+    boxShadow: "none",
+  },
+  saveAndRunButtonText: {
+    marginLeft: theme.spacing(1),
+  },
+  fabProgress: {
+    color: colors.blue[500],
+  },
+}));

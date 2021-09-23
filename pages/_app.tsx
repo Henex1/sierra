@@ -17,6 +17,7 @@ import AppLayout from "../components/AppLayout";
 import { SessionProvider, ActiveProjectProvider } from "../components/Session";
 
 import "../styles/globals.css";
+import { AlertsProvider } from "../utils/react/providers/AlertsProvider";
 
 export const cache = createCache({ key: "css", prepend: true });
 
@@ -53,5 +54,6 @@ export default function MyApp(props: AppProps) {
   page = <ActiveProjectProvider children={page} />;
   page = <SessionProvider children={page} />;
   page = <NextSessionProvider children={page} session={pageProps.session} />;
+  page = <AlertsProvider children={page} />;
   return page;
 }

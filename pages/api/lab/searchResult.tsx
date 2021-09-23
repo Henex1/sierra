@@ -4,7 +4,6 @@ import * as z from "zod";
 
 import {
   apiHandler,
-  HttpError,
   requireUser,
   requireQuery,
   SierraApiRequest,
@@ -23,6 +22,8 @@ import {
   getSearchEndpoint,
   getQueryInterface,
 } from "../../../lib/searchendpoints";
+import { notFound } from "../../../lib/errors";
+import { ErrorMessage } from "../../../lib/errors/constants";
 import explanationSample from "./explanationSample.json";
 
 function mockExplanation(explanation: any) {
@@ -59,17 +60,17 @@ export default apiHandler(
     const user = requireUser(req);
     const spe = await getSearchPhraseExecution(user, id);
     if (!spe) {
-      throw new HttpError(404, { error: "seaarch phrase execution not found" });
+      return notFound(res, ErrorMessage.SearchPhraseExecutionNotFound);
     }
     const execution = await getExecution(user, spe.executionId);
     if (!execution) {
-      throw new HttpError(404, { error: "execution not found" });
+      return notFound(res, ErrorMessage.ExecutionNotFound);
     }
     const config = await getExecutionSearchConfiguration(execution);
     const project = await getSearchConfigurationProject(config);
     const se = await getSearchEndpoint(user, project.searchEndpointId);
     if (!se) {
-      throw new HttpError(500, { error: "search endpoint is not available" });
+      return notFound(res, ErrorMessage.SearchEndpointNotFound);
     }
     const speResults = spe.results as SearchPhraseExecutionResults;
     const docIds = speResults.map((h) => h.id);

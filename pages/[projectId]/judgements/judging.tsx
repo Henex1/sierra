@@ -67,11 +67,7 @@ export default function Judging() {
   const [rating, setRating] = useState<null | number>(null);
 
   const handleDecisionButton = () => {
-    if (rating !== null) {
-      console.log(`Confirm Judgement with rating ${rating}`);
-    } else {
-      console.log("Skip Judgement");
-    }
+    // TODO: implement judgement scoring
   };
 
   const handleRatingDecision = (buttonRating: number) => {
