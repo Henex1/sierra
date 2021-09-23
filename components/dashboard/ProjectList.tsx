@@ -173,10 +173,15 @@ export default function Projects({ projects, compact }: Props) {
                           variant="rounded"
                           className={classes.avatar}
                           style={{
-                            background: colorScale(project.combinedScore),
+                            background:
+                              typeof project?.combinedScore === "number"
+                                ? colorScale(project.combinedScore)
+                                : undefined,
                           }}
                         >
-                          {project.combinedScore}
+                          {typeof project?.combinedScore === "number"
+                            ? project.combinedScore
+                            : "?"}
                         </Avatar>
                       </Link>
                     </Tooltip>
