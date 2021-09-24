@@ -25,26 +25,26 @@ export async function expandQuery(
     if (!["ELASTICSEARCH", "OPEN_SEARCH"].includes(endpoint.type)) {
       throw new HttpError(405, ErrorMessage.UnsupportedSearchEndpointType);
     }
-    const config: Record<string, unknown> = {};
-    Object.entries(tpl.knobs as Record<string, unknown>).forEach(([k, v]) => {
-      config[k] = v;
-    });
-    config.rules = rulesets.map((rv) => (rv.value as any).rules);
-    config.ltr_model = ltrModelName;
     const body = JSON.stringify({
-      template: JSON.parse(tpl.query),
-      config,
-    });
-    const response = await fetch(
-      `${QUERY_EXPANDER_URL}/query/expand?q=${encodeURI(phrase)}`,
-      {
-        method: "POST",
-        body,
-        headers: {
-          "Content-Type": "application/json",
+      query: phrase,
+      search_configuration: {
+        search_endpoint_type: endpoint.type,
+        template: tpl.query,
+        config: {
+          ltr_model: ltrModelName,
         },
-      }
-    );
+        rules: rulesets,
+        knobs: tpl.knobs,
+      },
+    });
+
+    const response = await fetch(`${QUERY_EXPANDER_URL}/query/expand`, {
+      method: "POST",
+      body,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
     return await response.json();
   } catch (err) {
     throw new HttpError(500, ErrorMessage.FailedToExpandQuery);
