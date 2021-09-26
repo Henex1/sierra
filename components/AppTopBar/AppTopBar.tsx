@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { signIn } from "next-auth/client";
 import io from "socket.io-client";
 
-import { AppBar, Box, Typography, Button } from "@material-ui/core";
+import { AppBar, Box, Button } from "@material-ui/core";
 import HomeOutlinedIcon from "@material-ui/icons/HomeOutlined";
 import FlaskIcon from "../common/FlaskIcon";
 
@@ -41,7 +41,11 @@ export default function AppTopBar() {
       <Box className={classes.appBarWrapper}>
         <Box className={classes.leftWrapper}>
           <Link href="/" color="inherit" underline="none">
-            <Typography variant="h5">Sierra</Typography>
+            <img
+              className={classes.headerLogo}
+              src="/images/sierraLogo_white.svg"
+              alt="Sierra Logo"
+            />
           </Link>
           <LinkButton
             href="/"

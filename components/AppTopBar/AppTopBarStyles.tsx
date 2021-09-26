@@ -9,7 +9,7 @@ export default makeStyles((theme) => ({
     height: theme.spacing(8),
     display: "flex",
     justifyContent: "space-between",
-    padding: theme.spacing(0, 5),
+    padding: theme.spacing(0, 5, 0, 3),
   },
   leftWrapper: {
     display: "flex",
@@ -40,5 +40,9 @@ export default makeStyles((theme) => ({
   },
   selectIcon: {
     color: "white",
+  },
+  headerLogo: {
+    height: theme.spacing(3),
+    padding: theme.spacing(0, 5, 0, 0),
   },
 }));
