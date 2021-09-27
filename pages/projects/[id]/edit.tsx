@@ -7,10 +7,8 @@ import Container from "@material-ui/core/Container";
 import { ProjectForm } from "../../../components/projects/Form";
 import { authenticatedPage, requireParam } from "../../../lib/pageHelpers";
 import { apiRequest } from "../../../lib/api";
-import {
-  ExposedSearchEndpoint,
-  listSearchEndpoints,
-} from "../../../lib/searchendpoints";
+import { listSearchEndpoints } from "../../../lib/searchendpoints";
+import { ExposedSearchEndpoint } from "../../../lib/searchendpoints/types/ExposedSearchEndpoint";
 import {
   formatProject,
   getProject,

@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { TypeOf } from "zod";
 
 export const SearchEndpointType = z.union([
   z.literal("ELASTICSEARCH"),
@@ -8,25 +9,29 @@ export const SearchEndpointType = z.union([
   z.literal("REDIS_SEARCH"),
 ]);
 
-export const ElasticsearchInfoSchema = z.object({
+export const SSLValidationSchema = z.object({
+  ignoreSSL: z.boolean().optional(),
+});
+
+export const ElasticsearchInfoSchema = SSLValidationSchema.extend({
   endpoint: z.string().url(),
   index: z.string(),
 });
 
-export const OpenSearchInfoSchema = z.object({
+export const OpenSearchInfoSchema = SSLValidationSchema.extend({
   endpoint: z.string(),
   index: z.string(),
 });
 
-export const SolrInfoSchema = z.object({
+export const SolrInfoSchema = SSLValidationSchema.extend({
   endpoint: z.string(),
 });
 
-export const VespaInfoSchema = z.object({
+export const VespaInfoSchema = SSLValidationSchema.extend({
   endpoint: z.string(),
 });
 
-export const RedisSearchInfoSchema = z.object({
+export const RedisSearchInfoSchema = SSLValidationSchema.extend({
   endpoint: z.string(),
 });
 
@@ -61,3 +66,5 @@ export const SearchEndpointSchema = z.object({
   info: SearchEndpointInfo,
   credentials: searchEndpointCredentialsSchema.nullable().optional(),
 });
+
+export type SearchEndpoint = TypeOf<typeof SearchEndpointSchema>;

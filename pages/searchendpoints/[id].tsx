@@ -10,8 +10,8 @@ import { apiRequest } from "../../lib/api";
 import {
   formatSearchEndpoint,
   getSearchEndpoint,
-  ExposedSearchEndpoint,
 } from "../../lib/searchendpoints";
+import { ExposedSearchEndpoint } from "../../lib/searchendpoints/types/ExposedSearchEndpoint";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
@@ -45,7 +45,7 @@ export default function EditSearchEndpoint({ searchEndpoint }: Props) {
 
   async function onSubmit(values: ExposedSearchEndpoint) {
     if (values.testConnection) {
-      const { id, ...editableFields } = values;
+      const { hasCredentials, ...editableFields } = values;
       const result = await apiRequest(
         `/api/searchendpoints/connection`,
         editableFields,
@@ -56,7 +56,7 @@ export default function EditSearchEndpoint({ searchEndpoint }: Props) {
       return false;
     }
 
-    const { id, orgId, type, ...editableFields } = values;
+    const { id, orgId, type, hasCredentials, ...editableFields } = values;
     await apiRequest(
       `/api/searchendpoints/${searchEndpoint.id}`,
       editableFields,

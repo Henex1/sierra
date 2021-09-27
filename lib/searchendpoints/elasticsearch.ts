@@ -10,6 +10,8 @@ import {
   ElasticsearchResult,
   QueryResult,
 } from "./index";
+import { trimEnd } from "lodash";
+import { Agent } from "https";
 
 type ElasticsearchHit = {
   _id: string;
@@ -19,6 +21,10 @@ type ElasticsearchHit = {
   _type: "_doc";
   _explanation: Record<string, unknown>;
 };
+
+interface IgnoreSSL {
+  ignoreSSL?: boolean;
+}
 
 type ElasticsearchQueryResponse =
   | { error: { type: string; reason: string } }
@@ -53,8 +59,13 @@ function getHeaders(
   return headers;
 }
 
+export type SearchEndpointData = Omit<
+  SearchEndpoint,
+  "id" | "createdAt" | "updatedAt"
+>;
+
 export class ElasticsearchInterface implements QueryInterface {
-  constructor(public searchEndpoint: SearchEndpoint) {}
+  constructor(public searchEndpoint: SearchEndpointData) {}
 
   private async rawQuery<ResultType = any>(
     api: string,
@@ -65,10 +76,13 @@ export class ElasticsearchInterface implements QueryInterface {
       this.searchEndpoint.info
     );
     const credentials = await getSearchEndpointCredentials(this.searchEndpoint);
-    const response = await fetch(`${endpoint}${index}/${api}`, {
+    const response = await fetch(`${trimEnd(endpoint, "/")}/${index}/${api}`, {
       method: "POST",
       body,
       headers: getHeaders(credentials),
+      agent: new Agent({
+        rejectUnauthorized: !(this.searchEndpoint.info as IgnoreSSL).ignoreSSL,
+      }),
       ...extra,
     });
 
@@ -87,7 +101,7 @@ export class ElasticsearchInterface implements QueryInterface {
           match_all: {},
         },
       });
-      const queryResult = await this.rawQuery("/_search", query);
+      const queryResult = await this.rawQuery("_search", query);
       if (queryResult.error) {
         result.success = false;
         result.message = queryResult.error.root_cause[0].reason;

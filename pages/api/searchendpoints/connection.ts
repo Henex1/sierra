@@ -1,15 +1,20 @@
 import {
-  createSearchEndpointSchema,
   testSearchEndpointConnection,
   encryptCredentials,
+  getSearchEndpoint,
 } from "../../../lib/searchendpoints";
 import {
   requireUser,
-  requireBody,
   requireMethod,
   apiHandler,
   requireOnlyOrg,
+  HttpError,
 } from "../../../lib/apiServer";
+import {
+  NewEndpointSchema,
+  ExistingEndpointSchema,
+} from "../../../lib/searchendpoints/types/TestSearchEndpoint";
+import { SearchEndpointData } from "../../../lib/searchendpoints/elasticsearch";
 
 export default apiHandler(async (req, res) => {
   requireMethod(req, "POST");
@@ -17,12 +22,27 @@ export default apiHandler(async (req, res) => {
   const org = await requireOnlyOrg(req);
   req.body.orgId = org.id;
   delete req.body.testConnection;
-  const body = requireBody(req, createSearchEndpointSchema);
 
-  (body as any).credentials = body.credentials
-    ? encryptCredentials(body.credentials)
-    : "";
+  let testEndpoint: SearchEndpointData;
 
-  const result = await testSearchEndpointConnection(user, body);
+  try {
+    const endpoint = NewEndpointSchema.parse(req.body);
+    const credentials = encryptCredentials(endpoint.credentials);
+
+    testEndpoint = { ...endpoint, credentials };
+  } catch {
+    const endpoint = ExistingEndpointSchema.parse(req.body);
+    const credentials =
+      encryptCredentials(endpoint.credentials) ??
+      (await getSearchEndpoint(user, endpoint.id))?.credentials;
+
+    if (!credentials) {
+      throw new HttpError(400, "Invalid credentials");
+    }
+
+    testEndpoint = { ...endpoint, credentials };
+  }
+
+  const result = await testSearchEndpointConnection(user, testEndpoint);
   res.status(200).json(result);
 });

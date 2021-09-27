@@ -10,10 +10,10 @@ import BlurLinearIcon from "@material-ui/icons/BlurLinear";
 
 import { authenticatedPage, requireParam } from "../../../lib/pageHelpers";
 import {
-  ExposedSearchEndpoint,
   formatSearchEndpoint,
   getSearchEndpoint,
 } from "../../../lib/searchendpoints";
+import { ExposedSearchEndpoint } from "../../../lib/searchendpoints/types/ExposedSearchEndpoint";
 
 import Link, { LinkButton } from "../../../components/common/Link";
 import { useActiveProject } from "../../../components/Session";
