@@ -4,10 +4,8 @@ import { useRouter } from "next/router";
 import Typography from "@material-ui/core/Typography";
 import Container from "@material-ui/core/Container";
 
-import {
-  ExposedSearchEndpoint,
-  listSearchEndpoints,
-} from "../../lib/searchendpoints";
+import { listSearchEndpoints } from "../../lib/searchendpoints";
+import { ExposedSearchEndpoint } from "../../lib/searchendpoints/types/ExposedSearchEndpoint";
 import { create as createSearchEndpoint } from "../searchendpoints/create";
 import { authenticatedPage } from "../../lib/pageHelpers";
 import { apiRequest } from "../../lib/api";

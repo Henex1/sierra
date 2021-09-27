@@ -9,7 +9,7 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Grid from "@material-ui/core/Grid";
 
 import { ExposedProject } from "../../lib/projects";
-import { ExposedSearchEndpoint } from "../../lib/searchendpoints";
+import { ExposedSearchEndpoint } from "../../lib/searchendpoints/types/ExposedSearchEndpoint";
 import SearchEndpointForm from "../searchendpoints/Form";
 import { useEffect, useState } from "react";
 import { apiRequest } from "../../lib/api";

@@ -15,10 +15,8 @@ import AddIcon from "@material-ui/icons/Add";
 import EditIcon from "@material-ui/icons/Edit";
 
 import { authenticatedPage } from "../../lib/pageHelpers";
-import {
-  listSearchEndpoints,
-  ExposedSearchEndpoint,
-} from "../../lib/searchendpoints";
+import { listSearchEndpoints } from "../../lib/searchendpoints";
+import { ExposedSearchEndpoint } from "../../lib/searchendpoints/types/ExposedSearchEndpoint";
 
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";

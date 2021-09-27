@@ -4,10 +4,10 @@ import { useRouter } from "next/router";
 import { Typography, Container, Box, Divider } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
-import { ExposedSearchEndpoint } from "../../lib/searchendpoints";
+import { ExposedSearchEndpoint } from "../../lib/searchendpoints/types/ExposedSearchEndpoint";
 import { authenticatedPage } from "../../lib/pageHelpers";
 import { apiRequest } from "../../lib/api";
-import Form from "../../components/searchendpoints/Form";
+import Form, { FormValues } from "../../components/searchendpoints/Form";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
@@ -18,6 +18,14 @@ const useStyles = makeStyles(() => ({
     height: "100%",
   },
 }));
+
+const initialValues: Partial<FormValues> = {
+  info: {
+    endpoint: "",
+    index: "",
+  },
+  resultId: "_id",
+};
 
 export default function CreateSearchEndpoint() {
   const [testResultModalOpen, setTestResultModalOpen] = React.useState(false);
@@ -67,6 +75,7 @@ export default function CreateSearchEndpoint() {
           testResultModalOpen={testResultModalOpen}
           connectionTestResult={connectionTestResult}
           setTestResultModalOpen={setTestResultModalOpen}
+          initialValues={initialValues}
         />
       </Container>
     </div>

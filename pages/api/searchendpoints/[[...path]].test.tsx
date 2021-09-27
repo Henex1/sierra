@@ -15,7 +15,11 @@ describe("api/searchendpoints", () => {
     whitelist: [],
     resultId: "_id",
     displayFields: [],
-    info: { endpoint: "http://localhost:9200/", index: "icecat" },
+    info: {
+      endpoint: "http://localhost:9200/",
+      index: "icecat",
+      ignoreSSL: false,
+    },
   };
   it("POST /", async () => {
     mockModels("org").action("findMany").with({}).resolvesTo([TEST_ORG]);
@@ -46,7 +50,11 @@ describe("api/searchendpoints", () => {
       .resolvesTo({ id: TEST_SEARCHENDPOINT.id, ...initialInfo });
     const revisedInfo = {
       name: "Updated Endpoint Name",
-      info: { endpoint: "http://eshost:9200/", index: "icecat" },
+      info: {
+        endpoint: "http://eshost:9200/",
+        index: "icecat",
+        ignoreSSL: false,
+      },
     };
     mockModels("searchEndpoint")
       .action("update")
@@ -74,7 +82,11 @@ describe("api/searchendpoints", () => {
       .resolvesTo({ id: TEST_SEARCHENDPOINT.id, ...initialInfo });
     const revisedInfo = {
       name: "Updated Endpoint Name",
-      info: { endpoint: "http://eshost:9200/", index: "icecat" },
+      info: {
+        endpoint: "http://eshost:9200/",
+        index: "icecat",
+        ignoreSSL: false,
+      },
       credentials: null,
     };
     mockModels("searchEndpoint")
@@ -104,7 +116,11 @@ describe("api/searchendpoints", () => {
       .resolvesTo({ id: TEST_SEARCHENDPOINT.id, ...initialInfo });
     const revisedInfo = {
       name: "Updated Endpoint Name",
-      info: { endpoint: "http://eshost:9200/", index: "icecat" },
+      info: {
+        endpoint: "http://eshost:9200/",
+        index: "icecat",
+        ignoreSSL: false,
+      },
       credentials: { username: "a", password: "b" },
     };
     const internalData = { ...revisedInfo, credentials: expect.any(String) };
