@@ -59,7 +59,6 @@ export const SearchEndpointSchema = z.object({
   orgId: z.string(),
   name: z.string(),
   description: z.string(),
-  whitelist: z.array(z.string()),
   resultId: z.string(),
   displayFields: z.array(z.string()),
   type: SearchEndpointType,

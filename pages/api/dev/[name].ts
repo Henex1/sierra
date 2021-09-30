@@ -77,7 +77,6 @@ async function handleSeed(
     orgId: org.id,
     name: "Local Elasticsearch",
     description: "Elasticsearch instance on localhost.",
-    whitelist: [],
     resultId: "_id",
     displayFields: ["title:title", "short_description", "image:img_thumb"],
     type: "ELASTICSEARCH",

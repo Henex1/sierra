@@ -121,7 +121,6 @@ model SearchEndpoint {
   orgId         String
   name          String
   description   String
-  whitelist     String[]
   resultId      String
   displayFields String[]
   type          SearchEndpointType

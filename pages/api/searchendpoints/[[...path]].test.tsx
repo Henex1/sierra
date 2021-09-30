@@ -12,7 +12,6 @@ describe("api/searchendpoints", () => {
     name: "My Search Endpoint",
     type: "ELASTICSEARCH",
     description: "",
-    whitelist: [],
     resultId: "_id",
     displayFields: [],
     info: {

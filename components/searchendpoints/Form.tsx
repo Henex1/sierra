@@ -17,7 +17,6 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import { ExposedSearchEndpoint } from "../../lib/searchendpoints/types/ExposedSearchEndpoint";
 import { SearchEndpointCredentials } from "../../lib/schema";
 
-import Whitelist from "./Whitelist";
 import DisplayFields from "./DisplayFields";
 import {
   Checkbox,
@@ -356,11 +355,6 @@ export default function SearchEndpointForm({
                   )}
                 </>
               )}
-              <Grid item xs={12}>
-                <Field name="whitelist">
-                  {(props) => <Whitelist whitelistProps={props} />}
-                </Field>
-              </Grid>
               <Grid item xs={12}>
                 <Box mt={1} mb={2}>
                   <Divider />

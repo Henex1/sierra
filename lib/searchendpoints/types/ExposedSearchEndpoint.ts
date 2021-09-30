@@ -8,7 +8,6 @@ export interface ExposedSearchEndpoint
     | "orgId"
     | "name"
     | "description"
-    | "whitelist"
     | "resultId"
     | "displayFields"
     | "type"
@@ -28,7 +27,6 @@ export function fromPrismaSearchEndpoint(
     name: val.name,
     type: val.type,
     description: val.description,
-    whitelist: val.whitelist,
     resultId: val.resultId,
     displayFields: val.displayFields,
     hasCredentials: !!val.credentials,
