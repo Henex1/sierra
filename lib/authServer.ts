@@ -75,6 +75,9 @@ export const authOptions: NextAuthOptions = {
       });
     },
   },
+  pages: {
+    signIn: "/auth/signin",
+  },
 };
 
 async function initAuth(req: IncomingMessage): Promise<UserSession | null> {

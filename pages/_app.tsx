@@ -18,6 +18,7 @@ import { SessionProvider, ActiveProjectProvider } from "../components/Session";
 
 import "../styles/globals.css";
 import { AlertsProvider } from "../utils/react/providers/AlertsProvider";
+import "../styles/login.css";
 
 export const cache = createCache({ key: "css", prepend: true });
 
