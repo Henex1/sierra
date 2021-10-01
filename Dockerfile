@@ -36,6 +36,8 @@ RUN yarn build
 
 FROM node:15.14.0-alpine
 #### Release/minify
+ENV NODE_ENV=production
+
 WORKDIR /app
 
 COPY --from=builder /app/next.config.js ./
