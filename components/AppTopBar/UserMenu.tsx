@@ -74,7 +74,7 @@ export default function UserMenu({ user, org }: Props) {
         className={classes.dropMenu}
         onClose={() => setAnchorEl(null)}
         anchorOrigin={{
-          vertical: "bottom",
+          vertical: "top",
           horizontal: "right",
         }}
         transformOrigin={{
