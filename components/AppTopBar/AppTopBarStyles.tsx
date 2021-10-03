@@ -32,7 +32,9 @@ export default makeStyles((theme) => ({
   selectLabel: {
     backgroundColor: "#212952",
     padding: "0 5px",
-    color: "white",
+    "&.MuiFormLabel-root": {
+      color: "white",
+    },
     transform: "translate(14px, 13px) scale(1)",
     "&.Mui-focused": {
       color: "white",
