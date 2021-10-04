@@ -49,6 +49,7 @@ export const TEST_USER: NoTimestamps<User> = {
 export const TEST_ORG: NoTimestamps<Org> = {
   id: TEST_ORG_ID,
   name: "Test Org",
+  domain: "http://test.org",
   image: "https://placekitten.com/200/200",
 };
 

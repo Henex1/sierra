@@ -7,19 +7,31 @@ import EditIcon from "@material-ui/icons/Edit";
 import BusinessIcon from "@material-ui/icons/Business";
 
 import { authenticatedPage } from "../../../lib/pageHelpers";
-import { ExposedOrg, listOrgs, formatOrg } from "../../../lib/org";
+import {
+  ExposedOrg,
+  listOrgs,
+  formatOrg,
+  canCreateOrg,
+} from "../../../lib/org";
 
 import { useActiveOrg } from "../../../components/Session";
 import Link, { LinkButton } from "../../../components/common/Link";
 import BreadcrumbsButtons from "../../../components/common/BreadcrumbsButtons";
+import { CreateButton } from "./create/CreateButton";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const orgs = await listOrgs(context.user);
-  return { props: { orgs: orgs.map(formatOrg) } };
+  return {
+    props: {
+      orgs: orgs.map(formatOrg),
+      canCreate: canCreateOrg(context.user),
+    },
+  };
 });
 
 type Props = {
   orgs: ExposedOrg[];
+  canCreate: boolean;
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -32,9 +44,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Index({ orgs }: Props) {
+export default function Index({ orgs, canCreate }: Props) {
   const classes = useStyles();
   const { activeOrg } = useActiveOrg();
+
+  const createButton = canCreate ? <CreateButton /> : null;
 
   return (
     <div>
@@ -44,7 +58,9 @@ export default function Index({ orgs }: Props) {
       </BreadcrumbsButtons>
       <Grid container spacing={3}>
         <Grid item xs={12} className={classes.header}>
-          <Typography variant="h4">{activeOrg?.name}</Typography>
+          <Typography variant="h4">
+            {activeOrg?.name} {createButton}
+          </Typography>
           <div>
             <LinkButton
               className={classes.editButton}

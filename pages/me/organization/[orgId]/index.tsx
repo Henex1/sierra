@@ -38,8 +38,12 @@ export default function EditOrganization({ org }: Props) {
   const classes = useStyles();
   const router = useRouter();
 
-  async function onSubmit(values: ExposedOrg) {
-    await apiRequest(`/api/organization/create`, values);
+  async function onSubmit({ name, image, domain }: ExposedOrg) {
+    await apiRequest(`/api/organization/update/${org.id}`, {
+      name: name || null,
+      image: image || null,
+      domain: domain || null,
+    });
     router.push("/me/organization");
     // Keep the form stuck as pending
     return new Promise(() => {});
