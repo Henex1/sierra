@@ -14,7 +14,48 @@ export default class MyDocument extends Document {
         <Head>
           {/* PWA primary color */}
           <meta name="theme-color" content={theme.palette.primary.main} />
-          <link rel="icon" href="/favicon.ico" />
+
+          {/* generics */}
+          <link
+            rel="icon"
+            href="/images/favicons/favicon-32.png"
+            sizes="32x32"
+          />
+          <link
+            rel="icon"
+            href="/images/favicons/favicon-128.png"
+            sizes="128x128"
+          />
+          <link
+            rel="icon"
+            href="/images/favicons/favicon-192.png"
+            sizes="192x192"
+          />
+
+          {/* iOS */}
+          <link
+            rel="apple-touch-icon"
+            href="/images/favicons/favicon-152.png"
+            sizes="152x152"
+          />
+          <link
+            rel="apple-touch-icon"
+            href="/images/favicons/favicon-167.png"
+            sizes="167x167"
+          />
+          <link
+            rel="apple-touch-icon"
+            href="/images/favicons/favicon-180.png"
+            sizes="180x180"
+          />
+
+          {/* Android */}
+          <link
+            rel="shortcut icon"
+            href="/images/favicons/favicon-196.png"
+            sizes="196x196"
+          />
+
           <link
             rel="stylesheet"
             href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
