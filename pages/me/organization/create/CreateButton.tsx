@@ -15,3 +15,5 @@ export const CreateButton = (): ReactElement => {
     </Button>
   );
 };
+
+export default CreateButton;
