@@ -2,13 +2,19 @@ import * as z from "zod";
 import fernet from "fernet";
 
 import { HttpError } from "../apiServer";
-import prisma, { Prisma, User, SearchEndpoint } from "../prisma";
+import prisma, {
+  Prisma,
+  User,
+  SearchEndpoint,
+  SearchEndpointType,
+} from "../prisma";
 import { SearchEndpointSchema, SearchEndpointCredentials } from "../schema";
 import { userCanAccessOrg } from "../org";
 import { requireEnv } from "../env";
 import { ElasticsearchInterface, SearchEndpointData } from "./elasticsearch";
 import { expandQuery, ExpandedQuery } from "./queryexpander";
 import * as ExposedSearchEndpoint from "./types/ExposedSearchEndpoint";
+import { SolrQueryInterface } from "./Solr";
 
 export { expandQuery };
 
@@ -230,13 +236,15 @@ export interface QueryInterface {
 export function getQueryInterface(
   searchEndpoint: SearchEndpointData
 ): QueryInterface {
-  if (
-    searchEndpoint.type === "ELASTICSEARCH" ||
-    searchEndpoint.type === "OPEN_SEARCH"
-  ) {
-    return new ElasticsearchInterface(searchEndpoint);
-  } else {
-    throw new Error(`unimplemented SearchEndpoint ${searchEndpoint.type}`);
+  switch (searchEndpoint.type as SearchEndpointType) {
+    case "ELASTICSEARCH":
+    case "OPEN_SEARCH":
+      return new ElasticsearchInterface(searchEndpoint);
+    case "SOLR":
+      return new SolrQueryInterface(searchEndpoint);
+    case "REDIS_SEARCH":
+    case "VESPA":
+      throw new Error(`unimplemented SearchEndpoint ${searchEndpoint.type}`);
   }
 }
 
@@ -267,4 +275,23 @@ export async function getSearchEndpointCredentials<
   T extends { credentials: string | null }
 >(se: T): Promise<SearchEndpointCredentials | null> {
   return decryptCredentials(se.credentials);
+}
+
+export function getHeaders(
+  credentials: SearchEndpointCredentials | null
+): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (credentials) {
+    const { username, password } = credentials;
+    headers["Authorization"] = `Basic ${Buffer.from(
+      `${username}:${password}`
+    ).toString("base64")}`;
+  }
+  return headers;
+}
+
+export interface IgnoreSSL {
+  ignoreSSL?: boolean;
 }

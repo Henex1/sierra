@@ -25,6 +25,7 @@ export const OpenSearchInfoSchema = SSLValidationSchema.extend({
 
 export const SolrInfoSchema = SSLValidationSchema.extend({
   endpoint: z.string(),
+  index: z.string(),
 });
 
 export const VespaInfoSchema = SSLValidationSchema.extend({

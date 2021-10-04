@@ -3,7 +3,12 @@ import fetch, { RequestInit } from "node-fetch";
 import { SearchEndpoint } from "../prisma";
 import { ElasticsearchInfoSchema, SearchEndpointCredentials } from "../schema";
 import { ExpandedQuery } from "./queryexpander";
-import { getSearchEndpointCredentials, TestResult } from "./index";
+import {
+  getHeaders,
+  getSearchEndpointCredentials,
+  IgnoreSSL,
+  TestResult,
+} from "./index";
 import {
   FieldsCapabilitiesFilters,
   QueryInterface,
@@ -22,10 +27,6 @@ type ElasticsearchHit = {
   _explanation: Record<string, unknown>;
 };
 
-interface IgnoreSSL {
-  ignoreSSL?: boolean;
-}
-
 type ElasticsearchQueryResponse =
   | { error: { type: string; reason: string } }
   | {
@@ -43,21 +44,6 @@ type ElasticsearchQueryResponse =
         hits: ElasticsearchHit[];
       };
     };
-
-function getHeaders(
-  credentials: SearchEndpointCredentials | null
-): Record<string, string> {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-  if (credentials) {
-    const { username, password } = credentials;
-    headers["Authorization"] = `Basic ${Buffer.from(
-      `${username}:${password}`
-    ).toString("base64")}`;
-  }
-  return headers;
-}
 
 export type SearchEndpointData = Omit<
   SearchEndpoint,

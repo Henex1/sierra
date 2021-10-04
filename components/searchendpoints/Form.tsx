@@ -30,7 +30,16 @@ import {
 import { trimEnd } from "lodash";
 import { usePageUnload } from "../../utils/react/hooks/usePageUnload";
 
-export const searchEndpointTypes = [
+type Type = "ELASTICSEARCH" | "OPEN_SEARCH" | "SOLR";
+
+interface SearchEndpointConfig {
+  label: string;
+  value: Type;
+  imageSrc: string;
+  enabled: boolean;
+}
+
+export const searchEndpointTypes: SearchEndpointConfig[] = [
   {
     label: "Elasticsearch",
     value: "ELASTICSEARCH",
@@ -47,7 +56,7 @@ export const searchEndpointTypes = [
     label: "Solr",
     value: "SOLR",
     imageSrc: "/images/solr.png",
-    enabled: false,
+    enabled: true,
   },
   // {
   //   label: "Vespa",
@@ -62,6 +71,16 @@ export const searchEndpointTypes = [
   //   enabled: false,
   // },
 ];
+
+const indexTitle = (id: Type): string => {
+  switch (id) {
+    case "ELASTICSEARCH":
+    case "OPEN_SEARCH":
+      return "Index name";
+    case "SOLR":
+      return "Collection";
+  }
+};
 
 interface Credentials extends SearchEndpointCredentials {
   change: boolean;
@@ -123,7 +142,13 @@ export default function SearchEndpointForm({
     form: FormApi<FormValues, Partial<FormValues>>,
     callback?: (errors?: SubmissionErrors) => void
   ) {
-    const payload = { ...values };
+    const payload: FormValues = {
+      ...values,
+      info: {
+        ...values.info,
+        endpoint: `${trimEnd(values.info.endpoint, "/")}/`,
+      },
+    };
     // The "change" prop is not a part of the type
     const credentials: any = payload.credentials;
     // There are 3 cases:
@@ -266,7 +291,7 @@ export default function SearchEndpointForm({
                     variant="outlined"
                     size="small"
                   />
-                  {values.info?.endpoint.startsWith("https") ? (
+                  {values.info?.endpoint?.startsWith("https") ? (
                     <FormControlLabel
                       control={
                         <Field name="info.ignoreSSL">
@@ -284,18 +309,19 @@ export default function SearchEndpointForm({
                   ) : null}
                 </Grid>
               )}
-              {(values.type === "ELASTICSEARCH" ||
-                values.type === "OPEN_SEARCH") && (
-                <Grid item xs={12}>
+              <Grid item xs={12}>
+                {["ELASTICSEARCH", "OPEN_SEARCH", "SOLR"].includes(
+                  values.type
+                ) ? (
                   <TextField
-                    label="Index name"
+                    label={indexTitle(values.type as Type)}
                     name="info.index"
                     required={true}
                     variant="outlined"
                     size="small"
                   />
-                </Grid>
-              )}
+                ) : null}
+              </Grid>
               <Grid item xs={12}>
                 <Box mt={1} mb={2}>
                   <Divider />
@@ -304,8 +330,9 @@ export default function SearchEndpointForm({
                   Security options
                 </Typography>
               </Grid>
-              {(values.type === "ELASTICSEARCH" ||
-                values.type === "OPEN_SEARCH") && (
+              {["ELASTICSEARCH", "OPEN_SEARCH", "SOLR"].includes(
+                values.type
+              ) && (
                 <>
                   {isNew ? null : (
                     <Grid item xs={12}>
