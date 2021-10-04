@@ -82,6 +82,10 @@ body {
   margin-bottom: 70px;
 }
 
+.login-wrapper .login-form-container .login-form .signin-container {
+  width: 100%;
+}
+
 .login-wrapper .login-form-container .login-form .greeting {
   font-size: 20px;
 }
