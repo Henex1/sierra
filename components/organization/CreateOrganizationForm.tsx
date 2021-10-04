@@ -28,10 +28,15 @@ export default function CreateOrganizationForm({
             />
           </Box>
           <Box pb={2}>
-            <TextField label="Domain" name="domain" variant="filled" />
+            <TextField
+              label="Domain"
+              name="domain"
+              variant="filled"
+              type="url"
+            />
           </Box>
           <Box pb={2}>
-            <TextField label="Logo" name="logo" variant="filled" />
+            <TextField label="Logo" name="image" variant="filled" />
           </Box>
           <Box pb={2}>
             <Button

@@ -82,6 +82,7 @@ model Org {
   updatedAt DateTime @updatedAt
   name      String
   image     String?
+  domain    String?
 
   projects               Project[]
   searchEndpoints        SearchEndpoint[]

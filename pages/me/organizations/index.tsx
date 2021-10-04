@@ -4,7 +4,12 @@ import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 
 import { authenticatedPage } from "../../../lib/pageHelpers";
-import { ExposedOrg, listOrgs, formatOrg } from "../../../lib/org";
+import {
+  ExposedOrg,
+  listOrgs,
+  formatOrg,
+  canCreateOrg,
+} from "../../../lib/org";
 import { useActiveOrg } from "../../../components/Session";
 import Link from "../../../components/common/Link";
 import BreadcrumbsButtons from "../../../components/common/BreadcrumbsButtons";
@@ -19,14 +24,21 @@ import {
 import { makeStyles } from "@material-ui/core/styles";
 import { green } from "@material-ui/core/colors";
 import { useRouter } from "next/router";
+import { CreateButton } from "../organization/create/CreateButton";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const orgs = await listOrgs(context.user);
-  return { props: { orgs: orgs.map(formatOrg) } };
+  return {
+    props: {
+      orgs: orgs.map(formatOrg),
+      canCreate: canCreateOrg(context.user),
+    },
+  };
 });
 
 type Props = {
   orgs: ExposedOrg[] & { domain: string };
+  canCreate: boolean;
 };
 
 const useStyles = makeStyles(() => ({
@@ -52,11 +64,13 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export default function Index({ orgs }: Props) {
+export default function Index({ orgs, canCreate }: Props) {
   const classes = useStyles();
   const router = useRouter();
 
   const { activeOrg, setActiveOrg } = useActiveOrg();
+
+  const createButton = canCreate ? <CreateButton /> : null;
 
   return (
     <div>
@@ -67,7 +81,7 @@ export default function Index({ orgs }: Props) {
       </BreadcrumbsButtons>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <Typography variant="h4">My organizations</Typography>
+          <Typography variant="h4">My organizations {createButton}</Typography>
         </Grid>
         {orgs.map((organization) => (
           <Grid key={organization.id} item xs={4}>
