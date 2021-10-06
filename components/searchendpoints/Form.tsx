@@ -266,7 +266,7 @@ export default function SearchEndpointForm({
                     variant="outlined"
                     size="small"
                   />
-                  {values.info?.endpoint.startsWith("https") ? (
+                  {values.info?.endpoint?.startsWith("https") ? (
                     <FormControlLabel
                       control={
                         <Field name="info.ignoreSSL">
