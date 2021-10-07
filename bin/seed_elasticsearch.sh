@@ -32,7 +32,15 @@ curl -fsSLX PUT $ELASTICSEARCH_URL -H 'Content-Type: application/json' --data-bi
     },
     "mappings": {
         "properties": {
-            "attrs": { "type": "object", "enabled": false }
+            "attrs": { "type": "object", "enabled": false },
+            "price" : { "type" : "long" },
+            "name" : { "type" : "text" },
+            "short_description" : { "type" : "text" },
+            "supplier" : { "type" : "text" },
+            "title" : { "type" : "text" },
+            "img_thumb" : { "type" : "object", "enabled" : "false" },
+            "img_low" : { "type" : "object", "enabled" : "false" },
+            "img_high" : { "type" : "object", "enabled" : "false" }
         }
     }
 }'
