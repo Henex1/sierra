@@ -307,6 +307,10 @@ async function newSearchPhraseExecution(
             queryResult.results.slice(0, 5).map((r) => r.id),
             jp.results
           ),
+          "ap@10": scorers.ap(
+            queryResult.results.slice(0, 10).map((r) => r.id),
+            jp.results
+          ),
         }
       : null;
   if (process.env.NODE_ENV === "development" && Math.random() < 0.1) {
