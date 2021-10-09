@@ -1,15 +1,15 @@
 import _ from "lodash";
 
 import prisma, {
-  Prisma,
-  User,
-  SearchEndpoint,
-  SearchConfiguration,
   Execution,
-  SearchPhraseExecution,
-  QueryTemplate,
   OffsetPagination,
+  Prisma,
+  QueryTemplate,
   RulesetVersion,
+  SearchConfiguration,
+  SearchEndpoint,
+  SearchPhraseExecution,
+  User,
 } from "../prisma";
 import { getQueryInterface, expandQuery } from "../searchendpoints";
 import { userCanAccessSearchConfiguration } from "../searchconfigurations";
@@ -279,7 +279,7 @@ export async function createExecution(
     [0.5, 0.95, 0.99],
     (r) => r.tookMs
   );
-  const execution = await prisma.execution.create({
+  return await prisma.execution.create({
     data: {
       searchConfigurationId: config.id,
       projectId,
@@ -289,7 +289,6 @@ export async function createExecution(
       phrases: { create: results },
     },
   });
-  return execution;
 }
 
 async function newSearchPhraseExecution(
