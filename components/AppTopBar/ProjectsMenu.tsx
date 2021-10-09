@@ -13,6 +13,7 @@ import { useSession, useActiveProject } from "../Session";
 import { ExposedProject } from "../../lib/projects";
 
 import useStyles from "./AppTopBarStyles";
+import { MenuItemLink } from "../common/Link";
 
 const ProjectInput = withStyles((theme: Theme) =>
   createStyles({
@@ -91,6 +92,8 @@ export default function ProjectsMenu() {
                 {project.name}
               </MenuItem>
             ))}
+            {/*TODO place a separator here*/}
+            <MenuItemLink href="/projects">Show all projects...</MenuItemLink>
           </Select>
         </FormControl>
       )}

@@ -9,7 +9,6 @@ import FlaskIcon from "../common/FlaskIcon";
 import { useSession, useActiveProject, useActiveOrg } from "../Session";
 import Link, { LinkButton } from "../common/Link";
 import useStyles from "./AppTopBarStyles";
-import SettingsMenu from "./SettingsMenu";
 import ResourcesMenu from "./ResourcesMenu";
 import UserMenu from "./UserMenu";
 import ProjectsMenu from "./ProjectsMenu";
@@ -70,7 +69,6 @@ export default function AppTopBar() {
         <Box className={classes.rightWrapper}>
           <RunningTasksSpinner tasks={tasks} />
           <ProjectsMenu />
-          <SettingsMenu />
           <FeedbackMenu />
           {session.user ? (
             <UserMenu

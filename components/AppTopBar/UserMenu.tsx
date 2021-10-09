@@ -84,6 +84,7 @@ export default function UserMenu({ user, org }: Props) {
       >
         <MenuItemLink href="/me/organization">Organization</MenuItemLink>
         <MenuItemLink href="/me">Profile</MenuItemLink>
+        <MenuItemLink href="/settings">Settings</MenuItemLink>
         <MenuItem onClick={() => signOut()}>Logout</MenuItem>
       </Menu>
     </>
