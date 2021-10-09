@@ -121,8 +121,16 @@ yarn dev # Start the server
 
 Once the server is running, you need to set up the internal data structures:
 
-1. Log into the site using a google account that matches `ALLOW_REGISTRATION_FROM` in `.env`.
+1. Log into the site using a google account that matches `ALLOW_REGISTRATION_FROM` in `.env`. Change that value as needed.
 2. Open http://localhost:3000/dev and use the Seed function to populate the sample data.
+
+If you get an error like `The table public.ApiKey does not exist in the current database.` or similar, fix it by running:
+
+```bash
+rm -rf prisma/migrations
+yarn prisma migrate dev --create-only --skip-seed
+yarn prisma migrate reset --force
+```
 
 ### Set up development environment (normal)
 
