@@ -26,6 +26,7 @@ import {
   DialogContentText,
   DialogTitle,
   FormControlLabel,
+  Tooltip,
 } from "@material-ui/core";
 import { trimEnd } from "lodash";
 import { usePageUnload } from "../../utils/react/hooks/usePageUnload";
@@ -93,7 +94,16 @@ export interface FormValues extends ExposedSearchEndpoint {
 export type FormProps = BaseFormProps<FormValues> & {
   formId?: string;
   onDelete?: () => void;
+  removable?: boolean;
+  removeMessage?: string;
   hideActions?: boolean;
+  resultModalOpen?: boolean;
+  resultMessage?: {
+    success: boolean;
+    title: string;
+    message: string;
+  };
+  setResultModalOpen?: (s: boolean) => void;
 };
 
 const useStyles = makeStyles(() => ({
@@ -103,6 +113,9 @@ const useStyles = makeStyles(() => ({
   deleteButton: {
     float: "right",
     marginRight: "15px",
+    "&.Mui-disabled": {
+      pointerEvents: "auto",
+    },
   },
   saveButton: {
     float: "right",
@@ -115,10 +128,12 @@ const useStyles = makeStyles(() => ({
 export default function SearchEndpointForm({
   formId,
   onDelete,
-  testResultModalOpen,
-  connectionTestResult,
-  setTestResultModalOpen,
+  resultModalOpen,
+  resultMessage,
+  setResultModalOpen,
   hideActions,
+  removable,
+  removeMessage,
   ...rest
 }: FormProps) {
   const submitted = useRef(false);
@@ -180,7 +195,7 @@ export default function SearchEndpointForm({
   }
 
   function handleClose(values: FormValues) {
-    setTestResultModalOpen(false);
+    setResultModalOpen?.(false);
     setTestConnection(false);
     if (isNew) {
       (values.credentials as any).change = true;
@@ -188,6 +203,19 @@ export default function SearchEndpointForm({
   }
 
   usePageUnload(onPageUnload);
+
+  const RemoveTooltip = useCallback(
+    ({ children }: { children: React.ReactElement }): React.ReactElement => {
+      return removeMessage ? (
+        <Tooltip title={removeMessage} placement="top">
+          {children}
+        </Tooltip>
+      ) : (
+        children
+      );
+    },
+    [removeMessage]
+  );
 
   return (
     <Form
@@ -207,7 +235,7 @@ export default function SearchEndpointForm({
         return (
           <form id={formId} onSubmit={handleSubmit}>
             <Dialog
-              open={testResultModalOpen}
+              open={resultModalOpen ?? false}
               onClose={() => {
                 handleClose(values);
               }}
@@ -217,10 +245,9 @@ export default function SearchEndpointForm({
               </DialogTitle>
               <DialogContent>
                 <DialogContentText id="alert-dialog-description">
-                  Connection
-                  {connectionTestResult?.success ? " successful." : " failed."}
-                  {connectionTestResult?.success ||
-                    " Error Message: " + connectionTestResult?.message}
+                  {resultMessage?.title}.
+                  {resultMessage?.success ||
+                    " Error Message: " + resultMessage?.message}
                 </DialogContentText>
               </DialogContent>
               <DialogActions>
@@ -417,14 +444,20 @@ export default function SearchEndpointForm({
                     {isNew ? "Create" : "Update"}
                   </Button>
                   {!isNew && (
-                    <Button
-                      className={classes.deleteButton}
-                      variant="contained"
-                      onClick={onDelete}
-                      startIcon={<DeleteIcon />}
-                    >
-                      Delete
-                    </Button>
+                    <RemoveTooltip>
+                      <Button
+                        className={classes.deleteButton}
+                        variant="contained"
+                        onClick={onDelete}
+                        startIcon={<DeleteIcon />}
+                        disabled={removable === false}
+                        // There are some problems when adding tooltips on disabled elements
+                        // @ts-expect-error, https://stackoverflow.com/questions/61115913/is-it-possible-to-render-a-tooltip-on-a-disabled-material-ui-button-within-a
+                        component={removable === false ? "div" : undefined}
+                      >
+                        Delete
+                      </Button>
+                    </RemoveTooltip>
                   )}
                   <Button
                     type="submit"

@@ -29,8 +29,12 @@ const handleCreateSearchEndpoint = apiHandler(async (req, res) => {
 const handleDeleteSearchEndpoint = apiHandler(async (req, res) => {
   requireMethod(req, "DELETE");
   const user = requireUser(req);
-  await deleteSearchEndpoint(user, req.query.path[0]);
-  res.status(200).json({ success: true });
+  try {
+    await deleteSearchEndpoint(user, req.query.path[0]);
+    res.status(200).json({ success: true });
+  } catch (e) {
+    res.status(e.statusCode).json(e.data);
+  }
 });
 
 const handleUpdateSearchEndpoint = apiHandler(async (req, res) => {

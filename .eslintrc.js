@@ -38,6 +38,8 @@ module.exports = {
     // This rule appears to serve no purpose and the docs don't even attempt to
     // explain why it's a good idea.
     "react/no-children-prop": "off",
+    // We use typescript, no need to define prop types.
+    "react/prop-types": "off",
     // There are many legitimate uses for empty functions and the intent of the
     // code is quite obvious.
     "@typescript-eslint/no-empty-function": "off",
