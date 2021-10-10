@@ -1,7 +1,7 @@
 import fetch, { RequestInit } from "node-fetch";
 
 import { SearchEndpoint } from "../prisma";
-import { ElasticsearchInfoSchema, SearchEndpointCredentials } from "../schema";
+import { ElasticsearchInfoSchema } from "../schema";
 import { ExpandedQuery } from "./queryexpander";
 import {
   getHeaders,
