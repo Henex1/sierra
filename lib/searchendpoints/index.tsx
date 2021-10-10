@@ -39,13 +39,19 @@ export function userCanAccessSearchEndpoint(
 export const formatSearchEndpoint =
   ExposedSearchEndpoint.fromPrismaSearchEndpoint;
 
-export async function getSearchEndpoint(
+export async function getSearchEndpoint<T extends Prisma.SearchEndpointInclude>(
   user: User,
-  id: string
-): Promise<SearchEndpoint | null> {
-  const ds = await prisma.searchEndpoint.findFirst({
+  id: string,
+  include?: T
+) {
+  const ds = await prisma.searchEndpoint.findFirst<{
+    include: T;
+    where: Prisma.SearchEndpointWhereInput;
+  }>({
     where: userCanAccessSearchEndpoint(user, { id }),
+    include: include as T,
   });
+
   return ds;
 }
 
@@ -136,7 +142,24 @@ export async function deleteSearchEndpoint(
   if (!ds) {
     return Promise.reject(new HttpError(404, { error: "not found" }));
   }
-  await prisma.searchEndpoint.delete({ where: { id: ds.id } });
+
+  try {
+    await prisma.searchEndpoint.delete({ where: { id: ds.id } });
+  } catch (e) {
+    switch (e.code) {
+      case "P2014":
+        return Promise.reject(
+          new HttpError(500, {
+            error:
+              "Unable to remove search endpoint as it is linked to a project",
+          })
+        );
+      default:
+        return Promise.reject(
+          new HttpError(500, { error: "Unable to remove search endpoint" })
+        );
+    }
+  }
 }
 
 export const updateSearchEndpointSchema = SearchEndpointSchema.omit({

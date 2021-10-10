@@ -29,7 +29,9 @@ const initialValues: Partial<FormValues> = {
 
 export default function CreateSearchEndpoint() {
   const [testResultModalOpen, setTestResultModalOpen] = React.useState(false);
-  const [connectionTestResult, setConnectionTestResult] = React.useState(false);
+  const [connectionTestResult, setConnectionTestResult] = React.useState<
+    { success: boolean; title: string; message: string } | undefined
+  >();
   const classes = useStyles();
   const router = useRouter();
 
@@ -46,7 +48,11 @@ export default function CreateSearchEndpoint() {
         newSearchEndpoint,
         { method: "POST" }
       );
-      setConnectionTestResult(result);
+      setConnectionTestResult({
+        success: result.success,
+        title: `Connection ${result.success ? "successful" : "failed"}`,
+        message: result.message,
+      });
       setTestResultModalOpen(true);
       return false;
     } else {
@@ -71,9 +77,9 @@ export default function CreateSearchEndpoint() {
         </Box>
         <Form
           onSubmit={onSubmit}
-          testResultModalOpen={testResultModalOpen}
-          connectionTestResult={connectionTestResult}
-          setTestResultModalOpen={setTestResultModalOpen}
+          resultModalOpen={testResultModalOpen}
+          resultMessage={connectionTestResult}
+          setResultModalOpen={setTestResultModalOpen}
           initialValues={initialValues}
         />
       </Container>

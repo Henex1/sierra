@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useRouter } from "next/router";
+import * as Z from "zod";
 
 import { Container, Typography, Divider, Box } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
@@ -18,17 +19,28 @@ import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 export const getServerSideProps = authenticatedPage(async (context) => {
   const searchEndpoint = await getSearchEndpoint(
     context.user,
-    context.params!.id as string
+    context.params!.id as string,
+    { projects: true }
   );
   if (!searchEndpoint) {
     return { notFound: true };
   }
-  return { props: { searchEndpoint: formatSearchEndpoint(searchEndpoint) } };
+  return {
+    props: {
+      searchEndpoint: formatSearchEndpoint(searchEndpoint),
+      hasAssociatedProjects: searchEndpoint.projects.length > 0,
+    },
+  };
 });
 
 type Props = {
   searchEndpoint: ExposedSearchEndpoint;
+  hasAssociatedProjects: boolean;
 };
+
+const RemoveErr = Z.object({
+  error: Z.string(),
+});
 
 const useStyles = makeStyles(() => ({
   wrapper: {
@@ -36,9 +48,19 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export default function EditSearchEndpoint({ searchEndpoint }: Props) {
+export default function EditSearchEndpoint({
+  searchEndpoint,
+  hasAssociatedProjects,
+}: Props) {
   const [testResultModalOpen, setTestResultModalOpen] = React.useState(false);
-  const [connectionTestResult, setConnectionTestResult] = React.useState({});
+  const [connectionTestResult, setConnectionTestResult] = React.useState<
+    | {
+        success: boolean;
+        title: string;
+        message: string;
+      }
+    | undefined
+  >();
 
   const classes = useStyles();
   const router = useRouter();
@@ -51,7 +73,11 @@ export default function EditSearchEndpoint({ searchEndpoint }: Props) {
         editableFields,
         { method: "POST" }
       );
-      setConnectionTestResult(result);
+      setConnectionTestResult({
+        success: result.success,
+        title: `Connection ${result.success ? "successful" : "failed"}`,
+        message: result.message,
+      });
       setTestResultModalOpen(true);
       return false;
     }
@@ -68,14 +94,37 @@ export default function EditSearchEndpoint({ searchEndpoint }: Props) {
   }
 
   async function onDelete() {
-    await apiRequest(
-      `/api/searchendpoints/${searchEndpoint.id}`,
-      {},
-      { method: "DELETE" }
-    );
-    router.push("/searchendpoints");
-    // Keep the form stuck as pending
-    return new Promise(() => {});
+    const r = confirm("Are you sure, you want to delete the search endpoint?");
+
+    if (!r) {
+      return;
+    }
+
+    try {
+      await apiRequest(
+        `/api/searchendpoints/${searchEndpoint.id}`,
+        {},
+        { method: "DELETE" }
+      );
+      router.push("/searchendpoints");
+    } catch (e) {
+      const title = "Delete failed";
+
+      try {
+        setConnectionTestResult({
+          success: false,
+          title: title,
+          message: RemoveErr.parse(JSON.parse(e.message)).error,
+        });
+      } catch {
+        setConnectionTestResult({
+          success: false,
+          title: title,
+          message: "Unable to remove endpoint",
+        });
+      }
+      setTestResultModalOpen(true);
+    }
   }
 
   return (
@@ -93,9 +142,15 @@ export default function EditSearchEndpoint({ searchEndpoint }: Props) {
         <Form
           onSubmit={onSubmit}
           onDelete={onDelete}
-          testResultModalOpen={testResultModalOpen}
-          connectionTestResult={connectionTestResult}
-          setTestResultModalOpen={setTestResultModalOpen}
+          removable={!hasAssociatedProjects}
+          removeMessage={
+            hasAssociatedProjects
+              ? "Search endpoint is associated with one or more projects"
+              : undefined
+          }
+          resultModalOpen={testResultModalOpen}
+          resultMessage={connectionTestResult}
+          setResultModalOpen={setTestResultModalOpen}
           initialValues={searchEndpoint}
         />
       </Container>
