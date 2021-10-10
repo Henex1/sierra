@@ -56,6 +56,7 @@ export class SolrQueryInterface implements QueryInterface {
 
       // TODO: Not sure how I should take the explanation
       // Does the document schema has those fields?
+      // @ts-expect-error, needs to be fixed
       results: r.response.docs,
     };
   }
@@ -69,10 +70,14 @@ export class SolrQueryInterface implements QueryInterface {
     return r.response.docs.map(({ id }) => ({ _id: id, _source: {} }));
   }
 
+  // @ts-expect-error, needs to be implemented
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getFields(filters?: FieldsCapabilitiesFilters): Promise<string[]> {
     //TODO: Implement this
   }
 
+  // @ts-expect-error, needs to be implemented
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getFieldValues(fieldName: string, prefix?: string): Promise<string[]> {
     //TODO: Implement this
   }
