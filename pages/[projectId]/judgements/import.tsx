@@ -23,6 +23,7 @@ import Link from "components/common/Link";
 import BreadcrumbsButtons from "components/common/BreadcrumbsButtons";
 import { useActiveProject } from "components/Session";
 import FileInput from "components/common/FileInput";
+import classNames from "classnames";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -65,6 +66,12 @@ const useStyles = makeStyles((theme) =>
       alignItems: "center",
       justifyContent: "space-evenly",
       paddingTop: theme.spacing(3),
+    },
+    actionBtn: {
+      width: "50%",
+      "&:first-of-type": {
+        marginRight: theme.spacing(1),
+      },
     },
     root: {
       height: "90%",
@@ -140,7 +147,7 @@ function Import() {
       </BreadcrumbsButtons>
       <Grid container spacing={3}>
         <Grid item xs={12} container justify="space-between">
-          <Typography variant="h4"> Import judgements</Typography>
+          <Typography variant="h4">Import judgements</Typography>
           <IconButton
             aria-label="close page"
             component="span"
@@ -186,7 +193,7 @@ function Import() {
                 variant="contained"
                 color="primary"
                 component="span"
-                className={classes.upload}
+                className={classNames(classes.upload, classes.actionBtn)}
                 startIcon={
                   isUploading ? (
                     <CircularProgress size={24} />
@@ -203,6 +210,7 @@ function Import() {
                 variant="contained"
                 color="default"
                 component="span"
+                className={classes.actionBtn}
                 startIcon={<CloseIcon />}
                 onClick={handleClosePage}
               >

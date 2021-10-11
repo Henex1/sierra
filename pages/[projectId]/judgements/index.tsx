@@ -12,7 +12,9 @@ import {
   TableHead,
   TableRow,
   Button,
+  useMediaQuery,
 } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core/styles";
 import GavelIcon from "@material-ui/icons/Gavel";
 import AddIcon from "@material-ui/icons/Add";
 
@@ -25,6 +27,19 @@ import {
   listJudgementsExtended,
 } from "lib/judgements";
 import { getProject } from "lib/projects";
+import classNames from "classnames";
+
+const useStyles = makeStyles((theme) => ({
+  judgingBtn: {
+    width: 210,
+    "&:first-of-type": {
+      marginRight: theme.spacing(2),
+    },
+  },
+  judgingBtnMrg: {
+    marginBottom: theme.spacing(1),
+  },
+}));
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const projectId = requireParam(context, "projectId");
@@ -41,9 +56,11 @@ type Props = {
 };
 
 export default function Judgements({ judgements }: Props) {
+  const classes = useStyles();
   const { project } = useActiveProject();
   const router = useRouter();
   const BASE_URL = project && project.id ? `/${project.id}/judgements` : "";
+  const maxWidthMatches = useMediaQuery("(max-width:499px)");
 
   const handleStartJudgmentsEndpoint = () => {
     if (project) {
@@ -77,7 +94,10 @@ export default function Judgements({ judgements }: Props) {
           <>
             <Grid item xs={12}>
               <Button
-                style={{ marginRight: "15px" }}
+                className={classNames(
+                  classes.judgingBtn,
+                  maxWidthMatches && classes.judgingBtnMrg
+                )}
                 variant="outlined"
                 startIcon={<GavelIcon />}
                 size="medium"
@@ -86,6 +106,7 @@ export default function Judgements({ judgements }: Props) {
                 Start Judging
               </Button>
               <Button
+                className={classes.judgingBtn}
                 variant="outlined"
                 startIcon={<AddIcon />}
                 size="medium"

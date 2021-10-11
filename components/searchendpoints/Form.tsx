@@ -2,17 +2,20 @@ import React, { useCallback, useRef } from "react";
 import { Form, Field, FormProps as BaseFormProps } from "react-final-form";
 import { FormApi, SubmissionErrors } from "final-form";
 import { TextField, Select } from "mui-rff";
-
+import {
+  Button,
+  MenuItem,
+  Grid,
+  Box,
+  Divider,
+  Typography,
+  useMediaQuery,
+} from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import Button from "@material-ui/core/Button";
-import MenuItem from "@material-ui/core/MenuItem";
-import Grid from "@material-ui/core/Grid";
-import Box from "@material-ui/core/Box";
-import Divider from "@material-ui/core/Divider";
-import Typography from "@material-ui/core/Typography";
 import SaveIcon from "@material-ui/icons/Save";
 import FlashOnIcon from "@material-ui/icons/FlashOn";
 import DeleteIcon from "@material-ui/icons/Delete";
+import classNames from "classnames";
 
 import { ExposedSearchEndpoint } from "../../lib/searchendpoints/types/ExposedSearchEndpoint";
 import { SearchEndpointCredentials } from "../../lib/schema";
@@ -106,22 +109,26 @@ export type FormProps = BaseFormProps<FormValues> & {
   setResultModalOpen?: (s: boolean) => void;
 };
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   menuItemLogo: {
     height: "25px",
   },
   deleteButton: {
-    float: "right",
     marginRight: "15px",
     "&.Mui-disabled": {
       pointerEvents: "auto",
     },
   },
-  saveButton: {
+  floatRight: {
     float: "right",
   },
   testButton: {
     float: "left",
+  },
+  fullWidthBtn: {
+    width: "100%",
+    marginBottom: theme.spacing(1),
+    marginRight: 0,
   },
 }));
 
@@ -139,6 +146,7 @@ export default function SearchEndpointForm({
   const submitted = useRef(false);
   const formStatus = useRef(false);
   const [testConnection, setTestConnection] = React.useState(false);
+  const maxWidthMatches = useMediaQuery("(max-width:499px)");
   const onPageUnload = useCallback(
     (): string | false =>
       formStatus.current && "Changes you made may not be saved.",
@@ -435,33 +443,10 @@ export default function SearchEndpointForm({
                 <Grid item xs={12}>
                   <Button
                     type="submit"
-                    className={classes.saveButton}
-                    disabled={submitting}
-                    variant="contained"
-                    color="primary"
-                    startIcon={isNew ? undefined : <SaveIcon />}
-                  >
-                    {isNew ? "Create" : "Update"}
-                  </Button>
-                  {!isNew && (
-                    <RemoveTooltip>
-                      <Button
-                        className={classes.deleteButton}
-                        variant="contained"
-                        onClick={onDelete}
-                        startIcon={<DeleteIcon />}
-                        disabled={removable === false}
-                        // There are some problems when adding tooltips on disabled elements
-                        // @ts-expect-error, https://stackoverflow.com/questions/61115913/is-it-possible-to-render-a-tooltip-on-a-disabled-material-ui-button-within-a
-                        component={removable === false ? "div" : undefined}
-                      >
-                        Delete
-                      </Button>
-                    </RemoveTooltip>
-                  )}
-                  <Button
-                    type="submit"
-                    className={classes.testButton}
+                    className={classNames(
+                      classes.testButton,
+                      maxWidthMatches && classes.fullWidthBtn
+                    )}
                     disabled={submitting}
                     variant="contained"
                     color="primary"
@@ -470,6 +455,37 @@ export default function SearchEndpointForm({
                   >
                     Test Connection
                   </Button>
+                  <Box className={`${!maxWidthMatches && classes.floatRight}`}>
+                    {!isNew && (
+                      <RemoveTooltip>
+                        <Button
+                          className={classNames(
+                            classes.deleteButton,
+                            maxWidthMatches && classes.fullWidthBtn
+                          )}
+                          variant="contained"
+                          onClick={onDelete}
+                          startIcon={<DeleteIcon />}
+                          disabled={removable === false}
+                          // There are some problems when adding tooltips on disabled elements
+                          // @ts-expect-error, https://stackoverflow.com/questions/61115913/is-it-possible-to-render-a-tooltip-on-a-disabled-material-ui-button-within-a
+                          component={removable === false ? "div" : undefined}
+                        >
+                          Delete
+                        </Button>
+                      </RemoveTooltip>
+                    )}
+                    <Button
+                      type="submit"
+                      className={`${maxWidthMatches && classes.fullWidthBtn}`}
+                      disabled={submitting}
+                      variant="contained"
+                      color="primary"
+                      startIcon={isNew ? undefined : <SaveIcon />}
+                    >
+                      {isNew ? "Create" : "Update"}
+                    </Button>
+                  </Box>
                 </Grid>
               )}
             </Grid>

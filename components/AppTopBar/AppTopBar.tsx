@@ -11,9 +11,11 @@ import Link, { LinkButton } from "../common/Link";
 import useStyles from "./AppTopBarStyles";
 import ResourcesMenu from "./ResourcesMenu";
 import UserMenu from "./UserMenu";
+import MobileUserMenu from "./MobileUserMenu";
 import ProjectsMenu from "./ProjectsMenu";
 import { RunningTasksSpinner } from "./RunningTasksSpinner";
 import { FeedbackMenu } from "./FeedbackMenu";
+import classNames from "classnames";
 
 export default function AppTopBar() {
   const [tasks, setTasks] = useState([]);
@@ -38,7 +40,18 @@ export default function AppTopBar() {
   return (
     <AppBar position="fixed" className={classes.appBar}>
       <Box className={classes.appBarWrapper}>
-        <Box className={classes.leftWrapper}>
+        <Box className={classNames(classes.leftWrapper, classes.sectionTablet)}>
+          <Link href="/" color="inherit" underline="none">
+            <img
+              className={classes.headerLogo}
+              src="/images/sierraLogo_white.svg"
+              alt="Sierra Logo"
+            />
+          </Link>
+        </Box>
+        <Box
+          className={classNames(classes.leftWrapper, classes.sectionDesktop)}
+        >
           <Link href="/" color="inherit" underline="none">
             <img
               className={classes.headerLogo}
@@ -62,11 +75,13 @@ export default function AppTopBar() {
             size="large"
             startIcon={<FlaskIcon />}
           >
-            Lab
+            <span className={classes.sectionDesktop}>Lab</span>
           </LinkButton>
           <ResourcesMenu />
         </Box>
-        <Box className={classes.rightWrapper}>
+        <Box
+          className={classNames(classes.rightWrapper, classes.sectionDesktop)}
+        >
           <RunningTasksSpinner tasks={tasks} />
           <ProjectsMenu />
           <FeedbackMenu />
@@ -91,6 +106,10 @@ export default function AppTopBar() {
               Log In
             </Button>
           )}
+        </Box>
+        <Box className={`${classes.rightWrapper} ${classes.sectionTablet}`}>
+          <ProjectsMenu />
+          <MobileUserMenu activeProjectId={activeProjectId} />
         </Box>
       </Box>
     </AppBar>

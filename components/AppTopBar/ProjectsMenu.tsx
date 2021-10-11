@@ -84,7 +84,7 @@ export default function ProjectsMenu() {
             value={selectValue?.id ?? ""}
             label="Current Project"
             classes={{ icon: classes.selectIcon }}
-            input={<ProjectInput />}
+            input={<ProjectInput className={classes.mobileProjectsSelection} />}
             onChange={handleChange}
           >
             {session.projects.map((project: ExposedProject) => (
