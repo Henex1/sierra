@@ -61,14 +61,18 @@ export class ElasticsearchInterface implements QueryInterface {
     const { endpoint, index } = ElasticsearchInfoSchema.parse(
       this.searchEndpoint.info
     );
+    const endpointUrl = trimEnd(endpoint, "/");
     const credentials = await getSearchEndpointCredentials(this.searchEndpoint);
-    const response = await fetch(`${trimEnd(endpoint, "/")}/${index}/${api}`, {
+    const response = await fetch(`${endpointUrl}/${index}/${api}`, {
       method: "POST",
       body,
       headers: getHeaders(credentials),
-      agent: new Agent({
-        rejectUnauthorized: !(this.searchEndpoint.info as IgnoreSSL).ignoreSSL,
-      }),
+      agent: endpointUrl.startsWith("https")
+        ? new Agent({
+            rejectUnauthorized: !(this.searchEndpoint.info as IgnoreSSL)
+              .ignoreSSL,
+          })
+        : undefined,
       ...extra,
     });
 
