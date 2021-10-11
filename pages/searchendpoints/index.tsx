@@ -98,7 +98,7 @@ export default function SearchEndpoints({ searchEndpoints }: Props) {
                 (o) => o.value === item.type
               );
               return (
-                <Grid key={item.id} item xs={3}>
+                <Grid key={item.id} item xs={6} md={3}>
                   <Card className={classes.card}>
                     <CardHeader title={item.name} />
                     <CardMedia

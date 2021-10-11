@@ -9,7 +9,10 @@ export default makeStyles((theme) => ({
     height: theme.spacing(8),
     display: "flex",
     justifyContent: "space-between",
-    padding: theme.spacing(0, 5, 0, 3),
+    padding: theme.spacing(0, 1, 0, 2),
+    [theme.breakpoints.up("md")]: {
+      padding: theme.spacing(0, 5, 0, 3),
+    },
   },
   leftWrapper: {
     display: "flex",
@@ -45,6 +48,33 @@ export default makeStyles((theme) => ({
   },
   headerLogo: {
     height: theme.spacing(3),
-    padding: theme.spacing(0, 5, 0, 0),
+    padding: theme.spacing(0, 2, 0, 0),
+    [theme.breakpoints.up("sm")]: {
+      padding: theme.spacing(0, 5, 0, 0),
+    },
+  },
+  sectionDesktop: {
+    display: "none",
+    [theme.breakpoints.up("md")]: {
+      display: "flex",
+    },
+  },
+  sectionTablet: {
+    display: "flex",
+    [theme.breakpoints.up("md")]: {
+      display: "none",
+    },
+  },
+  sectionMobile: {
+    display: "flex",
+    [theme.breakpoints.up("sm")]: {
+      display: "none",
+    },
+  },
+  mobileProjectsSelection: {
+    width: "115px",
+    [theme.breakpoints.up("sm")]: {
+      width: "250px",
+    },
   },
 }));

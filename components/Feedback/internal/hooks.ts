@@ -20,7 +20,7 @@ export const useFeedbackStyles = makeStyles({
                         "form form"`,
     gridTemplateColumns: "1fr auto",
     gridGap: "15px",
-    width: "400px",
+    maxWidth: "400px",
   },
   title: {
     fontSize: "18px",

@@ -7,6 +7,7 @@ import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
 import Chip from "@material-ui/core/Chip";
 import BlurLinearIcon from "@material-ui/icons/BlurLinear";
+import classNames from "classnames";
 
 import { authenticatedPage, requireParam } from "../../../lib/pageHelpers";
 import {
@@ -71,12 +72,28 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(3),
   },
   testbedButton: {
-    marginRight: theme.spacing(3),
+    marginRight: theme.spacing(1),
+    [theme.breakpoints.up("sm")]: {
+      marginRight: theme.spacing(3),
+    },
+  },
+  noWrapBtn: {
+    whiteSpace: "nowrap",
+  },
+  manageBtn: {
+    width: 215,
   },
   detailsWrapper: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  flexRow: {
+    display: "flex",
+    justifyContent: "start",
+    [theme.breakpoints.up("md")]: {
+      justifyContent: "end",
+    },
   },
 }));
 
@@ -92,58 +109,47 @@ export default function ViewProject({ projectData, searchEndpoint }: Props) {
         <Typography>{projectData.name}</Typography>
       </BreadcrumbsButtons>
       <Grid container spacing={3}>
-        <Grid item xs={12} className={classes.headerWrapper}>
-          <div className={classes.titleWrapper}>
-            <Typography variant="h4">Project: {projectData.name}</Typography>
-            {projectData.id === project?.id && (
-              <Chip
-                color="primary"
-                label="Active"
-                classes={{
-                  root: classes.activeChipRoot,
-                }}
-              />
-            )}
-          </div>
-          <div>
-            <LinkButton
-              className={classes.testbedButton}
-              href="/testbed"
-              size="large"
-              variant="contained"
+        <Grid item xs={12} md={6} className={classes.titleWrapper}>
+          <Typography variant="h4">Project: {projectData.name}</Typography>
+          {projectData.id === project?.id && (
+            <Chip
               color="primary"
-              startIcon={<BlurLinearIcon />}
-            >
-              Open Testbed
-            </LinkButton>
-            <LinkButton
-              href={`/${projectData.id}/lab`}
-              size="large"
-              variant="contained"
-              color="primary"
-              startIcon={<FlaskIcon />}
-            >
-              Go To Lab
-            </LinkButton>
-          </div>
+              label="Active"
+              classes={{
+                root: classes.activeChipRoot,
+              }}
+            />
+          )}
         </Grid>
-        <Grid item xs={12} className={classes.detailsWrapper}>
-          <Typography variant="h6">Project details</Typography>
+        <Grid item xs={12} md={6} className={classes.flexRow}>
           <LinkButton
-            href={`/projects/${projectData.id}/edit`}
-            variant="outlined"
-            startIcon={<EditIcon />}
+            className={classNames(classes.testbedButton, classes.noWrapBtn)}
+            href="/testbed"
+            size="large"
+            variant="contained"
+            color="primary"
+            startIcon={<BlurLinearIcon />}
           >
-            Edit Project
+            Open Testbed
+          </LinkButton>
+          <LinkButton
+            className={classes.noWrapBtn}
+            href={`/${projectData.id}/lab`}
+            size="large"
+            variant="contained"
+            color="primary"
+            startIcon={<FlaskIcon />}
+          >
+            Go To Lab
           </LinkButton>
         </Grid>
         <Grid item xs={12}>
           <Grid container spacing={3}>
-            <Grid item xs={4}>
+            <Grid item xs={6} sm={4}>
               <Typography variant="overline">Name</Typography>
               <Typography variant="h5">{projectData.name}</Typography>
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={6} sm={4}>
               <Typography variant="overline">Search Endpoint</Typography>
               <Typography variant="h5">{searchEndpoint.name}</Typography>
             </Grid>
@@ -152,6 +158,7 @@ export default function ViewProject({ projectData, searchEndpoint }: Props) {
         <Grid item xs={12} className={classes.detailsWrapper}>
           <Typography variant="h6">Judgements</Typography>
           <LinkButton
+            className={classes.manageBtn}
             href={`/judgements`}
             variant="outlined"
             startIcon={<EditIcon />}
@@ -165,6 +172,7 @@ export default function ViewProject({ projectData, searchEndpoint }: Props) {
         <Grid item xs={12} className={classes.detailsWrapper}>
           <Typography variant="h6">Rulesets</Typography>
           <LinkButton
+            className={classes.manageBtn}
             href={`/rulesets`}
             variant="outlined"
             startIcon={<EditIcon />}
