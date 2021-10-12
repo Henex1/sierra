@@ -59,7 +59,11 @@ export function UpBoostField({
         />
       </Grid>
       <Grid style={{ position: "relative" }} item xs>
-        <InlineQueryEditor name={name} value={value as UpDownInstruction} />
+        <InlineQueryEditor
+          name={name}
+          disabled={disabled}
+          value={value as UpDownInstruction}
+        />
       </Grid>
     </>
   );

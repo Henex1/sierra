@@ -152,7 +152,12 @@ function RulesList({
     let rulesToDisplay = fields.value;
     if (filter) {
       rulesToDisplay = fields.value.filter(
-        (field: Rule) => field.expression.indexOf(filter) !== -1
+        (field: Rule) =>
+          field.expression.indexOf(filter) > -1 ||
+          field.instructions.find(
+            (instr) =>
+              instr.type === "synonym" && instr.term.indexOf(filter) > -1
+          )
       );
     }
     return rulesToDisplay.length === 0 ? (
