@@ -20,11 +20,13 @@ const useStyles = makeStyles(() => ({
 type InlineQueryEditor = {
   name: string;
   value: UpDownInstruction | FilterInstruction;
+  disabled?: boolean;
 };
 
 export default function InlineQueryEditor({
   name,
   value,
+  disabled,
 }: React.PropsWithChildren<InlineQueryEditor>) {
   const classes = useStyles();
   const form = useForm();
@@ -100,6 +102,7 @@ export default function InlineQueryEditor({
             onChange={handleInputChange(input.onChange)}
             className={value.query ? classes.hidden : undefined}
             inputRef={inputRef}
+            disabled={disabled}
             fullWidth
           />
         )}
