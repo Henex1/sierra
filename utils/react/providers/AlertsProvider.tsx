@@ -10,7 +10,7 @@ interface IAlert {
   body: React.ReactElement;
 }
 
-type AlertsProviderProps = {
+type Props = {
   children: React.ReactNode;
 };
 
@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const AlertsProvider = ({ children }: AlertsProviderProps) => {
+export const AlertsProvider = ({ children }: Props) => {
   const classes = useStyles();
   const [alerts, setAlerts] = React.useState<Array<IAlert>>([]);
 

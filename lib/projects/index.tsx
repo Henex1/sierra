@@ -192,7 +192,7 @@ export async function getRecentProject(
   );
   const searchEndpointName = searchEndpoint?.name || "";
   const searchEndpointType = searchEndpoint?.type || "";
-  console.log(lastExecution);
+
   const combinedScore =
     typeof lastExecution?.combinedScore === "number"
       ? Math.round(lastExecution.combinedScore * 100)

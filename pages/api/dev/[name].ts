@@ -181,7 +181,7 @@ async function handleSeed(
     await createExecution(sc, project.id);
   } catch (error) {
     const { statusCode = 500, data } = error;
-    res.status(statusCode).json({ error: data });
+    return res.status(statusCode).json({ error: data });
   }
 
   return res.status(200).json({ success: true });

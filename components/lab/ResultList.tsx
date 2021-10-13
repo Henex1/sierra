@@ -12,7 +12,7 @@ import { Skeleton } from "@material-ui/lab";
 import useSWR from "swr";
 import { ExposedSearchPhrase, MockSearchResult } from "../../lib/lab";
 
-import ResultScore from "./ResultScore";
+import ResultScore from "./ResultScore/ResultScore";
 import ExplainBlock from "./ExplainBlock";
 import { ResultCard } from "./ResultCard";
 
@@ -40,13 +40,19 @@ const useStyles = makeStyles((theme) => ({
 
 type Props = {
   searchPhrase: ExposedSearchPhrase;
+  searchConfigurationId?: string;
   onClose: () => void;
   displayFields: string[];
 };
 
-export function ResultList({ displayFields, onClose, searchPhrase }: Props) {
+export function ResultList({
+  displayFields,
+  onClose,
+  searchPhrase,
+  searchConfigurationId,
+}: Props) {
   const classes = useStyles();
-  const { data } = useSWR<MockSearchResult[]>(
+  const { data, mutate } = useSWR<MockSearchResult[]>(
     `/api/lab/searchResult?id=${searchPhrase.id}`
   );
 
@@ -104,7 +110,12 @@ export function ResultList({ displayFields, onClose, searchPhrase }: Props) {
             <Paper key={result.id} className={classes.paper}>
               <Grid container>
                 <Grid item xs={1}>
-                  <ResultScore score={result.score} />
+                  <ResultScore
+                    searchConfigurationId={searchConfigurationId}
+                    result={result}
+                    searchPhrase={searchPhrase}
+                    onChange={mutate}
+                  />
                 </Grid>
                 <Grid item xs={8} className={classes.content}>
                   <ResultCard displayFields={displayFields} result={result} />

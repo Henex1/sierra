@@ -1,6 +1,6 @@
 import { createMuiTheme, Theme } from "@material-ui/core";
 import { CSSProperties } from "@material-ui/core/styles/withStyles";
-import { red } from "@material-ui/core/colors";
+import { orange, red } from "@material-ui/core/colors";
 
 declare module "@material-ui/core/styles/createMixins" {
   interface Mixins {
@@ -19,6 +19,9 @@ const theme = createMuiTheme({
     },
     error: {
       main: red.A400,
+    },
+    warning: {
+      main: orange.A200,
     },
     background: {
       default: "#fff",
