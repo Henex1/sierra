@@ -1,17 +1,17 @@
-import * as React from "react";
-import { Avatar, Tooltip, colors } from "@material-ui/core";
+import React from "react";
+import { Tooltip, Avatar, colors } from "@material-ui/core";
 import { scaleLinear } from "d3-scale";
-import { useStyles } from "./hooks";
+import { useStyles } from "../hooks";
 
 const colorScale = scaleLinear<string, string>()
   .domain([0, 1, 3])
   .range([colors.red[500], colors.yellow[500], colors.green[500]]);
 
-type Props = {
+type ScoreIconProps = {
   score?: number;
 };
 
-export default function ResultScore({ score }: Props) {
+export const ResultScoreIcon = ({ score }: ScoreIconProps) => {
   const classes = useStyles();
 
   return (
@@ -31,4 +31,4 @@ export default function ResultScore({ score }: Props) {
       </Avatar>
     </Tooltip>
   );
-}
+};

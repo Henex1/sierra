@@ -7,24 +7,24 @@ import {
   requireUser,
   requireQuery,
   SierraApiRequest,
-} from "../../../lib/apiServer";
+} from "../../../../lib/apiServer";
 import {
   SearchPhraseExecutionResults,
   getExecution,
   getSearchPhraseExecution,
   getCombinedJudgementForPhrase,
-} from "../../../lib/execution";
+} from "../../../../lib/execution";
 import {
   getSearchConfigurationProject,
   getExecutionSearchConfiguration,
-} from "../../../lib/searchconfigurations";
+} from "../../../../lib/searchconfigurations";
 import {
   getSearchEndpoint,
   getQueryInterface,
-} from "../../../lib/searchendpoints";
-import { notFound } from "../../../lib/errors";
-import { ErrorMessage } from "../../../lib/errors/constants";
-import explanationSample from "./explanationSample.json";
+} from "../../../../lib/searchendpoints";
+import { notFound } from "../../../../lib/errors";
+import { ErrorMessage } from "../../../../lib/errors/constants";
+import explanationSample from "../explanationSample.json";
 
 function mockExplanation(explanation: any) {
   const queue = [explanation];

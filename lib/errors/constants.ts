@@ -11,7 +11,9 @@ export enum ErrorMessage {
   SearchPhraseExecutionNotFound = "Search phrase execution was not found",
   ExecutionNotFound = "Execution was not found",
   OrganisationNotFound = "Organisation was not found",
+  VoteNotFound = "Vote was not found",
   FailedToCreateExecution = "Failed to create an execution",
   FailedToExpandQuery = "Failed to expand query",
   UnsupportedSearchEndpointType = "You attempted to execute an unsupported search enpoint type",
+  FailedToCreateVote = "Failed to create a new vote",
 }

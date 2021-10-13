@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Grid, Typography, Box, makeStyles } from "@material-ui/core";
 import { Pagination } from "@material-ui/lab";
 import Router, { useRouter } from "next/router";
+import { isAfter } from "date-fns";
 
 import { apiRequest } from "../../lib/api";
 import Filters from "../../components/lab/Filters";
@@ -17,13 +18,12 @@ import {
   getActiveSearchConfiguration,
 } from "../../lib/searchconfigurations";
 import {
-  getExecution,
   listExecutions,
   countSearchPhrases,
   getSearchPhrases,
   ExposedExecution,
   formatExecution,
-  getLatestExecution,
+  getCurrentExecution,
 } from "../../lib/execution";
 import { ExposedSearchPhrase, ShowOptions, SortOptions } from "../../lib/lab";
 import {
@@ -49,8 +49,10 @@ import {
 } from "../../lib/querytemplates";
 import { getSearchEndpoint } from "../../lib/searchendpoints";
 import NoExistingExcution from "components/lab/NoExistingExcution";
+import { listJudgements } from "../../lib/judgements";
 import { BackdropLoadingSpinner } from "../../components/common/BackdropLoadingSpinner";
 import { useAlertsContext } from "../../utils/react/hooks/useAlertsContext";
+import { useLabContext } from "../../utils/react/hooks/useLabContext";
 
 const useStyles = makeStyles((theme) => ({
   listContainer: {
@@ -84,6 +86,7 @@ type Props = {
   };
   page: number;
   displayFields: Array<string>;
+  isExecutionDirty: boolean;
 };
 
 export const getServerSideProps = authenticatedPage<Props>(async (context) => {
@@ -120,15 +123,21 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
   );
 
   // Current execution
-  let currentExecution = null;
-  if (currentExecutionId) {
-    currentExecution = await getExecution(
-      context.user,
-      currentExecutionId as string
-    );
-  } else if (activeSearchConfiguration) {
-    currentExecution = await getLatestExecution(activeSearchConfiguration);
-  }
+  const currentExecution = await getCurrentExecution(
+    context.user,
+    activeSearchConfiguration,
+    currentExecutionId as string
+  );
+
+  const judgements = await listJudgements(project);
+  const isExecutionDirty = currentExecution
+    ? judgements.find((judgement) =>
+        isAfter(
+          new Date(judgement.updatedAt),
+          new Date(currentExecution.createdAt)
+        )
+      )
+    : false;
 
   const searchPhrasesTotal = currentExecution
     ? await countSearchPhrases(currentExecution)
@@ -224,6 +233,7 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
       displayOptions,
       page: page + 1,
       displayFields: searchEndpoint.displayFields,
+      isExecutionDirty: Boolean(isExecutionDirty),
     },
   };
 });
@@ -238,12 +248,25 @@ export default function Lab({
   currentExecution,
   executions,
   displayFields,
+  isExecutionDirty,
   ...props
 }: Props) {
   const classes = useStyles();
   const router = useRouter();
   const [propsLoading, setPropsLoading] = useState(false);
   const { addErrorAlert } = useAlertsContext();
+  const { setCurrentExecution, setIsExecutionDirty } = useLabContext();
+
+  useEffect(() => {
+    // Bubble current execution to the LabContext. This makes current execution available in each component of the application.
+    if (currentExecution) {
+      setCurrentExecution(currentExecution);
+    }
+  }, [currentExecution]);
+
+  useEffect(() => {
+    setIsExecutionDirty(isExecutionDirty);
+  }, [isExecutionDirty]);
 
   useEffect(() => {
     // Add backdrop with loading spinner while getting server side props
@@ -372,6 +395,7 @@ export default function Lab({
               <Grid item md={8}>
                 {activeSearchPhrase ? (
                   <ResultList
+                    searchConfigurationId={searchConfigurationId}
                     searchPhrase={activeSearchPhrase}
                     onClose={handleModalClose}
                     displayFields={displayFields}

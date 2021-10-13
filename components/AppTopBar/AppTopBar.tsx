@@ -16,6 +16,7 @@ import ProjectsMenu from "./ProjectsMenu";
 import { RunningTasksSpinner } from "./RunningTasksSpinner";
 import { FeedbackMenu } from "./FeedbackMenu";
 import classNames from "classnames";
+import { AppTopBarOutdatedExecution } from "./AppTopBarOutdatedExecution";
 
 export default function AppTopBar() {
   const [tasks, setTasks] = useState([]);
@@ -112,6 +113,7 @@ export default function AppTopBar() {
           <MobileUserMenu activeProjectId={activeProjectId} />
         </Box>
       </Box>
+      <AppTopBarOutdatedExecution />
     </AppBar>
   );
 }

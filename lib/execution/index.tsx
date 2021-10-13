@@ -56,6 +56,10 @@ export type ExposedSearchPhraseExecution = Pick<
   keyof typeof speSelect
 >;
 
+export type ExecutionUpdateInput = {
+  searchConfigurationId?: string;
+};
+
 export function formatExecution(val: Execution): ExposedExecution {
   return _.pick(
     { ...val, createdAt: val.createdAt.toString() },
@@ -77,6 +81,22 @@ export async function getExecution(
     where: { id, searchConfiguration: userCanAccessSearchConfiguration(user) },
   });
   return execution;
+}
+
+export async function getCurrentExecution(
+  user: User,
+  sc: SearchConfiguration | null,
+  executionId?: string
+): Promise<Execution | null> {
+  // Current execution
+  let currentExecution = null;
+  if (executionId) {
+    currentExecution = await getExecution(user, executionId as string);
+  } else if (sc) {
+    currentExecution = await getLatestExecution(sc);
+  }
+
+  return currentExecution;
 }
 
 export async function getLatestExecution(
@@ -224,15 +244,43 @@ function mean(input: [number, ...number[]]): number {
   return input.reduce((a, b) => a + b) / input.length;
 }
 
-export async function updateExecution(
-  id: string,
-  searchConfigurationId: string
-) {
+export async function getJudgementsForPhrase(
+  config: SearchConfiguration,
+  phrase: string,
+  documentId: string
+): Promise<{
+  phrase: string;
+  votes: Array<{ name?: string; score?: number }>;
+}> {
+  const votes: Array<{
+    id: number;
+    name: string;
+    score: number;
+  }> = await prisma.$queryRaw`
+    SELECT V."id" as "id", J."name", JSC."weight" * V."score" AS "score"
+    FROM "JudgementSearchConfiguration" AS JSC
+    INNER JOIN "JudgementPhrase" AS JP
+    ON JP."judgementId" = JSC."judgementId"
+    INNER JOIN "Vote" AS V
+    ON V."judgementPhraseId" = JP."id"
+    AND V."documentId" = ${documentId}
+    INNER JOIN "Judgement" AS J
+    ON J."id" = JSC."judgementId"
+    WHERE JSC."searchConfigurationId" = ${config.id}
+    AND JP."phrase" = ${phrase}
+    ORDER BY V."documentId"
+  `;
+
+  return {
+    phrase,
+    votes,
+  };
+}
+
+export async function updateExecution(id: string, data: ExecutionUpdateInput) {
   const updated = await prisma.execution.update({
     where: { id },
-    data: {
-      searchConfigurationId,
-    },
+    data,
   });
 
   return updated;
@@ -260,6 +308,7 @@ export async function createExecution(
   const combinedNumbers = results
     .map((r) => r.combinedScore)
     .filter(_.isNumber);
+
   const combinedScore = isNotEmpty(combinedNumbers) ? mean(combinedNumbers) : 0;
   const scorers = Object.keys(results.find((x) => x)?.allScores ?? {}) ?? [];
 

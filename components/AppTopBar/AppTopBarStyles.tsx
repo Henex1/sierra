@@ -2,10 +2,10 @@ import { makeStyles } from "@material-ui/core/styles";
 
 export default makeStyles((theme) => ({
   appBar: {
-    backgroundColor: "#212952",
     zIndex: theme.zIndex.drawer + 1,
   },
   appBarWrapper: {
+    backgroundColor: "#212952",
     height: theme.spacing(8),
     display: "flex",
     justifyContent: "space-between",

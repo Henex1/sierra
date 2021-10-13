@@ -15,6 +15,8 @@ import prisma, {
 } from "../prisma";
 import { userCanAccessProject } from "../projects";
 import { ChangeTypeOfKeys } from "../pageHelpers";
+import { HttpError } from "../../lib/apiServer";
+import { ErrorMessage } from "../../lib/errors/constants";
 
 // Votes range from 0 to VOTE_MAX.
 export const VOTE_MAX = 3;
@@ -106,6 +108,17 @@ export async function getJudgementForSearchConfiguration(
   return judgementSearchConfiguration;
 }
 
+export async function getJudgementPhraseForJudgementSearchConfiguration(
+  jsc: JudgementSearchConfiguration
+): Promise<JudgementPhrase | null> {
+  const judgementPhrase = await prisma.judgementPhrase.findFirst({
+    where: {
+      judgementId: jsc.judgementId,
+    },
+  });
+  return judgementPhrase;
+}
+
 export async function listJudgements(project: Project): Promise<Judgement[]> {
   const judgements = await prisma.judgement.findMany({
     where: { projectId: project.id },
@@ -151,7 +164,9 @@ export async function createJudgement(
   return judgement;
 }
 
-export const updateJudgementSchema = createJudgementSchema.partial();
+export const updateJudgementSchema = createJudgementSchema
+  .partial()
+  .extend({ updatedAt: z.date().optional() });
 
 export type UpdateJudgement = z.infer<typeof updateJudgementSchema>;
 
@@ -355,4 +370,42 @@ export async function getLatestJudgements(
     take: size,
   });
   return judgements;
+}
+
+export async function getVote(id: number): Promise<Vote | null> {
+  const vote = await prisma.vote.findFirst({
+    where: { id },
+  });
+
+  return vote;
+}
+
+export async function updateVote(vote: Vote, score: number): Promise<Vote> {
+  const updatedVote = await prisma.vote.update({
+    where: { id: vote.id },
+    data: {
+      score,
+    },
+  });
+
+  return updatedVote;
+}
+
+export async function createVote(
+  judgementPhraseId: string,
+  documentId: string,
+  score: number
+): Promise<Vote> {
+  try {
+    return await prisma.vote.create({
+      data: {
+        judgementPhraseId,
+        documentId,
+        score,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    throw new HttpError(500, ErrorMessage.FailedToCreateVote);
+  }
 }

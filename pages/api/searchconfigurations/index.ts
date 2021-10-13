@@ -155,10 +155,9 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
   });
 
   // Update current execution with newly created search configuration
-  const updatedExecution = await updateExecution(
-    input.executionId,
-    createdSearchConfiguration.id
-  );
+  const updatedExecution = await updateExecution(input.executionId, {
+    searchConfigurationId: createdSearchConfiguration.id,
+  });
 
   return res.status(200).json({
     searchConfiguration: formatSearchConfiguration(
