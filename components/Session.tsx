@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   getSession as getNextSession,
   useSession as useNextSession,
 } from "next-auth/client";
 import { Session as NextSession, User as NextUser } from "next-auth";
+import { setCookies } from "cookies-next";
 
 import { ExposedOrg } from "../lib/org";
 import { ExposedProject } from "../lib/projects";
@@ -99,6 +100,11 @@ const ActiveProjectContext = React.createContext<ActiveProject>(
 
 export function ActiveProjectProvider({ children }: ProviderProps) {
   const [project, setProject] = React.useState<ExposedProject | null>(null);
+  useEffect(() => {
+    if (project) {
+      setCookies("activeProjectId", project?.id);
+    }
+  }, [project]);
 
   return (
     <ActiveProjectContext.Provider value={{ project, setProject }}>
