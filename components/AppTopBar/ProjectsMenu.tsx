@@ -8,6 +8,7 @@ import {
 } from "@material-ui/core";
 import { createStyles, withStyles, Theme } from "@material-ui/core/styles";
 import { useRouter } from "next/router";
+import { getCookie } from "cookies-next";
 
 import { useSession, useActiveProject } from "../Session";
 import { ExposedProject } from "../../lib/projects";
@@ -43,7 +44,14 @@ export default function ProjectsMenu() {
 
   React.useEffect(() => {
     if (session?.projects && !project) {
-      setProject(session?.projects[0]);
+      const lastActiveProjectId = getCookie("activeProjectId");
+      let activeProject: ExposedProject | null = session?.projects[0];
+      if (lastActiveProjectId) {
+        activeProject =
+          session!.projects!.find((p) => p.id == lastActiveProjectId) ?? null;
+      }
+
+      setProject(activeProject);
     }
   }, [session]);
 
