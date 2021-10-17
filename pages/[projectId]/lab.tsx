@@ -5,7 +5,6 @@ import { Pagination } from "@material-ui/lab";
 import Router, { useRouter } from "next/router";
 import { isAfter } from "date-fns";
 
-import { apiRequest } from "../../lib/api";
 import Filters from "../../components/lab/Filters";
 import SearchPhraseList from "../../components/lab/SearchPhraseList";
 import { ResultList } from "../../components/lab/ResultList";
@@ -51,8 +50,9 @@ import { getSearchEndpoint } from "../../lib/searchendpoints";
 import NoExistingExcution from "components/lab/NoExistingExcution";
 import { listJudgements } from "../../lib/judgements";
 import { BackdropLoadingSpinner } from "../../components/common/BackdropLoadingSpinner";
-import { useAlertsContext } from "../../utils/react/hooks/useAlertsContext";
-import { useLabContext } from "../../utils/react/hooks/useLabContext";
+import { LabProvider } from "../../utils/react/providers/LabProvider";
+import { useAppTopBarBannerContext } from "../../utils/react/hooks/useAppTopBarBannerContext";
+import { AppTopBarBannerVariant } from "../../utils/react/providers/AppTopBarBannerProvider";
 
 const useStyles = makeStyles((theme) => ({
   listContainer: {
@@ -254,18 +254,16 @@ export default function Lab({
   const classes = useStyles();
   const router = useRouter();
   const [propsLoading, setPropsLoading] = useState(false);
-  const { addErrorAlert } = useAlertsContext();
-  const { setCurrentExecution, setIsExecutionDirty } = useLabContext();
+  const { setBanner } = useAppTopBarBannerContext();
 
   useEffect(() => {
-    // Bubble current execution to the LabContext. This makes current execution available in each component of the application.
-    if (currentExecution) {
-      setCurrentExecution(currentExecution);
+    if (isExecutionDirty) {
+      setBanner({
+        variant: AppTopBarBannerVariant.Warning,
+        message:
+          "This execution is stale. Some judgements and scores might not be up to date.",
+      });
     }
-  }, [currentExecution]);
-
-  useEffect(() => {
-    setIsExecutionDirty(isExecutionDirty);
   }, [isExecutionDirty]);
 
   useEffect(() => {
@@ -298,8 +296,6 @@ export default function Lab({
     string | null
   >(null);
   const [page, setPage] = React.useState(props.page);
-  const [isTestRunning, setIsTestRunning] = React.useState(false);
-  const searchConfigurationId = searchConfiguration?.id;
 
   React.useEffect(() => {
     router.push({
@@ -325,39 +321,16 @@ export default function Lab({
     []
   );
 
-  const handleModalClose = useCallback(() => setActiveSearchPhrase(null), []);
-
-  const handleRun = useCallback(
-    async (queryTemplateId) => {
-      if (!searchConfigurationId) return;
-
-      setIsTestRunning(true);
-
-      try {
-        await apiRequest("/api/searchconfigurations/update", {
-          id: searchConfigurationId,
-          queryTemplateId,
-          executionId: currentExecution?.id,
-        });
-
-        await apiRequest("/api/searchconfigurations/execute", {
-          id: searchConfigurationId,
-        });
-
-        setIsTestRunning(false);
-        location.reload();
-      } catch (err) {
-        addErrorAlert(err);
-        setIsTestRunning(false);
-      }
-    },
-    [searchConfigurationId]
-  );
+  const handleModalClose = () => setActiveSearchPhrase(null);
 
   const isFirstQueryExcute = searchPhrases.length == 0;
 
   return (
-    <>
+    <LabProvider
+      currentExecution={currentExecution}
+      searchConfiguration={searchConfiguration}
+      rulesets={rulesets}
+    >
       <BackdropLoadingSpinner open={propsLoading} />
       <div>
         {!!searchConfiguration && !isFirstQueryExcute ? (
@@ -395,7 +368,6 @@ export default function Lab({
               <Grid item md={8}>
                 {activeSearchPhrase ? (
                   <ResultList
-                    searchConfigurationId={searchConfigurationId}
                     searchPhrase={activeSearchPhrase}
                     onClose={handleModalClose}
                     displayFields={displayFields}
@@ -405,10 +377,8 @@ export default function Lab({
                     {activeExecution && currentExecution && (
                       <ExecutionSummary
                         templates={templates}
-                        rulesets={rulesets}
                         executions={executions}
                         activeExecution={activeExecution}
-                        currentExecution={currentExecution}
                         onSelected={(id: string) => setCurrentExecutionId(id)}
                       />
                     )}
@@ -423,15 +393,8 @@ export default function Lab({
             isRunQuery={isFirstQueryExcute}
           />
         )}
-        <ActionButtons
-          searchConfiguration={searchConfiguration}
-          rulesets={rulesets}
-          canRun={searchConfiguration !== null}
-          isRunning={isTestRunning}
-          onRun={handleRun}
-          executionId={currentExecution?.id}
-        />
+        <ActionButtons />
       </div>
-    </>
+    </LabProvider>
   );
 }

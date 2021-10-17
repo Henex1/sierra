@@ -2,11 +2,7 @@ import React from "react";
 import classnames from "classnames";
 import { Box, makeStyles, Typography } from "@material-ui/core";
 import { Check, Error, WarningRounded } from "@material-ui/icons";
-
-type Props = {
-  children: string;
-  variant: "success" | "warning" | "danger";
-};
+import { useAppTopBarBannerContext } from "../../utils/react/hooks/useAppTopBarBannerContext";
 
 const ICONS = {
   success: <Check />,
@@ -34,13 +30,18 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const AppTopBarBanner = ({ children, variant }: Props) => {
+export const AppTopBarBanner = () => {
   const classes = useStyles();
+  const { banner } = useAppTopBarBannerContext();
+
+  if (!banner) {
+    return null;
+  }
 
   return (
-    <Box className={classnames(classes.container, classes[variant])}>
-      {ICONS[variant]}
-      <Typography className={classes.title}>{children}</Typography>
+    <Box className={classnames(classes.container, classes[banner.variant])}>
+      {ICONS[banner.variant]}
+      <Typography className={classes.title}>{banner.message}</Typography>
     </Box>
   );
 };

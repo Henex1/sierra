@@ -24,8 +24,7 @@ import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import classnames from "classnames";
 import { useRouter } from "next/router";
 
-import { ExposedSearchConfiguration } from "../../lib/searchconfigurations";
-import { ExposedRuleset, ExposedRulesetVersion } from "../../lib/rulesets";
+import { ExposedRulesetVersion } from "../../lib/rulesets";
 import { ExposedQueryTemplate } from "../../lib/querytemplates";
 import QueryPanel, { QueryPanelValues } from "./QueryPanel";
 import RulesetPanel from "./RulesetPanel";
@@ -33,6 +32,7 @@ import LoadingContent from "../common/LoadingContent";
 import Scrollable from "../common/Scrollable";
 import { apiRequest } from "../../lib/api";
 import { useAlertsContext } from "../../utils/react/hooks/useAlertsContext";
+import { useLabContext } from "../../utils/react/hooks/useLabContext";
 
 type TabPanelProps = {
   index: number;
@@ -75,38 +75,22 @@ const menu = [
 const formId = "searchConfigurationForm";
 
 type Props = {
-  searchConfiguration:
-    | (ExposedSearchConfiguration & {
-        queryTemplate: ExposedQueryTemplate;
-        rulesets: ExposedRulesetVersion[];
-      })
-    | null;
-  rulesets: ExposedRuleset[];
   width: number;
   setDrawerWidth: (value: number) => void;
   handleClose: () => void;
-  canRun: boolean;
-  isRunning: boolean;
-  onRun: (id: string) => void;
-  executionId: string | null;
 };
 
 export default function ConfigurationDrawer({
-  searchConfiguration,
-  rulesets,
   setDrawerWidth,
   width,
   handleClose,
-  canRun,
-  isRunning,
-  onRun,
-  executionId,
 }: Props) {
   const classes = useStyles({ width });
   const router = useRouter();
   const [activeTab, setActiveTab] = React.useState(0);
   const [isResizing, setIsResizing] = React.useState(false);
   const [rulesetIds, setRulesetIds] = React.useState<string[]>([]);
+  const { searchConfiguration } = useLabContext();
   const [queryPanelData, setQueryPanelData] = React.useState<QueryPanelValues>({
     query: searchConfiguration?.queryTemplate.query || "",
     knobs: (searchConfiguration?.queryTemplate.knobs || {}) as {
@@ -114,10 +98,20 @@ export default function ConfigurationDrawer({
     },
   });
   const { addErrorAlert } = useAlertsContext();
+  const {
+    runExecution,
+    isExecutionRunning,
+    canRunExecution,
+    currentExecution,
+  } = useLabContext();
 
   React.useEffect(() => {
     if (searchConfiguration) {
-      setRulesetIds(searchConfiguration.rulesets.map((item) => item.rulesetId));
+      setRulesetIds(
+        searchConfiguration.rulesets.map(
+          (item: ExposedRulesetVersion) => item.rulesetId
+        )
+      );
     }
   }, [searchConfiguration]);
 
@@ -176,7 +170,7 @@ export default function ConfigurationDrawer({
         id: searchConfiguration?.id,
         queryTemplateId,
         rulesetIds,
-        executionId,
+        executionId: currentExecution?.id,
       });
       router.replace(router.asPath);
     } catch (err) {
@@ -224,7 +218,7 @@ export default function ConfigurationDrawer({
 
   const handleRun = async () => {
     const { queryTemplate } = await updateQueryTemplate(queryPanelData);
-    onRun(queryTemplate.id);
+    runExecution(queryTemplate.id);
   };
 
   return (
@@ -308,7 +302,6 @@ export default function ConfigurationDrawer({
                 <TabPanel value={activeTab} index={1}>
                   <RulesetPanel
                     formId={formId}
-                    rulesets={rulesets}
                     activeRulesetIds={rulesetIds}
                     setActiveRulesetIds={setRulesetIds}
                     onUpdate={handleRulesetUpdate}
@@ -330,11 +323,11 @@ export default function ConfigurationDrawer({
                   color="primary"
                   variant="extended"
                   onClick={handleRun}
-                  disabled={!canRun || isRunning}
+                  disabled={!canRunExecution || isExecutionRunning}
                   className={classes.saveAndRunButton}
                   size="medium"
                 >
-                  {isRunning ? (
+                  {isExecutionRunning ? (
                     <CircularProgress
                       size={18}
                       className={classes.fabProgress}
@@ -343,7 +336,7 @@ export default function ConfigurationDrawer({
                     <PlayArrowIcon />
                   )}
                   <span className={classes.saveAndRunButtonText}>
-                    {isRunning ? "Running" : "Run"}
+                    {isExecutionRunning ? "Running" : "Run"}
                   </span>
                 </Fab>
               </Toolbar>

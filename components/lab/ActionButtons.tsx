@@ -4,11 +4,9 @@ import SettingsIcon from "@material-ui/icons/Settings";
 import CreateIcon from "@material-ui/icons/Create";
 import classnames from "classnames";
 
-import { ExposedQueryTemplate } from "../../lib/querytemplates";
-import { ExposedRuleset, ExposedRulesetVersion } from "../../lib/rulesets";
-import { ExposedSearchConfiguration } from "../../lib/searchconfigurations";
 import { LayoutContext } from "../AppLayout";
 import ConfigurationDrawer from "./ConfigurationDrawer";
+import { useLabContext } from "../../utils/react/hooks/useLabContext";
 
 const useStyles = makeStyles<Theme, { width: number }>((theme) => ({
   fabContainer: {
@@ -40,36 +38,16 @@ const useStyles = makeStyles<Theme, { width: number }>((theme) => ({
   },
 }));
 
-type Props = {
-  searchConfiguration:
-    | (ExposedSearchConfiguration & {
-        queryTemplate: ExposedQueryTemplate;
-        rulesets: ExposedRulesetVersion[];
-      })
-    | null;
-  rulesets: ExposedRuleset[];
-  canRun: boolean;
-  isRunning: boolean;
-  onRun: (id: string) => void;
-  executionId?: string | null;
-};
-
-export default function ActionButtons({
-  searchConfiguration,
-  rulesets,
-  canRun,
-  isRunning,
-  onRun,
-  executionId,
-}: Props) {
+export default function ActionButtons() {
   const [open, setOpen] = React.useState(false);
   const [drawerWidth, setDrawerWidth] = React.useState(600);
   const classes = useStyles({ width: drawerWidth });
+  const { canRunExecution } = useLabContext();
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  return canRun ? (
+  return canRunExecution ? (
     <div>
       <div
         className={classnames(
@@ -88,15 +66,9 @@ export default function ActionButtons({
             <Portal container={sidebarRef.current}>
               {open && (
                 <ConfigurationDrawer
-                  canRun={canRun}
-                  isRunning={isRunning}
-                  onRun={onRun}
                   width={drawerWidth}
                   setDrawerWidth={setDrawerWidth}
-                  searchConfiguration={searchConfiguration}
-                  rulesets={rulesets}
                   handleClose={handleClose}
-                  executionId={executionId as string}
                 />
               )}
             </Portal>

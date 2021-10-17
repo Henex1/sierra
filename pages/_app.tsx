@@ -19,7 +19,7 @@ import { SessionProvider, ActiveProjectProvider } from "../components/Session";
 import "../styles/globals.css";
 import { AlertsProvider } from "../utils/react/providers/AlertsProvider";
 import "../styles/login.css";
-import { LabProvider } from "../utils/react/providers/LabProvider";
+import { AppTopBarBannerProvider } from "../utils/react/providers/AppTopBarBannerProvider";
 
 export const cache = createCache({ key: "css", prepend: true });
 
@@ -57,6 +57,6 @@ export default function MyApp(props: AppProps) {
   page = <SessionProvider children={page} />;
   page = <NextSessionProvider children={page} session={pageProps.session} />;
   page = <AlertsProvider children={page} />;
-  page = <LabProvider children={page} />;
+  page = <AppTopBarBannerProvider children={page} />;
   return page;
 }

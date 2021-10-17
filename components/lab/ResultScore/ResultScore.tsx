@@ -8,7 +8,6 @@ import { VoteScores } from "./VoteScores";
 
 type ResultScoreProps = {
   result: MockSearchResult;
-  searchConfigurationId?: string;
   searchPhrase: ExposedSearchPhrase;
   onChange: () => void;
 };
@@ -21,7 +20,6 @@ export default function ResultScore({
   result,
   searchPhrase,
   onChange,
-  searchConfigurationId,
 }: ResultScoreProps) {
   const [votes, setVotes] = useState<ExtendedVote[] | undefined>(undefined);
 
@@ -56,7 +54,6 @@ export default function ResultScore({
           <VoteScores
             vote={votes[0]}
             documentId={result.id}
-            searchConfigurationId={searchConfigurationId}
             onChange={handleChange}
           />
         )}
@@ -75,7 +72,6 @@ export default function ResultScore({
                       vote={vote}
                       onChange={handleChange}
                       documentId={result.id}
-                      searchConfigurationId={searchConfigurationId}
                     />
                   </ResultScorePopover>
                   {vote.name}

@@ -4,6 +4,7 @@ import classnames from "classnames";
 
 import ExecutionScore from "../lab/ExecutionScore";
 import { ExposedExecution } from "../../lib/execution";
+import { useLabContext } from "../../utils/react/hooks/useLabContext";
 
 const useStyles = makeStyles((theme) => ({
   list: {
@@ -29,16 +30,15 @@ const useStyles = makeStyles((theme) => ({
 type Props = {
   executions: ExposedExecution[];
   activeExecution: ExposedExecution;
-  currentExecution: ExposedExecution;
   onSelected: (id: string) => void;
 };
 
 export default function ExecutionList({
   executions,
   activeExecution,
-  currentExecution,
   onSelected,
 }: Props) {
+  const { currentExecution } = useLabContext();
   const classes = useStyles();
   const sortedExecutions = executions
     .slice()
@@ -51,7 +51,7 @@ export default function ExecutionList({
     <div className={classes.list}>
       {sortedExecutions.map((item) => {
         const isActive = activeExecution.id === item.id;
-        const isCurrent = currentExecution.id === item.id;
+        const isCurrent = currentExecution?.id === item.id;
         let tooltip: React.ReactNode[] = [
           `${new Date(item.createdAt).toLocaleDateString()} ${new Date(
             item.createdAt
