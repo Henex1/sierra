@@ -167,10 +167,14 @@ export async function getSearchPhrases(
 }
 
 export async function countSearchPhrases(
-  execution: Execution
+  execution: Execution,
+  filter: ShowOptions
 ): Promise<number> {
   return await prisma.searchPhraseExecution.count({
-    where: { executionId: execution.id },
+    where: {
+      executionId: execution.id,
+      AND: filterMapping[filter] ?? {},
+    },
   });
 }
 
