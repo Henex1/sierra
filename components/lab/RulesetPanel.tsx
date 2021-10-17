@@ -14,13 +14,13 @@ import { useRouter } from "next/router";
 import CheckIcon from "@material-ui/icons/Check";
 import EditIcon from "@material-ui/icons/Edit";
 
-import { ExposedRuleset } from "../../lib/rulesets";
 import { apiRequest } from "../../lib/api";
 import RulesetEditor from "../rulesets/RulesetEditor";
 import { Props as RulesetEditorProps } from "../../pages/rulesets/[id]";
 import { RulesetVersionValue } from "lib/rulesets/rules";
 import LoadingContent from "../common/LoadingContent";
 import { useAlertsContext } from "../../utils/react/hooks/useAlertsContext";
+import { useLabContext } from "../../utils/react/hooks/useLabContext";
 
 const useStyles = makeStyles((theme) => ({
   dropdown: {
@@ -44,7 +44,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 type RulesetPanelProps = {
-  rulesets: ExposedRuleset[];
   formId: string;
   activeRulesetIds: string[];
   setActiveRulesetIds: (ids: string[]) => void;
@@ -52,7 +51,6 @@ type RulesetPanelProps = {
 };
 
 export default function RulesetPanel({
-  rulesets,
   formId,
   activeRulesetIds,
   setActiveRulesetIds,
@@ -62,6 +60,7 @@ export default function RulesetPanel({
   const router = useRouter();
   const [rulesetId, setRulesetId] = React.useState<string>("");
   const { addErrorAlert } = useAlertsContext();
+  const { rulesets } = useLabContext();
 
   React.useEffect(() => {
     if (!activeRulesetIds.length) {

@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { scaleLinear } from "d3-scale";
 import { apiRequest } from "../../../lib/api";
 import { ExposedVote } from "../../../lib/judgements";
+import { useLabContext } from "../../../utils/react/hooks/useLabContext";
 
 const colorScale = scaleLinear<string, string>()
   .domain([0, 1, 3])
@@ -23,26 +24,21 @@ const useStyles = makeStyles((theme) => ({
 type Props = {
   vote: ExposedVote;
   documentId: number;
-  searchConfigurationId?: string;
   onChange: () => void;
 };
 
 const BUTTONS = ["0 Poor", "1 Fair", "2 Good", "3 Perfect"];
 
-export const VoteScores = ({
-  vote,
-  onChange,
-  searchConfigurationId,
-  documentId,
-}: Props) => {
+export const VoteScores = ({ vote, onChange, documentId }: Props) => {
   const classes = useStyles();
   const router = useRouter();
+  const { searchConfiguration } = useLabContext();
 
   const handleUpdateVote = async (score: number) => {
     await apiRequest("/api/lab/vote/updateOrCreate", {
       voteId: vote?.id,
       score,
-      searchConfigurationId,
+      searchConfigurationId: searchConfiguration?.id,
       documentId,
     });
     router.replace(router.asPath);

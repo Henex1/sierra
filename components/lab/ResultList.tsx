@@ -40,17 +40,11 @@ const useStyles = makeStyles((theme) => ({
 
 type Props = {
   searchPhrase: ExposedSearchPhrase;
-  searchConfigurationId?: string;
   onClose: () => void;
   displayFields: string[];
 };
 
-export function ResultList({
-  displayFields,
-  onClose,
-  searchPhrase,
-  searchConfigurationId,
-}: Props) {
+export function ResultList({ displayFields, onClose, searchPhrase }: Props) {
   const classes = useStyles();
   const { data, mutate } = useSWR<MockSearchResult[]>(
     `/api/lab/searchResult?id=${searchPhrase.id}`
@@ -111,7 +105,6 @@ export function ResultList({
               <Grid container>
                 <Grid item xs={1}>
                   <ResultScore
-                    searchConfigurationId={searchConfigurationId}
                     result={result}
                     searchPhrase={searchPhrase}
                     onChange={mutate}

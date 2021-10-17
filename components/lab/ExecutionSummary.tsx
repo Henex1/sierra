@@ -9,12 +9,12 @@ import {
 } from "@material-ui/core";
 
 import { ExposedQueryTemplate } from "../../lib/querytemplates";
-import { ExposedRulesetWithVersions } from "../../lib/rulesets";
 import { ExposedExecution } from "../../lib/execution";
 import ExecutionModal from "./ExecutionModal";
 import ExecutionList from "./ExecutionList";
 import PhraseScore from "./PhraseScore";
 import BasicModal from "../common/BasicModal";
+import { useLabContext } from "../../utils/react/hooks/useLabContext";
 
 const percentilesLabel: Record<string, string> = {
   tookP50: "p50",
@@ -37,22 +37,25 @@ const useStyles = makeStyles((theme) => ({
 
 type Props = {
   templates: ExposedQueryTemplate[];
-  rulesets: ExposedRulesetWithVersions[];
   executions: ExposedExecution[];
   activeExecution: ExposedExecution;
-  currentExecution: ExposedExecution;
   onSelected: (id: string) => void;
+};
+
+const getExecutionTime = (date: Date | string): string => {
+  const dateDate = new Date(date).toLocaleDateString("en-US");
+  const dateTime = new Date(date).toLocaleTimeString("en-US");
+  return `${dateDate} ${dateTime}`;
 };
 
 export default function ExecutionSummary({
   templates,
-  rulesets,
   executions,
   activeExecution,
-  currentExecution,
   onSelected,
 }: Props) {
   const classes = useStyles();
+  const { currentExecution } = useLabContext();
   const [modalOpen, setModalOpen] = React.useState(false);
   const handleOpenModal = () => {
     setModalOpen(true);
@@ -61,11 +64,9 @@ export default function ExecutionSummary({
     setModalOpen(false);
   };
 
-  const executionTime = `${new Date(
-    currentExecution.createdAt
-  ).toLocaleDateString("en-US")} ${new Date(
-    currentExecution.createdAt
-  ).toLocaleTimeString("en-US")}`;
+  if (!currentExecution) return null;
+
+  const executionTime = getExecutionTime(currentExecution?.createdAt);
 
   return (
     <Box>
@@ -74,7 +75,6 @@ export default function ExecutionSummary({
         <ExecutionList
           executions={executions}
           activeExecution={activeExecution}
-          currentExecution={currentExecution}
           onSelected={onSelected}
         />
       </Box>
@@ -91,7 +91,7 @@ export default function ExecutionSummary({
             </Box>
           </Grid>
           {Object.entries(
-            currentExecution.allScores as Record<string, number>
+            currentExecution?.allScores as Record<string, number>
           ).map(([key, value]) => (
             <Grid key={key} item className={classes.scoreBox}>
               <PhraseScore
@@ -150,7 +150,7 @@ export default function ExecutionSummary({
         )}
       </Grid>
       <BasicModal open={modalOpen} onClose={handleCloseModal}>
-        <ExecutionModal templates={templates} rulesets={rulesets} />
+        <ExecutionModal templates={templates} />
       </BasicModal>
     </Box>
   );

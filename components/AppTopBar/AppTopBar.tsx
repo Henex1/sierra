@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { signIn } from "next-auth/client";
 import io from "socket.io-client";
+import classNames from "classnames";
 
 import { AppBar, Box, Button } from "@material-ui/core";
 import HomeOutlinedIcon from "@material-ui/icons/HomeOutlined";
@@ -15,8 +16,7 @@ import MobileUserMenu from "./MobileUserMenu";
 import ProjectsMenu from "./ProjectsMenu";
 import { RunningTasksSpinner } from "./RunningTasksSpinner";
 import { FeedbackMenu } from "./FeedbackMenu";
-import classNames from "classnames";
-import { AppTopBarOutdatedExecution } from "./AppTopBarOutdatedExecution";
+import { AppTopBarBanner } from "./AppTopBarBanner";
 
 export default function AppTopBar() {
   const [tasks, setTasks] = useState([]);
@@ -113,7 +113,7 @@ export default function AppTopBar() {
           <MobileUserMenu activeProjectId={activeProjectId} />
         </Box>
       </Box>
-      <AppTopBarOutdatedExecution />
+      <AppTopBarBanner />
     </AppBar>
   );
 }

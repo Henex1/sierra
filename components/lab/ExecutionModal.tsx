@@ -2,18 +2,16 @@ import React from "react";
 import { Grid, Typography } from "@material-ui/core";
 
 import { ExposedQueryTemplate } from "../../lib/querytemplates";
-import {
-  ExposedRulesetVersion,
-  ExposedRulesetWithVersions,
-} from "../../lib/rulesets";
+import { ExposedRulesetVersion } from "../../lib/rulesets";
 import { useTree, TreeView } from "../common/TreeView";
+import { useLabContext } from "../../utils/react/hooks/useLabContext";
 
 type Props = {
   templates: ExposedQueryTemplate[];
-  rulesets: ExposedRulesetWithVersions[];
 };
 
-export default function ExecutionModal({ templates, rulesets }: Props) {
+export default function ExecutionModal({ templates }: Props) {
+  const { rulesets } = useLabContext();
   const roots = useTree(
     templates,
     (t: ExposedQueryTemplate) => t.id,
