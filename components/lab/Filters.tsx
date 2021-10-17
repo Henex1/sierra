@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Grid,
   Select,
@@ -7,23 +7,67 @@ import {
   InputLabel,
   SvgIconProps,
   makeStyles,
+  TextField,
 } from "@material-ui/core";
 import ArrowUpwardIcon from "@material-ui/icons/ArrowUpward";
-import ArrowDownwardIcon from "@material-ui/icons/ArrowDownward";
 
+import ArrowDownwardIcon from "@material-ui/icons/ArrowDownward";
 import { ShowOptions, SortOptions } from "../../lib/lab";
+import SearchIcon from "@material-ui/icons/Search";
+import classNames from "classnames";
 
 const useStyles = makeStyles((theme) => ({
+  gridItems: {
+    transition: theme.transitions.create(["max-width", "flex-basis"]),
+  },
+  formControl: {
+    width: "100%",
+    position: "relative",
+  },
   select: {
     display: "flex",
     alignItems: "center",
-    minWidth: 140,
-    minHeight: 24,
+    width: "100%",
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
   },
   selectItemIcon: {
     marginLeft: theme.spacing(1),
+    fontSize: theme.typography.fontSize,
+  },
+  search: {
+    position: "relative",
+    width: "35px",
+    transition: theme.transitions.create("width"),
+  },
+  activeSearch: {
+    width: "100%",
+  },
+  searchInput: {
+    paddingRight: "35px",
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
+    cursor: "pointer",
+    width: 0,
+    paddingLeft: 0,
+    transition: theme.transitions.create("width"),
+  },
+  searchInputActive: {
+    width: "100%",
+    paddingLeft: theme.spacing(),
+    cursor: "initial",
+  },
+  searchIcon: {
+    height: "100%",
+    position: "absolute",
+    pointerEvents: "none",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    top: 0,
+    right: 0,
+    width: "35px",
+    fontSize: theme.typography.fontSize,
   },
 }));
 
@@ -106,35 +150,48 @@ const sortOptions: SortMenuItemProps[] = [
   },
 ];
 
-type Props = {
+export type Props = {
   filters: {
     show: string;
     sort: string;
+    search: string;
   };
   onFilterChange: (
-    key: "show" | "sort",
-    value: ShowOptions | SortOptions
+    v:
+      | { type: "show"; value: ShowOptions }
+      | { type: "sort"; value: SortOptions }
+      | { type: "search"; value: string }
   ) => void;
 };
 
 export default function Filters({ filters, onFilterChange }: Props) {
   const classes = useStyles();
-  const handleChange = (key: "show" | "sort") => (
-    event: React.ChangeEvent<{ value: unknown }>
-  ) => {
-    onFilterChange(key, event.target.value as ShowOptions | SortOptions);
+  const [searchValue, setSearchValue] = useState(filters.search);
+  const [focused, setActiveSearch] = useState(false);
+  const activeSearch = focused || searchValue.length > 0;
+  const submitSearch = () => {
+    searchValue !== filters.search &&
+      onFilterChange({
+        type: "search",
+        value: searchValue,
+      });
   };
 
   return (
-    <Grid container spacing={2}>
-      <Grid item>
-        <FormControl variant="outlined">
+    <Grid container spacing={2} justify={"flex-end"} wrap={"nowrap"}>
+      <Grid className={classes.gridItems} item md={activeSearch ? 3 : 5}>
+        <FormControl className={classes.formControl} variant="outlined">
           <InputLabel id="filtersShowLabel">Show</InputLabel>
           <Select
             id="filtersShow"
             labelId="filtersShowLabel"
             value={filters.show}
-            onChange={handleChange("show")}
+            onChange={(e) =>
+              onFilterChange({
+                type: "show",
+                value: e.target.value as ShowOptions,
+              })
+            }
             label="Show"
             classes={{ root: classes.select }}
           >
@@ -146,14 +203,19 @@ export default function Filters({ filters, onFilterChange }: Props) {
           </Select>
         </FormControl>
       </Grid>
-      <Grid item>
-        <FormControl variant="outlined">
+      <Grid className={classes.gridItems} item md={activeSearch ? 3 : 5}>
+        <FormControl className={classes.formControl} variant="outlined">
           <InputLabel id="filtersSortLabel">Sort</InputLabel>
           <Select
             id="filtersSort"
             labelId="filtersSortLabel"
             value={filters.sort}
-            onChange={handleChange("sort")}
+            onChange={(e) =>
+              onFilterChange({
+                type: "sort",
+                value: e.target.value as SortOptions,
+              })
+            }
             label="Sort"
             classes={{ root: classes.select }}
           >
@@ -167,6 +229,40 @@ export default function Filters({ filters, onFilterChange }: Props) {
               );
             })}
           </Select>
+        </FormControl>
+      </Grid>
+      <Grid className={classes.gridItems} item md={activeSearch ? 6 : 2}>
+        <FormControl className={classes.formControl} variant="outlined">
+          <div
+            className={classNames(classes.search, {
+              [classes.activeSearch]: activeSearch,
+            })}
+          >
+            <TextField
+              variant="outlined"
+              placeholder={activeSearch ? "Starts with..." : ""}
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onKeyPress={(e) => {
+                e.code === "Enter" && submitSearch();
+              }}
+              inputProps={{
+                "aria-label": "search",
+                className: classNames(classes.searchInput, {
+                  [classes.searchInputActive]: activeSearch,
+                }),
+                onFocus: () => !activeSearch && setActiveSearch(true),
+                onBlur: () => {
+                  submitSearch();
+                  activeSearch && setActiveSearch(false);
+                },
+              }}
+              size="small"
+            />
+            <div className={classes.searchIcon}>
+              <SearchIcon />
+            </div>
+          </div>
         </FormControl>
       </Grid>
     </Grid>
