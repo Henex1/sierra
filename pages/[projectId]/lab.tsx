@@ -140,7 +140,7 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
     : false;
 
   const searchPhrasesTotal = currentExecution
-    ? await countSearchPhrases(currentExecution)
+    ? await countSearchPhrases(currentExecution, show as ShowOptions)
     : 0;
   const displayOptions = {
     show: show as ShowOptions,
