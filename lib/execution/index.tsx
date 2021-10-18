@@ -174,12 +174,14 @@ export async function getSearchPhrases(
 
 export async function countSearchPhrases(
   execution: Execution,
-  filter: ShowOptions
+  filter: ShowOptions,
+  search: string | undefined
 ): Promise<number> {
   return await prisma.searchPhraseExecution.count({
     where: {
       executionId: execution.id,
-      AND: filterMapping[filter] ?? {},
+      ...(search ? { phrase: { contains: search } } : {}),
+      ...(filterMapping[filter] ?? {}),
     },
   });
 }

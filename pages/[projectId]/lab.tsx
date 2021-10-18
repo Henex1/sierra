@@ -141,7 +141,11 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
     : false;
 
   const searchPhrasesTotal = currentExecution
-    ? await countSearchPhrases(currentExecution, show as ShowOptions)
+    ? await countSearchPhrases(
+        currentExecution,
+        show as ShowOptions,
+        (search as string) ?? ""
+      )
     : 0;
   const displayOptions = {
     show: show as ShowOptions,
@@ -323,7 +327,7 @@ export default function Lab({
         [type]: value,
       });
     },
-    []
+    [displayOptions]
   );
 
   const handleModalClose = () => setActiveSearchPhrase(null);

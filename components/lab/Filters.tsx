@@ -240,7 +240,7 @@ export default function Filters({ filters, onFilterChange }: Props) {
           >
             <TextField
               variant="outlined"
-              placeholder={activeSearch ? "Starts with..." : ""}
+              placeholder={activeSearch ? "Contains..." : ""}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               onKeyPress={(e) => {
