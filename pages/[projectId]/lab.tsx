@@ -4,8 +4,7 @@ import { Grid, Typography, Box, makeStyles } from "@material-ui/core";
 import { Pagination } from "@material-ui/lab";
 import Router, { useRouter } from "next/router";
 import { isAfter } from "date-fns";
-
-import Filters from "../../components/lab/Filters";
+import Filters, { Props as FiltersProps } from "../../components/lab/Filters";
 import SearchPhraseList from "../../components/lab/SearchPhraseList";
 import { ResultList } from "../../components/lab/ResultList";
 import ActionButtons from "../../components/lab/ActionButtons";
@@ -83,6 +82,7 @@ type Props = {
   displayOptions: {
     show: ShowOptions;
     sort: SortOptions;
+    search: string;
   };
   page: number;
   displayFields: Array<string>;
@@ -114,6 +114,7 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
     execution: currentExecutionId,
     show = "all",
     sort = "score-desc",
+    search = "",
   } = context.query;
 
   // Get active search configuration
@@ -140,11 +141,16 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
     : false;
 
   const searchPhrasesTotal = currentExecution
-    ? await countSearchPhrases(currentExecution, show as ShowOptions)
+    ? await countSearchPhrases(
+        currentExecution,
+        show as ShowOptions,
+        (search as string) ?? ""
+      )
     : 0;
   const displayOptions = {
     show: show as ShowOptions,
     sort: sort as SortOptions,
+    search: search as string,
   };
   const searchPhrases = currentExecution
     ? await getSearchPhrases(currentExecution, {
@@ -152,6 +158,7 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
         take: pageSize,
         filter: displayOptions.show,
         sort: displayOptions.sort,
+        search: displayOptions.search,
       })
     : undefined;
   const formattedPhrases:
@@ -293,6 +300,7 @@ export default function Lab({
   >({
     show: props.displayOptions.show,
     sort: props.displayOptions.sort,
+    search: props.displayOptions.search,
   });
   const [currentExecutionId, setCurrentExecutionId] = React.useState<
     string | null
@@ -306,21 +314,22 @@ export default function Lab({
         ...router.query,
         show: displayOptions.show,
         sort: displayOptions.sort,
+        search: displayOptions.search,
         execution: currentExecutionId,
         page,
       },
     });
   }, [displayOptions, page, currentExecutionId]);
 
-  const handleFilterChange = useCallback(
-    (key: "show" | "sort", value: ShowOptions | SortOptions) => {
+  const handleFilterChange = useCallback<FiltersProps["onFilterChange"]>(
+    ({ type, value }) => {
       handleModalClose();
       setDisplayOptions({
         ...displayOptions,
-        [key]: value,
+        [type]: value,
       });
     },
-    []
+    [displayOptions]
   );
 
   const handleModalClose = () => setActiveSearchPhrase(null);

@@ -146,6 +146,7 @@ const filterMapping: Record<
 type GetSearchPhraseOptions = OffsetPagination & {
   sort?: SortOptions;
   filter?: ShowOptions;
+  search?: string;
 };
 
 export async function getSearchPhrases(
@@ -155,10 +156,15 @@ export async function getSearchPhrases(
     skip = 0,
     sort = "search-phrase-asc",
     filter = "all",
+    search,
   }: GetSearchPhraseOptions = {}
 ): Promise<SearchPhraseExecution[]> {
   const phrases = await prisma.searchPhraseExecution.findMany({
-    where: { executionId: execution.id, AND: filterMapping[filter] ?? {} },
+    where: {
+      executionId: execution.id,
+      AND: filterMapping[filter] ?? {},
+      ...(search ? { phrase: { contains: search } } : {}),
+    },
     orderBy: [sortMapping[sort]].filter(_.identity).concat([{ phrase: "asc" }]),
     take,
     skip,
@@ -168,12 +174,14 @@ export async function getSearchPhrases(
 
 export async function countSearchPhrases(
   execution: Execution,
-  filter: ShowOptions
+  filter: ShowOptions,
+  search: string | undefined
 ): Promise<number> {
   return await prisma.searchPhraseExecution.count({
     where: {
       executionId: execution.id,
-      AND: filterMapping[filter] ?? {},
+      ...(search ? { phrase: { contains: search } } : {}),
+      ...(filterMapping[filter] ?? {}),
     },
   });
 }
