@@ -73,7 +73,7 @@ type Props = {
         rulesets: ExposedRulesetVersion[];
       })
     | null;
-  searchPhrases: ExposedSearchPhrase[];
+  searchPhrases: ExposedSearchPhrase[] | undefined;
   searchPhrasesTotal: number;
   rulesets: ExposedRulesetWithVersions[];
   templates: ExposedQueryTemplate[];
@@ -153,8 +153,10 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
         filter: displayOptions.show,
         sort: displayOptions.sort,
       })
-    : [];
-  const formattedPhrases: ExposedSearchPhrase[] = searchPhrases.map(
+    : undefined;
+  const formattedPhrases:
+    | ExposedSearchPhrase[]
+    | undefined = searchPhrases?.map(
     (phrase): ExposedSearchPhrase => {
       switch (phrase.error) {
         case null:
@@ -323,8 +325,6 @@ export default function Lab({
 
   const handleModalClose = () => setActiveSearchPhrase(null);
 
-  const isFirstQueryExcute = searchPhrases.length == 0;
-
   return (
     <LabProvider
       currentExecution={currentExecution}
@@ -333,7 +333,7 @@ export default function Lab({
     >
       <BackdropLoadingSpinner open={propsLoading} />
       <div>
-        {!!searchConfiguration && !isFirstQueryExcute ? (
+        {!!searchConfiguration && searchPhrases ? (
           <div>
             <Grid container spacing={4} className={classes.listContainer}>
               <Grid item sm={4} className={classes.listBorder}>
@@ -390,7 +390,7 @@ export default function Lab({
         ) : (
           <NoExistingExcution
             isSearchConfig={!!searchConfiguration}
-            isRunQuery={isFirstQueryExcute}
+            isRunQuery={searchPhrases === undefined}
           />
         )}
         <ActionButtons />
