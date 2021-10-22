@@ -13,6 +13,7 @@ declare const queryWasExpanded: unique symbol;
 export type ExpandedQuery = { [queryWasExpanded]: true };
 
 const QUERY_EXPANDER_URL = requireEnv("QUERY_EXPANDER_URL");
+// TODO const QUERY_EXPANDER_AUTH = optionalEnv("QUERY_EXPANDER_AUTH");
 
 export async function expandQuery(
   endpoint: SearchEndpoint,
@@ -43,6 +44,7 @@ export async function expandQuery(
       body,
       headers: {
         "Content-Type": "application/json",
+        // TODO add authorization header
       },
     });
     return await response.json();

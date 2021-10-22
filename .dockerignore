@@ -3,3 +3,5 @@ Dockerfile
 node_modules
 .next
 .git
+docker-compose.local.yml
+.env.sample
