@@ -1,13 +1,14 @@
-import React, { useEffect, MouseEventHandler } from "react";
+import React, { useEffect } from "react";
 import { signIn } from "next-auth/client";
 import { useSession } from "../../../components/Session";
 import { Button, Link, Box, Grid } from "@material-ui/core";
 import LoginWrapper from "../../../components/login/LoginWrapper";
+import { isAuthTypeEnabled } from "../../../lib/authSources";
 
 type AuthTargetProps = {
   title: string;
   icon: string;
-  action: MouseEventHandler;
+  name: string;
 };
 
 const getGreeting = () => {
@@ -32,13 +33,20 @@ const getCallbackURL = () => {
   return window.location.origin;
 };
 
-const SignInButton = (item: AuthTargetProps) => {
+const SignInButton = ({ name, icon, title }: AuthTargetProps) => {
+  const handleClick = () => {
+    const url = getCallbackURL();
+    signIn(name, { callbackUrl: url });
+  };
+
+  if (!isAuthTypeEnabled(name)) return null;
+
   return (
-    <Grid item xs={12} key={item.title}>
-      <Button fullWidth variant="contained" onClick={item.action}>
+    <Grid item xs={12} key={title}>
+      <Button fullWidth variant="contained" onClick={handleClick}>
         <span className="btn-txt">
-          <i className={`fab fa-${item.icon}`}></i>
-          {item.title}
+          <i className={`fab fa-${icon}`}></i>
+          {title}
         </span>
       </Button>
     </Grid>
@@ -47,28 +55,17 @@ const SignInButton = (item: AuthTargetProps) => {
 
 export default function SignInPage() {
   const session = useSession();
-  const signInWithMicrosoft = () => {
-    /* add Microsoft signIn */
-  };
-  const signInWithAzure = () => {
-    /* add Azure signIn */
-  };
-  const signInWithGSuite = () => {
-    const url = getCallbackURL();
-    signIn("google", { callbackUrl: url });
-  };
-  const signInWithGithub = () => {
-    /* add Github signIn */
-  };
-  const signInWithBitbucket = () => {
-    /* add Bitbucket signIn */
-  };
+
   const socialAuthTargets = [
-    { title: "Microsoft", icon: "microsoft", action: signInWithMicrosoft },
-    { title: "Azure", icon: "microsoft", action: signInWithAzure },
-    { title: "GSuite", icon: "google", action: signInWithGSuite },
-    { title: "Github", icon: "github", action: signInWithGithub },
-    { title: "Bitbucket", icon: "bitbucket", action: signInWithBitbucket },
+    {
+      title: "Atlassian",
+      icon: "atlassian",
+      name: "atlassian",
+    },
+    { title: "Azure", icon: "microsoft", name: "azureb2c" },
+    { title: "GSuite", icon: "google", name: "google" },
+    { title: "GitHub", icon: "github", name: "github" },
+    { title: "GitLab", icon: "gitlab", name: "gitlab" },
   ];
 
   useEffect(() => {
@@ -94,9 +91,9 @@ export default function SignInPage() {
             </Grid>
             <Grid item xs={12} className="social-auth-btns">
               <p>Sign In with</p>
-              {socialAuthTargets.map((item) => {
-                return SignInButton(item);
-              })}
+              {socialAuthTargets.map((item) => (
+                <SignInButton {...item} key={item.name} />
+              ))}
               <div className="signup-div">
                 <p>
                   Do not have an account?
