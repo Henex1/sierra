@@ -16,9 +16,5 @@ export function optionalEnv(
   name: string,
   def: string | number = ""
 ): string | number {
-  if (name in process.env) {
-    return process.env[name]!;
-  } else {
-    return def;
-  }
+  return name in process.env ? process.env[name]! : def;
 }

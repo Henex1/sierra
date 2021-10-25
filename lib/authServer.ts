@@ -8,6 +8,7 @@ import prisma, { User, UserOrgRole } from "./prisma";
 import { requireEnv } from "./env";
 import { formatProject, listProjects, ExposedProject } from "./projects";
 import { formatOrg, userCanAccessOrg, ExposedOrg, listOrgs } from "./org";
+import { AUTH_CONSTANTS, isAuthTypeEnabled } from "./authSources";
 
 export type ValidUserSession = {
   session: Session;
@@ -18,17 +19,54 @@ export type ValidUserSession = {
 
 export type UserSession = Partial<ValidUserSession>;
 
-const googleId = requireEnv("GOOGLE_ID");
-const googleSecret = requireEnv("GOOGLE_SECRET");
 const allowRegistrationFrom = requireEnv("ALLOW_REGISTRATION_FROM").split(",");
 const nextAuthSecret = requireEnv("SECRET");
 
 export const authOptions: NextAuthOptions = {
   providers: [
     Providers.Google({
-      clientId: googleId,
-      clientSecret: googleSecret,
+      clientId: AUTH_CONSTANTS.googleId,
+      clientSecret: AUTH_CONSTANTS.googleSecret,
     }),
+    // Add GitHub auth if enabled
+    ...(isAuthTypeEnabled("github")
+      ? [
+          Providers.GitHub({
+            clientId: AUTH_CONSTANTS.githubId,
+            clientSecret: AUTH_CONSTANTS.githubSecret,
+          }),
+        ]
+      : []),
+    // Add Atlassian auth if enabled
+    ...(isAuthTypeEnabled("atlassian")
+      ? [
+          Providers.Atlassian({
+            clientId: AUTH_CONSTANTS.atlassianId,
+            clientSecret: AUTH_CONSTANTS.atlassianSecret,
+            scope: "read:jira-user offline_access read:me",
+          }),
+        ]
+      : []),
+    // Add Azure AD auth if enabled
+    ...(isAuthTypeEnabled("azureAd")
+      ? [
+          Providers.AzureADB2C({
+            clientId: AUTH_CONSTANTS.azureAdId,
+            clientSecret: AUTH_CONSTANTS.azureAdSecret,
+            tenantId: AUTH_CONSTANTS.azureAdTenantId,
+            scope: "offline_access User.Read",
+          }),
+        ]
+      : []),
+    // Add BitBucket auth if enabled
+    ...(isAuthTypeEnabled("gitlab")
+      ? [
+          Providers.GitLab({
+            clientId: AUTH_CONSTANTS.gitlabId,
+            clientSecret: AUTH_CONSTANTS.gitlabSecret,
+          }),
+        ]
+      : []),
   ],
   adapter: Adapters.Prisma.Adapter({ prisma }),
   secret: nextAuthSecret,
@@ -51,7 +89,8 @@ export const authOptions: NextAuthOptions = {
       return { ...session, orgs: orgs.map(formatOrg), projects };
     },
     async signIn(user: any, account: any, profile: any) {
-      const email = profile.verified_email ? profile.email : "";
+      const email = profile.email ?? "";
+      // TODO: investigate this. We might want to let users to log in with their personal or company emails
       const validDomain = allowRegistrationFrom.some((d) =>
         email.endsWith(`@${d}`)
       );
