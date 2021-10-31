@@ -5,21 +5,23 @@ import { Grid } from "@material-ui/core";
 
 import BreadcrumbsButtons from "../../../../components/common/BreadcrumbsButtons";
 import Link from "../../../../components/common/Link";
-import { ExposedOrg } from "../../../../lib/org";
-import CreateOrganizationForm from "../../../../components/organization/CreateOrganizationForm";
+import {
+  CreateOrganizationForm,
+  FormProps,
+} from "../../../../components/organization/CreateOrganizationForm";
 import { apiRequest } from "../../../../lib/api";
 import { useRouter } from "next/router";
 
 export default function CreateOrganization() {
   const router = useRouter();
 
-  async function onSubmit({ name, image, domain }: ExposedOrg) {
+  const onSubmit: FormProps["onSubmit"] = async ({ name, image, domain }) => {
     return apiRequest(`/api/organization/create`, {
       name,
       domain,
-      image: image || undefined,
+      image,
     }).then(() => router.push("/me/organizations"));
-  }
+  };
 
   return (
     <div>
