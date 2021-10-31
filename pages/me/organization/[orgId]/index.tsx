@@ -9,7 +9,7 @@ import { authenticatedPage, requireParam } from "../../../../lib/pageHelpers";
 import BreadcrumbsButtons from "../../../../components/common/BreadcrumbsButtons";
 import Link, { LinkButton } from "../../../../components/common/Link";
 import { ExposedOrg, formatOrg, getOrg } from "../../../../lib/org";
-import CreateOrganizationForm from "../../../../components/organization/CreateOrganizationForm";
+import { CreateOrganizationForm } from "../../../../components/organization/CreateOrganizationForm";
 import { apiRequest } from "../../../../lib/api";
 import { useRouter } from "next/router";
 
@@ -41,7 +41,7 @@ export default function EditOrganization({ org }: Props) {
   async function onSubmit({ name, image, domain }: ExposedOrg) {
     await apiRequest(`/api/organization/update/${org.id}`, {
       name: name || null,
-      image: image || null,
+      image: org.image === image ? undefined : image || null,
       domain: domain || null,
     });
     router.push("/me/organization");

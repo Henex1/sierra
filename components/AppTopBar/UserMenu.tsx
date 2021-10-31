@@ -7,19 +7,20 @@ import {
   ButtonBase,
   makeStyles,
 } from "@material-ui/core";
-
+import { Avatar as OrgAvatar } from "../../components/organization/Avatar";
 import { MenuItemLink } from "../common/Link";
 
 const useStyles = makeStyles((theme) => ({
   content: {
-    display: "flex",
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "2px",
+    padding: "2px",
     margin: 4,
     background: "#fff",
     borderRadius: theme.shape.borderRadius,
   },
   avatar: {
-    width: theme.spacing(5),
-    height: theme.spacing(5),
     border: "solid 2px white",
   },
   focusVisible: {},
@@ -51,15 +52,12 @@ export default function UserMenu({ user, org }: Props) {
         focusVisibleClassName={classes.focusVisible}
       >
         <div className={classes.content}>
-          <Avatar
-            className={classes.avatar}
-            alt={org.name}
-            title={`${org.name}`}
-            src={org.image || undefined}
-            variant="rounded"
-          >
-            {org.image ? undefined : org.name.substring(0, 1)}
-          </Avatar>
+          <OrgAvatar
+            name={org.name}
+            image={org.image}
+            square={true}
+            size={"small"}
+          />
           <Avatar
             className={classes.avatar}
             alt={user.name}

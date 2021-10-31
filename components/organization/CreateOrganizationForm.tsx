@@ -1,19 +1,18 @@
 import React from "react";
-import { Form, FormProps as BaseFormProps } from "react-final-form";
+import { Form, Field, FormProps as BaseFormProps } from "react-final-form";
 import { TextField } from "mui-rff";
 import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
 import { ExposedOrg } from "../../lib/org";
+import { AvatarUpload } from "../AvatarUpload";
 
 export type FormProps = BaseFormProps<ExposedOrg> & {
   onDelete?: () => void;
 };
 
-export default function CreateOrganizationForm({
-  onDelete,
-  ...rest
-}: FormProps) {
+export function CreateOrganizationForm({ onDelete, ...rest }: FormProps) {
   const isNew = rest.initialValues?.id === undefined;
+
   return (
     <Form
       {...rest}
@@ -36,7 +35,17 @@ export default function CreateOrganizationForm({
             />
           </Box>
           <Box pb={2}>
-            <TextField label="Logo" name="image" variant="filled" />
+            <Field<string> name="image">
+              {(props) => {
+                return (
+                  <AvatarUpload
+                    value={props.input.value}
+                    onChange={(f) => form.change("image", f)}
+                    onRemove={() => form.change("image", null)}
+                  />
+                );
+              }}
+            </Field>
           </Box>
           <Box pb={2}>
             <Button

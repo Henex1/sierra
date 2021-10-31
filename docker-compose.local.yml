@@ -42,6 +42,13 @@ services:
 #      - 8080:9000
 #    environment:
 #      - SIERRA_LICENSE=eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9.eyJwcm9kdWN0Ijoic2llcnJhIiwidmVyc2lvbiI6MSwiaWF0IjoxNjI4NzA4NTAwLCJleHAiOjE2MzI5NDkyMDAsIm93bmVyIjoiZnF1bGY4MThhY3QiLCJtYXhfcHJvamVjdHMiOjEwMH0.APlOGNKLytih8rYWElV5hvNsSgLQHMnPy-iIcAuiMZOwfjTXEpovUMh3uauBY3fv8zlQnFACExochSJwZLZ_FtVFADzpj-53rZ17WV1H0a6dtlnkcFjwyv49MRyxeF08QiuYzlLSI32IXPX47PqHhySnukrR8swqsNQhBk7TKbM5kCFR
+   
+  google-storage:
+    image: fsouza/fake-gcs-server
+    ports:
+      - "4443:4443"
+    volumes:
+      - "./fakeGoogleStorageData:/data"
 
 volumes:
   solrData:
