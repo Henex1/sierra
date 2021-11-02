@@ -4,11 +4,12 @@ import {
   makeStyles,
   Button,
   Box,
-  Tooltip,
   Avatar,
   colors,
 } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
+import FlaskIcon from "../common/FlaskIcon";
+import InfoIcon from "@material-ui/icons/InfoOutlined";
 import Link from "../common/Link";
 import { RecentProject } from "../../lib/projects";
 import { scaleLinear } from "d3-scale";
@@ -62,9 +63,6 @@ const useStyles = makeStyles((theme) => ({
     "& > span": {
       marginRight: theme.spacing(2),
     },
-    "&:hover, &:focus, &:active": {
-      color: colors.blue[500],
-    },
   },
   chip: {
     textTransform: "capitalize",
@@ -85,9 +83,21 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: 10,
   },
   avatar: {
-    width: 60,
+    width: 50,
     fontSize: "18px",
     color: "#111",
+  },
+  button: {
+    textTransform: "none",
+    color: "#8BAB5E",
+    "&:hover": {
+      backgroundColor: "#8BAB5E26",
+    },
+  },
+  buttonContainer: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
 }));
 
@@ -157,34 +167,28 @@ export default function Projects({ projects, compact }: Props) {
               return (
                 <Box className={classes.projectCard} key={project.id}>
                   <Box className={classes.cardHeaderContainer}>
-                    <Link href={`/projects/${project.id}`}>
-                      <Typography
-                        variant="h5"
-                        color="textPrimary"
-                        className={classes.projectCardTitle}
-                      >
-                        <span>{project.name}</span>
-                      </Typography>
-                    </Link>
+                    <Typography
+                      variant="h5"
+                      color="textPrimary"
+                      className={classes.projectCardTitle}
+                    >
+                      <span>{project.name}</span>
+                    </Typography>
 
-                    <Tooltip title="Go to Lab">
-                      <Link href={`/${project.id}/lab`}>
-                        <Avatar
-                          variant="rounded"
-                          className={classes.avatar}
-                          style={{
-                            background:
-                              typeof project?.combinedScore === "number"
-                                ? colorScale(project.combinedScore)
-                                : undefined,
-                          }}
-                        >
-                          {typeof project?.combinedScore === "number"
-                            ? project.combinedScore
-                            : "?"}
-                        </Avatar>
-                      </Link>
-                    </Tooltip>
+                    <Avatar
+                      variant="rounded"
+                      className={classes.avatar}
+                      style={{
+                        background:
+                          typeof project?.combinedScore === "number"
+                            ? colorScale(project.combinedScore)
+                            : undefined,
+                      }}
+                    >
+                      {typeof project?.combinedScore === "number"
+                        ? project.combinedScore
+                        : "?"}
+                    </Avatar>
                   </Box>
                   <Box className={classes.dataContainer}>
                     <Typography variant="subtitle2" color="textSecondary">
@@ -196,10 +200,30 @@ export default function Projects({ projects, compact }: Props) {
                       alt={searchType.label}
                     />
                   </Box>
-                  <Typography
-                    variant="body2"
-                    color="textSecondary"
-                  >{`Updated ${getTimeAgo(project.updatedAt)}`}</Typography>
+                  <Box className={classes.buttonContainer}>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                    >{`Updated ${getTimeAgo(project.updatedAt)}`}</Typography>
+                    <Box>
+                      <Link href={`/projects/${project.id}`}>
+                        <Button
+                          className={classes.button}
+                          startIcon={<InfoIcon />}
+                        >
+                          Details
+                        </Button>
+                      </Link>
+                      <Link href={`/${project.id}/lab`}>
+                        <Button
+                          className={classes.button}
+                          startIcon={<FlaskIcon />}
+                        >
+                          Go to Lab
+                        </Button>
+                      </Link>
+                    </Box>
+                  </Box>
                 </Box>
               );
             })}
