@@ -4,6 +4,7 @@ import { useSession } from "../../../components/Session";
 import { Button, Link, Box, Grid } from "@material-ui/core";
 import LoginWrapper from "../../../components/login/LoginWrapper";
 import { isAuthTypeEnabled } from "../../../lib/authSources";
+import { randomImage } from "../../../lib/loginImage";
 
 type AuthTargetProps = {
   title: string;
@@ -53,7 +54,20 @@ const SignInButton = ({ name, icon, title }: AuthTargetProps) => {
   );
 };
 
-export default function SignInPage() {
+export const getServerSideProps = async () => {
+  const images = await randomImage();
+  return { props: { images } };
+};
+
+export interface Props {
+  images: Array<{
+    src: string;
+    width: number;
+    height: number;
+  }>;
+}
+
+export default function SignInPage({ images }: Props) {
   const session = useSession();
 
   const socialAuthTargets = [
@@ -80,7 +94,7 @@ export default function SignInPage() {
   }
 
   return (
-    <LoginWrapper isSignin>
+    <LoginWrapper images={images}>
       <div className="signin-container">
         <Box>
           <Grid container spacing={2}>

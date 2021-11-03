@@ -2,8 +2,22 @@ import React, { useState, useEffect } from "react";
 import { useSession } from "../../../components/Session";
 import LoginWrapper from "../../../components/login/LoginWrapper";
 import { Button, TextField, Link, Box, Grid } from "@material-ui/core";
+import { randomImage } from "../../../lib/loginImage";
 
-export default function SignUpPage() {
+export const getServerSideProps = async () => {
+  const images = await randomImage();
+  return { props: { images } };
+};
+
+export interface Props {
+  images: Array<{
+    src: string;
+    width: number;
+    height: number;
+  }>;
+}
+
+export default function SignUpPage({ images }: Props) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -25,7 +39,7 @@ export default function SignUpPage() {
   }, []);
 
   return (
-    <LoginWrapper>
+    <LoginWrapper images={images}>
       <div>
         <Box component="form" onSubmit={onSubmitForm}>
           <Grid container spacing={2}>
