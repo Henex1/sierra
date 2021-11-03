@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   Box,
   Typography,
@@ -10,8 +10,6 @@ import {
 import Link from "./common/Link";
 import AppTopBar from "./AppTopBar/AppTopBar";
 import { useSession } from "../components/Session";
-import SignInPage from "../pages/auth/signin";
-import SignUpPage from "../pages/auth/signup";
 
 function Copyright() {
   return (
@@ -60,32 +58,13 @@ type AppLayoutProps = {
   children?: React.ReactNode;
 };
 
-type LoginPageTypes = {
-  [key: string]: JSX.Element;
-};
-
 export default function AppLayout({ children }: AppLayoutProps) {
   const classes = useStyles();
   const session = useSession();
   const sidebarRef = React.useRef<HTMLDivElement | null>(null);
-  const [loginPage, setLoginPage] = useState("");
-
-  const loginPages: LoginPageTypes = {
-    signin: <SignInPage />,
-    signup: <SignUpPage />,
-  };
-
-  useEffect(() => {
-    const { pathname } = window.location;
-    if (pathname.indexOf("signup") > 1) {
-      setLoginPage("signup");
-    } else if (pathname.indexOf("signin") > 1) {
-      setLoginPage("signin");
-    }
-  }, []);
 
   if (!session.session.user) {
-    return loginPages[loginPage] || null;
+    return <>{children}</>;
   }
 
   return (

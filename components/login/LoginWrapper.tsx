@@ -1,16 +1,13 @@
 import React from "react";
 import Head from "next/head";
-import LoginImage from "./LoginImage";
+import LoginImage, { Props as LoginProps } from "./LoginImage";
 
 type LoginWrapperProps = {
   children: React.ReactNode;
-  isSignin?: boolean;
+  images: LoginProps["images"];
 };
 
-export default function LoginWrapper({
-  children,
-  isSignin = false,
-}: LoginWrapperProps) {
+export default function LoginWrapper({ children, images }: LoginWrapperProps) {
   return (
     <>
       <Head>
@@ -36,7 +33,7 @@ export default function LoginWrapper({
             {children}
           </div>
         </div>
-        <LoginImage isSignin={isSignin} />
+        <LoginImage images={images} />
       </div>
     </>
   );
