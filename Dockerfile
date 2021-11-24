@@ -27,6 +27,8 @@ ENV DATABASE_URL=postgresql://postgres:example@postgres:5432/postgres?schema=pub
     GOOGLE_SECRET=unset_google_secret \
     CREDENTIALS_SECRET=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
     NODE_ENV=production
+    REDIS_URL=redis://redis:6379
+
 
 WORKDIR /app
 COPY --from=schema /app ./
