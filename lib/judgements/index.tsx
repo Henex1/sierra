@@ -405,7 +405,6 @@ export async function createVote(
       },
     });
   } catch (err) {
-    console.log(err);
     throw new HttpError(500, ErrorMessage.FailedToCreateVote);
   }
 }

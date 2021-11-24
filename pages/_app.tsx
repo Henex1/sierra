@@ -53,8 +53,8 @@ export default function MyApp(props: AppProps) {
   );
   page = <ThemeProvider theme={theme} children={page} />;
   page = <CacheProvider value={cache} children={page} />;
-  page = <ActiveProjectProvider children={page} />;
   page = <SessionProvider children={page} />;
+  page = <ActiveProjectProvider children={page} />;
   page = <NextSessionProvider children={page} session={pageProps.session} />;
   page = <AlertsProvider children={page} />;
   page = <AppTopBarBannerProvider children={page} />;

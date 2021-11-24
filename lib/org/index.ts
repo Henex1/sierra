@@ -39,8 +39,11 @@ export async function getOrg(user: User, id: string): Promise<Org | null> {
   return org[0];
 }
 
-export async function getActiveOrg(user: User): Promise<Org | null> {
-  const query = user.activeOrgId ? { id: user.activeOrgId } : {};
+export async function getActiveOrg(
+  user: User,
+  id: string
+): Promise<Org | null> {
+  const query = { id };
   const org = await prisma.org.findFirst({
     where: userCanAccessOrg(user, query),
   });

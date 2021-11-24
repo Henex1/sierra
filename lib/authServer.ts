@@ -3,8 +3,10 @@ import { Session, NextAuthOptions } from "next-auth";
 import Providers from "next-auth/providers";
 import Adapters from "next-auth/adapters";
 import { getSession } from "next-auth/client";
+import { NextApiRequest } from "next";
 import { isExpired } from "./users/apikey";
-import prisma, { User, UserOrgRole } from "./prisma";
+import { getCookies } from "./cookies";
+import prisma, { User, UserOrgRole, OrgType } from "./prisma";
 import { requireEnv } from "./env";
 import { formatProject, listProjects, ExposedProject } from "./projects";
 import { formatOrg, userCanAccessOrg, ExposedOrg, listOrgs } from "./org";
@@ -22,7 +24,7 @@ export type UserSession = Partial<ValidUserSession>;
 const allowRegistrationFrom = requireEnv("ALLOW_REGISTRATION_FROM").split(",");
 const nextAuthSecret = requireEnv("SECRET");
 
-export const authOptions: NextAuthOptions = {
+export const authOptions = (req: NextApiRequest): NextAuthOptions => ({
   providers: [
     Providers.Google({
       clientId: AUTH_CONSTANTS.googleId,
@@ -79,14 +81,18 @@ export const authOptions: NextAuthOptions = {
       const orgs = await prisma.org.findMany({
         where: userCanAccessOrg(user),
       });
-      const activeOrg = orgs.find((o) => o.id === user.activeOrgId) || orgs[0];
-      (session as any).user.activeOrgId = activeOrg?.id;
+
+      let { activeOrgId } = getCookies(req);
+      if (!activeOrgId) {
+        activeOrgId = user.defaultOrgId as string;
+      }
+      const activeOrg = orgs.find((o) => o.id === activeOrgId) || orgs[0];
 
       const projects = (activeOrg ? await listProjects(activeOrg) : []).map(
         formatProject
       );
 
-      return { ...session, orgs: orgs.map(formatOrg), projects };
+      return { ...session, orgs: orgs.map(formatOrg), projects, activeOrgId };
     },
     async signIn(user: any, account: any, profile: any) {
       const email = profile.email ?? "";
@@ -103,7 +109,8 @@ export const authOptions: NextAuthOptions = {
       // replace this with an Org invitation system.
       await prisma.org.create({
         data: {
-          name: `${user.name}'s Organization`,
+          name: `${user.name}'s Space`,
+          orgType: OrgType.USER_SPACE,
           users: {
             create: {
               userId: user.id,
@@ -117,7 +124,7 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/auth/signin",
   },
-};
+});
 
 async function initAuth(req: IncomingMessage): Promise<UserSession | null> {
   let session = (await getSession({ req })) as UserSession | null;
@@ -180,11 +187,19 @@ export async function getUser(req: IncomingMessage): Promise<UserSession> {
     // XXX - this is a critical error meaning our session is corrupt!
     return { session };
   }
-  if (!user.activeOrgId) {
+
+  if (!user.defaultOrgId) {
     // We have to have a default Org or else we can't show any resources.
-    // Currently there's no way in UI to set user.activeOrgId, but it is required for apikey authentication to work
-    user.activeOrgId = session.orgs?.[0]?.id ?? null;
-    if (!user.activeOrgId) {
+    // Currently there's no way in UI to set user.defaultOrgId, but it is required for apikey authentication to work
+    const userWithDefaultOrg = await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        defaultOrgId: session.orgs?.[0]?.id ?? null,
+      },
+    });
+    if (!userWithDefaultOrg.defaultOrgId) {
       throw new Error("User has no Orgs!");
     }
   }

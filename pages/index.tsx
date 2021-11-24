@@ -13,13 +13,15 @@ import MenuDrawer from "../components/dashboard/MenuDrawer";
 import { authenticatedPage } from "../lib/pageHelpers";
 import { getRecentProjects, RecentProject } from "../lib/projects";
 import { getActiveOrg } from "../lib/org";
+import { getCookies } from "../lib/cookies";
 
 type Props = {
   projects: RecentProject[];
 };
 
 export const getServerSideProps = authenticatedPage<Props>(async (context) => {
-  const activeOrg = await getActiveOrg(context.user);
+  const { activeOrgId } = getCookies(context.req as any);
+  const activeOrg = await getActiveOrg(context.user, activeOrgId);
   if (!activeOrg) return { props: { projects: [] } };
 
   const projects = await getRecentProjects(activeOrg, context.user, {

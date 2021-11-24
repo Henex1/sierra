@@ -1,9 +1,8 @@
 import React, { useEffect } from "react";
-import { signIn } from "next-auth/client";
+import { getProviders, signIn } from "next-auth/client";
 import { useSession } from "../../../components/Session";
 import { Button, Link, Box, Grid } from "@material-ui/core";
 import LoginWrapper from "../../../components/login/LoginWrapper";
-import { isAuthTypeEnabled } from "../../../lib/authSources";
 import { randomImage } from "../../../lib/loginImage";
 
 type AuthTargetProps = {
@@ -39,14 +38,11 @@ const SignInButton = ({ name, icon, title }: AuthTargetProps) => {
     const url = getCallbackURL();
     signIn(name, { callbackUrl: url });
   };
-
-  if (!isAuthTypeEnabled(name)) return null;
-
   return (
     <Grid item xs={12} key={title}>
       <Button fullWidth variant="contained" onClick={handleClick}>
         <span className="btn-txt">
-          <i className={`fab fa-${icon}`}></i>
+          <i className={`fab fa-${icon}`} />
           {title}
         </span>
       </Button>
@@ -54,9 +50,37 @@ const SignInButton = ({ name, icon, title }: AuthTargetProps) => {
   );
 };
 
+type Provider = {
+  title: string;
+  name: string;
+  icon: string;
+};
+export const allProviders: Array<Provider> = [
+  {
+    title: "Atlassian",
+    icon: "atlassian",
+    name: "atlassian",
+  },
+  { title: "Azure", icon: "microsoft", name: "azureb2c" },
+  { title: "GSuite", icon: "google", name: "google" },
+  { title: "GitHub", icon: "github", name: "github" },
+  { title: "GitLab", icon: "gitlab", name: "gitlab" },
+];
+
 export const getServerSideProps = async () => {
   const images = await randomImage();
-  return { props: { images } };
+  const providersFromAuth = await getProviders();
+  const providers = providersFromAuth
+    ? allProviders.filter((provider) =>
+        Object.keys(providersFromAuth).includes(provider.name)
+      )
+    : [];
+  return {
+    props: {
+      images,
+      providers,
+    },
+  };
 };
 
 export interface Props {
@@ -65,22 +89,11 @@ export interface Props {
     width: number;
     height: number;
   }>;
+  providers: Array<Provider>;
 }
 
-export default function SignInPage({ images }: Props) {
+export default function SignInPage({ images, providers }: Props) {
   const session = useSession();
-
-  const socialAuthTargets = [
-    {
-      title: "Atlassian",
-      icon: "atlassian",
-      name: "atlassian",
-    },
-    { title: "Azure", icon: "microsoft", name: "azureb2c" },
-    { title: "GSuite", icon: "google", name: "google" },
-    { title: "GitHub", icon: "github", name: "github" },
-    { title: "GitLab", icon: "gitlab", name: "gitlab" },
-  ];
 
   useEffect(() => {
     // if user already logged in and manualy type "auth/signin" in browser url it should be redirected from signin to previous page
@@ -105,7 +118,7 @@ export default function SignInPage({ images }: Props) {
             </Grid>
             <Grid item xs={12} className="social-auth-btns">
               <p>Sign In with</p>
-              {socialAuthTargets.map((item) => (
+              {providers.map((item) => (
                 <SignInButton {...item} key={item.name} />
               ))}
               <div className="signup-div">
@@ -116,7 +129,7 @@ export default function SignInPage({ images }: Props) {
               </div>
               <div className="back-to-website-div">
                 <Link href="https://sierra.dev">
-                  <i className="fas fa-long-arrow-alt-left"></i>
+                  <i className="fas fa-long-arrow-alt-left" />
                   Return to website
                 </Link>
               </div>

@@ -4,6 +4,7 @@ import {
   User,
   Org,
   OrgUser,
+  OrgType,
   SearchEndpoint,
   Judgement,
   SearchConfiguration,
@@ -43,11 +44,12 @@ export const TEST_USER: NoTimestamps<User> = {
   emailVerified: new Date(2020, 1, 1),
   image: "https://placekitten.com/200/200",
   siteRole: "USER" as UserSiteRole,
-  activeOrgId: TEST_ORG_ID,
+  defaultOrgId: TEST_ORG_ID,
 };
 
 export const TEST_ORG: NoTimestamps<Org> = {
   id: TEST_ORG_ID,
+  orgType: OrgType.FULL,
   name: "Test Org",
   domain: "http://test.org",
   image: "https://placekitten.com/200/200",

@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import * as fs from "fs";
 import * as path from "path";
+import { getCookies } from "../../../lib/cookies";
 
 import { RulesetVersionValue } from "../../../lib/rulesets/rules";
 import prisma from "../../../lib/prisma";
@@ -68,7 +69,16 @@ async function handleSeed(
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<void> {
-  const org = await prisma.org.findFirst({ where: userCanAccessOrg(user) });
+  const { activeOrgId } = getCookies(req);
+
+  if (!activeOrgId || !user.defaultOrgId) {
+    throw new Error("Org can not be found due to missing org id");
+  }
+  const org = await prisma.org.findFirst({
+    where: userCanAccessOrg(user, {
+      id: activeOrgId || user.defaultOrgId,
+    }),
+  });
   if (!org) {
     return res.status(500).json({ error: "user has no attached org" });
   }

@@ -9,6 +9,7 @@ import { redirectToLogin } from "./errors";
 import { getUser, ValidUserSession } from "./authServer";
 import { Org } from "./prisma";
 import { getActiveOrg } from "./org";
+import { getCookies } from "./cookies";
 
 export class RedirectError extends Error {
   constructor(public dest: string) {
@@ -112,9 +113,10 @@ export function optionalNumberQuery<P extends ParsedUrlQuery>(
 // Returns the active Org for the current User, and fails if they don't have
 // one.
 export async function requireActiveOrg(
-  context: ValidUserSession
+  context: GetServerSidePropsContext & ValidUserSession
 ): Promise<Org> {
-  const activeOrg = await getActiveOrg(context.user);
+  const { activeOrgId } = getCookies(context.req as any);
+  const activeOrg = await getActiveOrg(context.user, activeOrgId);
   if (!activeOrg) {
     throw new RedirectError("/me/active-org");
   }

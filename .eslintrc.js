@@ -28,6 +28,7 @@ module.exports = {
     sourceType: "module",
   },
   plugins: ["react", "@typescript-eslint", "jest", "sierra"],
+  ignorePatterns: ["dist/*"],
   rules: {
     "@typescript-eslint/no-unused-vars": [
       "error",
