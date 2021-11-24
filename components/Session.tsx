@@ -4,13 +4,12 @@ import {
   useSession as useNextSession,
 } from "next-auth/client";
 import { Session as NextSession, User as NextUser } from "next-auth";
-import { setCookies } from "cookies-next";
+import Cookies from "js-cookie";
 
 import { ExposedOrg } from "../lib/org";
 import { ExposedProject } from "../lib/projects";
-import { apiRequest } from "../lib/api";
 
-type User = NextUser & { id?: number; activeOrgId: string | null };
+type User = NextUser & { id?: number; defaultOrgId: string | null };
 
 export type Session = Omit<NextSession, "user"> & {
   loading: boolean;
@@ -35,6 +34,7 @@ function mkSession(loading: boolean, session: any = {}): Session {
 
 export function SessionProvider({ children }: ProviderProps) {
   const [nextSession, nextLoading] = useNextSession();
+  const { setProject } = useActiveProject();
   const [val, setVal] = React.useState<Session>(
     mkSession(nextLoading, nextSession)
   );
@@ -43,6 +43,7 @@ export function SessionProvider({ children }: ProviderProps) {
       session: val,
       refresh: async () => {
         const session = await getNextSession();
+        setProject((session as any)?.projects?.[0]);
         // When this promise resolves, the useNextSession hook will change and
         // we'll see an updated session... except there's a bug, and the
         // session is actually the old session still, so we have to maintain
@@ -71,18 +72,14 @@ interface ActiveOrg {
 export function useActiveOrg(): ActiveOrg {
   const { session, refresh } = useSession();
   const activeOrg = React.useMemo((): ExposedOrg | null => {
-    const activeOrgId = session.user?.activeOrgId;
+    const activeOrgId = session.activeOrgId;
     if (!activeOrgId) return null;
     const orgs = session.orgs || [];
     return orgs.find((o) => o.id === activeOrgId) || null;
-  }, [session.orgs, session.user?.activeOrgId]);
+  }, [session.orgs, session.activeOrgId]);
   const setActiveOrg = React.useCallback(
     async (org: ExposedOrg): Promise<void> => {
-      await apiRequest(
-        "/api/users/me",
-        { activeOrgId: org.id },
-        { method: "PATCH" }
-      );
+      Cookies.set("activeOrgId", org.id);
       refresh();
     },
     []
@@ -102,7 +99,7 @@ export function ActiveProjectProvider({ children }: ProviderProps) {
   const [project, setProject] = React.useState<ExposedProject | null>(null);
   useEffect(() => {
     if (project) {
-      setCookies("activeProjectId", project?.id);
+      Cookies.set("activeProjectId", project?.id);
     }
   }, [project]);
 

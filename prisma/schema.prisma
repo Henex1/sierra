@@ -21,13 +21,12 @@ model User {
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
   siteRole      UserSiteRole @default(USER)
-  // This stores the user's "active" Org, which controls which resources they
-  // see when they are on various pages. This is a user preference, and does
-  // not imply that the user actually has access to the listed Org.
-  activeOrgId   String?
+  // This stores the user's "default" Org, which controls which organisation is
+  // selected by default when a user is logged in.
+  defaultOrgId  String?
 
-  orgs      OrgUser[]
-  activeOrg Org?      @relation(fields: [activeOrgId], references: [id])
+  orgs       OrgUser[]
+  defaultOrg Org?      @relation(fields: [defaultOrgId], references: [id])
 
   ApiKey ApiKey[]
   @@map("users")
@@ -73,6 +72,11 @@ model Session {
   @@map("sessions")
 }
 
+enum OrgType {
+  USER_SPACE
+  FULL
+}
+
 // Org is the main unit of resource isolation in Sierra. Most objects should be
 // owned by an Org, and users have access to the Org through the OrgUser
 // relation.
@@ -83,14 +87,15 @@ model Org {
   name      String
   image     String?
   domain    String?
+  orgType   OrgType  @default(FULL)
 
-  projects               Project[]
-  searchEndpoints        SearchEndpoint[]
-  users                  OrgUser[]
-  apiKeys                ApiKey[]
+  projects                Project[]
+  searchEndpoints         SearchEndpoint[]
+  users                   OrgUser[]
+  apiKeys                 ApiKey[]
   // Prisma requires that all relations are bidirectional like this, even
   // though this relationship isn't useful to us.
-  usersWithThisActiveOrg User[]
+  usersWithThisDefaultOrg User[]
 }
 
 // OrgUser represents membership in an organization.

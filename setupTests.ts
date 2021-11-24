@@ -45,7 +45,7 @@ const mockUser: User = {
   ...TEST_USER,
   createdAt: new Date(),
   updatedAt: new Date(),
-  activeOrgId: mockOrg.id,
+  defaultOrgId: mockOrg.id,
 };
 const mockGetUser = jest.fn(async () => {
   return { session: {}, user: mockUser };

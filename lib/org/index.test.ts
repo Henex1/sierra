@@ -9,7 +9,7 @@ describe("'canCreate' - Checks is current user can create organizations", () => 
     id: "212",
     createdAt: new Date(),
     updatedAt: new Date(),
-    activeOrgId: "",
+    defaultOrgId: "",
     emailVerified: new Date(),
     siteRole: "ADMIN",
   };
