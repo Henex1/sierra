@@ -72,7 +72,7 @@ type Props = {
         rulesets: ExposedRulesetVersion[];
       })
     | null;
-  searchPhrases: ExposedSearchPhrase[] | undefined;
+  searchPhrases: ExposedSearchPhrase[] | null;
   searchPhrasesTotal: number;
   rulesets: ExposedRulesetWithVersions[];
   templates: ExposedQueryTemplate[];
@@ -160,39 +160,39 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
         sort: displayOptions.sort,
         search: displayOptions.search,
       })
-    : undefined;
-  const formattedPhrases:
-    | ExposedSearchPhrase[]
-    | undefined = searchPhrases?.map(
-    (phrase): ExposedSearchPhrase => {
-      switch (phrase.error) {
-        case null:
-          return {
-            __type: "ScoredSearchPhraseExecution",
-            id: phrase.id,
-            phrase: phrase.phrase,
-            combinedScore: _.isNumber(phrase.combinedScore)
-              ? phrase.combinedScore * 100
-              : null,
-            allScores: phrase.allScores
-              ? _.mapValues(
-                  phrase.allScores as Record<string, number>,
-                  (s) => s * 100
-                )
-              : null,
-            results: phrase.totalResults,
-            tookMs: phrase.tookMs,
-          };
-        default:
-          return {
-            __type: "FailedSearchPhraseExecution",
-            id: phrase.id,
-            phrase: phrase.phrase,
-            error: phrase.error,
-          };
-      }
-    }
-  );
+    : null;
+  const formattedPhrases: ExposedSearchPhrase[] | null = searchPhrases
+    ? searchPhrases.map(
+        (phrase): ExposedSearchPhrase => {
+          switch (phrase.error) {
+            case null:
+              return {
+                __type: "ScoredSearchPhraseExecution",
+                id: phrase.id,
+                phrase: phrase.phrase,
+                combinedScore: _.isNumber(phrase.combinedScore)
+                  ? phrase.combinedScore * 100
+                  : null,
+                allScores: phrase.allScores
+                  ? _.mapValues(
+                      phrase.allScores as Record<string, number>,
+                      (s) => s * 100
+                    )
+                  : null,
+                results: phrase.totalResults,
+                tookMs: phrase.tookMs,
+              };
+            default:
+              return {
+                __type: "FailedSearchPhraseExecution",
+                id: phrase.id,
+                phrase: phrase.phrase,
+                error: phrase.error,
+              };
+          }
+        }
+      )
+    : null;
   const queryTemplate = activeSearchConfiguration
     ? await getQueryTemplate(
         context.user,
