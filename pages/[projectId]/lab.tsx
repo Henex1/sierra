@@ -271,6 +271,7 @@ export default function Lab({
         variant: AppTopBarBannerVariant.Warning,
         message:
           "This execution is stale. Some judgements and scores might not be up to date.",
+        pages: ["lab"],
       });
     }
   }, [isExecutionDirty]);

@@ -9,6 +9,7 @@ export enum AppTopBarBannerVariant {
 type AppTopBarBannerContextBanner = {
   variant: AppTopBarBannerVariant;
   message: string;
+  pages?: string[];
 };
 
 interface IAppTopBarBannerContext {

@@ -10,6 +10,7 @@ import {
 import Link from "./common/Link";
 import AppTopBar from "./AppTopBar/AppTopBar";
 import { useSession } from "../components/Session";
+import { AppTopBarBanner } from "./AppTopBar/AppTopBarBanner";
 
 function Copyright() {
   return (
@@ -74,6 +75,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <AppTopBar />
         <main className={classes.main}>
           <div className={classes.appBarSpacer} />
+          <AppTopBarBanner />
           <div className={classes.content}>
             <div ref={sidebarRef}></div>
             <Container maxWidth="lg" className={classes.container}>
