@@ -16,7 +16,6 @@ import MobileUserMenu from "./MobileUserMenu";
 import ProjectsMenu from "./ProjectsMenu";
 import { RunningTasksSpinner } from "./RunningTasksSpinner";
 import { FeedbackMenu } from "./FeedbackMenu";
-import { AppTopBarBanner } from "./AppTopBarBanner";
 
 export default function AppTopBar() {
   const [tasks, setTasks] = useState([]);
@@ -113,7 +112,6 @@ export default function AppTopBar() {
           <MobileUserMenu activeProjectId={activeProjectId} />
         </Box>
       </Box>
-      <AppTopBarBanner />
     </AppBar>
   );
 }
