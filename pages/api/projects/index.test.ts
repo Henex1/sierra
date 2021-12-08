@@ -11,7 +11,7 @@ import {
   TEST_PROJECT,
   TEST_SEARCHCONFIGURATION_ID,
 } from "../../../lib/test";
-import { defaultQueryTemplate } from "../../../lib/querytemplates";
+import { defaultQueryTemplates } from "../../../lib/querytemplates";
 
 describe("api/projects", () => {
   it("/create", async () => {
@@ -29,7 +29,7 @@ describe("api/projects", () => {
       .with({ data: initialInfo })
       .resolvesTo({ id: TEST_PROJECT.id, ...initialInfo });
     const defaultTemplate = {
-      ...defaultQueryTemplate,
+      ...defaultQueryTemplates.elasticsearch,
       projectId: TEST_PROJECT.id,
     };
     mockModels("queryTemplate")

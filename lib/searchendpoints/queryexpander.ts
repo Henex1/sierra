@@ -11,6 +11,7 @@ declare const queryWasExpanded: unique symbol;
 // accidentally pass any random object to the query methods without properly
 // expanding it.
 export type ExpandedQuery = { [queryWasExpanded]: true };
+export type SolrExpandedQuery = ExpandedQuery & { queryStr: string };
 
 const QUERY_EXPANDER_URL = requireEnv("QUERY_EXPANDER_URL");
 // TODO const QUERY_EXPANDER_AUTH = optionalEnv("QUERY_EXPANDER_AUTH");
@@ -23,6 +24,11 @@ export async function expandQuery(
   phrase: string
 ): Promise<ExpandedQuery> {
   try {
+    if (endpoint.type === "SOLR") {
+      const queryStr = tpl.query.split("#$query#").join(phrase);
+      return Promise.resolve({ queryStr } as SolrExpandedQuery);
+    }
+
     if (!["ELASTICSEARCH", "OPEN_SEARCH"].includes(endpoint.type)) {
       throw new HttpError(405, ErrorMessage.UnsupportedSearchEndpointType);
     }
@@ -49,6 +55,7 @@ export async function expandQuery(
     });
     return await response.json();
   } catch (err) {
+    console.error(err);
     throw new HttpError(500, ErrorMessage.FailedToExpandQuery);
   }
 }

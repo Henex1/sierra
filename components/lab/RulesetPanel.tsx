@@ -50,7 +50,7 @@ type RulesetPanelProps = {
   onUpdate: () => void;
 };
 
-export default function RulesetPanel({
+export function RulesetPanel({
   formId,
   activeRulesetIds,
   setActiveRulesetIds,

@@ -26,8 +26,8 @@ import { useRouter } from "next/router";
 
 import { ExposedRulesetVersion } from "../../lib/rulesets";
 import { ExposedQueryTemplate } from "../../lib/querytemplates";
-import QueryPanel, { QueryPanelValues } from "./QueryPanel";
-import RulesetPanel from "./RulesetPanel";
+import { QueryTemplateEditor, QueryPanelValues } from "./QueryTemplateEditor";
+import { RulesetPanel } from "./RulesetPanel";
 import LoadingContent from "../common/LoadingContent";
 import Scrollable from "../common/Scrollable";
 import { apiRequest } from "../../lib/api";
@@ -76,6 +76,7 @@ const formId = "searchConfigurationForm";
 
 type Props = {
   width: number;
+  searchEndpointType: string;
   setDrawerWidth: (value: number) => void;
   handleClose: () => void;
 };
@@ -84,6 +85,7 @@ export default function ConfigurationDrawer({
   setDrawerWidth,
   width,
   handleClose,
+  searchEndpointType,
 }: Props) {
   const classes = useStyles({ width });
   const router = useRouter();
@@ -291,9 +293,10 @@ export default function ConfigurationDrawer({
                 maxHeight="100%"
               >
                 <TabPanel value={activeTab} index={0}>
-                  <QueryPanel
+                  <QueryTemplateEditor
                     formId={formId}
                     queryTemplate={searchConfiguration.queryTemplate}
+                    searchEndpointType={searchEndpointType}
                     onUpdate={handleQueryTemplateUpdate}
                     updateQueryTemplate={updateQueryTemplate}
                     onFormValuesChange={handleQueryPanelChange}

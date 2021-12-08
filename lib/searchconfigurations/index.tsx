@@ -82,11 +82,20 @@ export async function getActiveSearchConfiguration(
   project: Project,
   executionId?: string
 ): Promise<SearchConfiguration | null> {
+  const where: any = {
+    queryTemplate: { projectId: project.id },
+  };
+
+  if (executionId) {
+    where.execution = {
+      some: {
+        id: executionId || undefined,
+      },
+    };
+  }
+
   const sc = await prisma.searchConfiguration.findFirst({
-    where: {
-      queryTemplate: { projectId: project.id },
-      executions: { some: { id: executionId || undefined } },
-    },
+    where,
     orderBy: [{ updatedAt: "desc" }],
     include: { tags: true },
   });
