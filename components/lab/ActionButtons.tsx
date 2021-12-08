@@ -38,7 +38,11 @@ const useStyles = makeStyles<Theme, { width: number }>((theme) => ({
   },
 }));
 
-export default function ActionButtons() {
+export default function ActionButtons({
+  searchEndpointType,
+}: {
+  searchEndpointType: string;
+}) {
   const [open, setOpen] = React.useState(false);
   const [drawerWidth, setDrawerWidth] = React.useState(600);
   const classes = useStyles({ width: drawerWidth });
@@ -66,6 +70,7 @@ export default function ActionButtons() {
             <Portal container={sidebarRef.current}>
               {open && (
                 <ConfigurationDrawer
+                  searchEndpointType={searchEndpointType}
                   width={drawerWidth}
                   setDrawerWidth={setDrawerWidth}
                   handleClose={handleClose}

@@ -14,7 +14,7 @@ import { requireEnv } from "../env";
 import { ElasticsearchInterface, SearchEndpointData } from "./elasticsearch";
 import { expandQuery, ExpandedQuery } from "./queryexpander";
 import * as ExposedSearchEndpoint from "./types/ExposedSearchEndpoint";
-import { SolrQueryInterface } from "./Solr";
+import { SolrQueryInterface } from "./solr";
 
 export { expandQuery };
 

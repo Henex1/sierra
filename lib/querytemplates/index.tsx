@@ -99,10 +99,17 @@ export const createQueryTemplateSchema = z.object({
 export type CreateQueryTemplate = z.infer<typeof createQueryTemplateSchema>;
 
 // This is the default query templated, created when a new project is created.
-export const defaultQueryTemplate: CreateQueryTemplate = {
-  description: "Initial query",
-  query: '{"query":{"match":{"title":"#$query#"}}}', // TODO rely on the data source title: field
-  knobs: {},
+export const defaultQueryTemplates = {
+  elasticsearch: {
+    description: "Initial query",
+    query: '{"query":{"match":{"title":"#$query#"}}}', // TODO rely on the data source title: field
+    knobs: {},
+  },
+  solr: {
+    description: "Initial query",
+    query: "qt=/select&q=#$query#&q.op=OR",
+    knobs: {},
+  },
 };
 
 export async function createQueryTemplate(

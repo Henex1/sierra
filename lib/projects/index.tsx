@@ -12,7 +12,7 @@ import prisma, {
 import { userCanAccessOrg } from "../org";
 import {
   createQueryTemplate,
-  defaultQueryTemplate,
+  defaultQueryTemplates,
   getLatestQueryTemplates,
 } from "../querytemplates";
 import {
@@ -109,7 +109,9 @@ export async function createProject(
     searchEndpoint.type == SearchEndpointType.ELASTICSEARCH ||
     searchEndpoint.type == SearchEndpointType.OPEN_SEARCH
   ) {
-    await createQueryTemplate(project, defaultQueryTemplate);
+    await createQueryTemplate(project, defaultQueryTemplates.elasticsearch);
+  } else if (searchEndpoint.type == SearchEndpointType.SOLR) {
+    await createQueryTemplate(project, defaultQueryTemplates.solr);
   } else {
     throw new Error(`Project type ${searchEndpoint.type} has no default query`);
   }

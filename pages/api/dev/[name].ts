@@ -63,6 +63,134 @@ const seedJudgementFile = path.join(
   "fixtures/Broad_Query_Set_rated.csv"
 );
 
+async function handleSolrSeed(
+  { user }: ValidUserSession,
+  req: NextApiRequest,
+  res: NextApiResponse
+): Promise<void> {
+  const org = await prisma.org.findFirst({
+    where: userCanAccessOrg(user, {
+      id: user.defaultOrgId!,
+    }),
+  });
+  if (!org) {
+    return res.status(500).json({ error: "user has no attached org" });
+  }
+
+  const searchEndpoint = await createSearchEndpoint(user, {
+    orgId: org.id,
+    name: "Local Solr",
+    description: "Solr instance on localhost.",
+    resultId: "_id",
+    displayFields: ["title:title", "short_description", "image:img_thumb"],
+    type: "SOLR",
+    info: {
+      endpoint: "http://localhost:8983",
+      index: "gettingstarted",
+    },
+    credentials: null,
+  });
+
+  const project = await prisma.project.create({
+    data: {
+      orgId: org.id,
+      searchEndpointId: searchEndpoint.id,
+      name: "Dev Solr Project",
+    },
+  });
+
+  const ruleset = await createRuleset(project, {
+    name: "Dev Solr Ruleset",
+  });
+  let rvBase = await createRulesetVersion(ruleset, {
+    parentId: null,
+    value: mockRuleset,
+  });
+  const rulesetVersionId = rvBase.id;
+  // Fake a tree of rulesetVersions
+  for (let i = 0; i < 2; i++) {
+    rvBase = await createRulesetVersion(ruleset, {
+      parentId: rvBase.id,
+      value: mockRuleset,
+    });
+  }
+  const rvChildren = [rvBase, rvBase];
+  for (let i = 0; i < 2; i++) {
+    await createRulesetVersion(ruleset, {
+      parentId: rvChildren[i].id,
+      value: mockRuleset,
+    });
+  }
+
+  let qtBase = await createQueryTemplate(project, {
+    description: "Solr query template",
+    query: "qt=/select&q=#$query#",
+    knobs: {},
+  });
+  // Fake a tree of revisions
+  for (let i = 0; i < 2; i++) {
+    qtBase = await updateQueryTemplate(qtBase, {
+      description: `Update number ${i + 1}`,
+      query: qtBase.query,
+      knobs: qtBase.knobs,
+    });
+  }
+  const qtChildren = [qtBase, qtBase];
+  for (let i = 0; i < 2; i++) {
+    for (let j = 0; j < qtChildren.length; j++) {
+      qtChildren[j] = await updateQueryTemplate(qtChildren[j], {
+        description: `Fork ${j + 1}.${i + 1}`,
+        query: qtChildren[j].query,
+        knobs: qtChildren[j].knobs,
+        tags: [`fork-${j + 1}`],
+      });
+    }
+  }
+
+  const judgement = await prisma.judgement.create({
+    data: {
+      projectId: project.id,
+      name: "Crowdsourced Judgements",
+    },
+  });
+  const votes = parseVotesCsv(fs.readFileSync(seedJudgementFile, "utf-8"));
+  await setVotes(judgement, votes);
+
+  const sc = await prisma.searchConfiguration.create({
+    data: {
+      queryTemplate: {
+        connect: {
+          id: qtChildren[0].id,
+        },
+      },
+      judgements: { create: [{ judgementId: judgement.id, weight: 1.0 }] },
+      rulesets: {
+        connect: {
+          id: rulesetVersionId,
+        },
+      },
+    },
+  });
+
+  // Set sc as active for this project
+  await prisma.project.update({
+    where: { id: project.id },
+    data: {
+      activeSearchConfigurationId: sc.id,
+    },
+  });
+
+  try {
+    await createExecution(sc, project.id);
+  } catch (error) {
+    console.error(error);
+    const { statusCode = 500, data } = error;
+    return res.status(statusCode).json({ error: data });
+  }
+
+  return res.status(200).json({ success: true });
+}
+
 async function handleSeed(
   { user }: ValidUserSession,
   req: NextApiRequest,
@@ -184,6 +312,7 @@ async function handleSeed(
   try {
     await createExecution(sc, project.id);
   } catch (error) {
+    console.error(error);
     const { statusCode = 500, data } = error as any;
     return res.status(statusCode).json({ error: data });
   }
@@ -198,6 +327,7 @@ type Mutator = (
 ) => Promise<void>;
 const routes: { [name: string]: Mutator } = {
   seed: handleSeed,
+  solrSeed: handleSolrSeed,
 };
 
 export default async function mutate(

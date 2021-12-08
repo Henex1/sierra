@@ -86,6 +86,7 @@ type Props = {
   };
   page: number;
   displayFields: Array<string>;
+  searchEndpointType: string;
   isExecutionDirty: boolean;
 };
 
@@ -226,7 +227,7 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
   return {
     props: {
       searchConfiguration,
-      searchPhrases: formattedPhrases,
+      searchPhrases: formattedPhrases || null,
       searchPhrasesTotal,
       rulesets: rulesetsWithVersions,
       templates: templates.map(formatQueryTemplate),
@@ -242,6 +243,7 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
       displayOptions,
       page: page + 1,
       displayFields: searchEndpoint.displayFields,
+      searchEndpointType: searchEndpoint.type,
       isExecutionDirty: Boolean(isExecutionDirty),
     },
   };
@@ -256,6 +258,7 @@ export default function Lab({
   activeExecution,
   currentExecution,
   executions,
+  searchEndpointType,
   displayFields,
   isExecutionDirty,
   ...props
@@ -399,10 +402,10 @@ export default function Lab({
         ) : (
           <NoExistingExcution
             isSearchConfig={!!searchConfiguration}
-            isRunQuery={searchPhrases === undefined}
+            isRunQuery={searchPhrases === null}
           />
         )}
-        <ActionButtons />
+        <ActionButtons searchEndpointType={searchEndpointType} />
       </div>
     </LabProvider>
   );
