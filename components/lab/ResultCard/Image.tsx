@@ -11,7 +11,7 @@ export interface Props {
 export const Image = ({ src, field }: Props): ReactElement => {
   const classes = useStyles();
   return (
-    <Box mb={1} className={classes.withLabel} key={field}>
+    <Box mb={1} key={field} className={classes.imageContainer}>
       <img
         className={classes.image}
         src={src}

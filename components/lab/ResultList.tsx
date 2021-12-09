@@ -30,6 +30,7 @@ const useStyles = makeStyles((theme) => ({
     flex: "none",
   },
   paper: {
+    fontFamily: "Source Sans Pro",
     padding: theme.spacing(1),
     marginBottom: theme.spacing(3),
   },

@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { Button, Popover } from "@material-ui/core";
+import {
+  Fade,
+  IconButton,
+  makeStyles,
+  Popper,
+  Tooltip,
+} from "@material-ui/core";
+import GavelIcon from "@material-ui/icons/Gavel";
+import CloseIcon from "@material-ui/icons/Close";
 import { ResultScoreIcon } from "./ResultScoreIcon";
 
 type Props = {
@@ -10,6 +18,23 @@ type Props = {
   id?: string;
 };
 
+const useStyles = makeStyles(() => ({
+  judmentButtonContainer: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  customTooltip: {
+    fontSize: "10px",
+    fontWeight: 600,
+    padding: "2px 5px",
+  },
+  iconButton: {
+    width: "35px",
+    height: "35px",
+  },
+}));
+
 export const ResultScorePopover = ({
   children,
   score,
@@ -17,10 +42,13 @@ export const ResultScorePopover = ({
   onClose,
   id = "result-score-popover",
 }: Props) => {
+  const classes = useStyles();
+  const [tooltipIsOpen, setTooltipIsOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
   const handleClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
+    setTooltipIsOpen(false);
     onOpen();
   };
 
@@ -44,25 +72,46 @@ export const ResultScorePopover = ({
 
   return (
     <>
-      <Button
-        aria-describedby={id}
-        onClick={handleClick}
-        style={{ backgroundColor: "transparent" }}
-      >
-        <ResultScoreIcon score={score} />
-      </Button>
-
-      <Popover
+      <ResultScoreIcon score={score} />
+      <div className={classes.judmentButtonContainer}>
+        <Tooltip
+          open={tooltipIsOpen}
+          title="Cast your own judgement"
+          placement="right"
+          classes={{
+            tooltip: classes.customTooltip,
+          }}
+        >
+          {anchorEl ? (
+            <IconButton
+              classes={{ root: classes.iconButton }}
+              onClick={handleClose}
+            >
+              <CloseIcon style={{ color: "#C0C0C0" }} fontSize="small" />
+            </IconButton>
+          ) : (
+            <IconButton
+              classes={{ root: classes.iconButton }}
+              onClick={handleClick}
+              onMouseEnter={() => setTooltipIsOpen(true)}
+              onMouseLeave={() => setTooltipIsOpen(false)}
+            >
+              <GavelIcon style={{ color: "#C0C0C0" }} fontSize="small" />
+            </IconButton>
+          )}
+        </Tooltip>
+      </div>
+      <Popper
         id={id}
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
-        onClose={handleClose}
         onClick={onClick}
-        anchorOrigin={{ vertical: "center", horizontal: "right" }}
-        transformOrigin={{ vertical: "center", horizontal: "left" }}
+        placement="right"
       >
-        {children}
-      </Popover>
+        <Fade in={Boolean(anchorEl)} timeout={250}>
+          <div>{children}</div>
+        </Fade>
+      </Popper>
     </>
   );
 };

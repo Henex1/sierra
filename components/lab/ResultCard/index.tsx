@@ -30,17 +30,19 @@ export function ResultCard({ displayFields, result }: Props) {
   return (
     <Grid container justify="space-between" wrap="nowrap">
       <Grid item>
-        {title ? (
-          <Title
-            field={title.field}
-            title={title.value as string}
-            url={url && url.value}
-            key={title.field}
-          />
-        ) : null}
-        {image ? (
-          <Image src={image.value} field={image.field} key={image.field} />
-        ) : null}
+        <div className={classes.titleAndImageWrapper}>
+          {image ? (
+            <Image src={image.value} field={image.field} key={image.field} />
+          ) : null}
+          {title ? (
+            <Title
+              field={title.field}
+              title={title.value as string}
+              url={url && url.value}
+              key={title.field}
+            />
+          ) : null}
+        </div>
         {fields.map((field): JSX.Element | null => {
           const text = getField(field, result);
           return text ? (

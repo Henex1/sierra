@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, colors } from "@material-ui/core";
+import { Button, Paper } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { useRouter } from "next/router";
 import { scaleLinear } from "d3-scale";
@@ -8,16 +8,39 @@ import { ExposedVote } from "../../../lib/judgements";
 import { useLabContext } from "../../../utils/react/hooks/useLabContext";
 
 const colorScale = scaleLinear<string, string>()
-  .domain([0, 1, 3])
-  .range([colors.red[500], colors.yellow[500], colors.green[500]]);
+  .domain([0, 1, 2, 3])
+  .range(["#FF6A6B", "#FFAB61", "#CCD766", "#91D16F"]);
 
-const useStyles = makeStyles((theme) => ({
-  container: {
-    display: "flex",
-    flexDirection: "row",
+const useStyles = makeStyles(() => ({
+  paper: {
+    padding: "15px",
+    position: "relative",
+    left: "14px",
+    border: "1px solid #ebebeb",
+    boxShadow: "0px 10px 10px rgba(0, 0, 0, 0.1)",
+  },
+  paperArrow: {
+    height: "16px",
+    width: "16px",
+    backgroundColor: "#fff",
+    position: "absolute",
+    left: 0,
+    top: "50%",
+    borderBottom: "1px solid #ebebeb",
+    borderLeft: "1px solid #ebebeb",
+    transform: "translate(-50%, -50%) rotate(45deg)",
   },
   button: {
-    margin: theme.spacing(0.5),
+    marginRight: "5px",
+    borderRadius: "50px",
+    fontSize: "15px",
+    fontWeight: 400,
+    padding: "5px 12px",
+    color: "white",
+    textTransform: "none",
+    "&:last-of-type": {
+      marginRight: "0px",
+    },
   },
 }));
 
@@ -27,7 +50,7 @@ type Props = {
   onChange: () => void;
 };
 
-const BUTTONS = ["0 Poor", "1 Fair", "2 Good", "3 Perfect"];
+const BUTTONS = ["0 - Poor", "1 - Fair", "2 - Good", "3 - Perfect"];
 
 export const VoteScores = ({ vote, onChange, documentId }: Props) => {
   const classes = useStyles();
@@ -47,7 +70,8 @@ export const VoteScores = ({ vote, onChange, documentId }: Props) => {
   };
 
   return (
-    <div className={classes.container}>
+    <Paper className={classes.paper}>
+      <div className={classes.paperArrow} />
       {BUTTONS.map((button, index) => (
         <Button
           key={`${button}-${index}`}
@@ -58,6 +82,6 @@ export const VoteScores = ({ vote, onChange, documentId }: Props) => {
           {button}
         </Button>
       ))}
-    </div>
+    </Paper>
   );
 };
