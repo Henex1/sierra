@@ -193,3 +193,7 @@ There are several test datasets available on https://elasticsearch-demos.bigdata
 | test-dataset-icecat  | The icecat eCommerce catalog          | 82,903  | 108.3mb |
 | test-dataset-msmarco | Microsoft's MSMarco dataset (unclean) | 630,000 | 5.1gb   |
 | test-dataset-tmbdb   | TMDB                                  | 9,500   | 6mb     |
+
+The icecat index for instance exposes the following fields for the lab:
+
+![image](/uploads/a67b5c4851f8eaadb751972a78f49c4e/image.png)
