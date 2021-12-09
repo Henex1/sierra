@@ -1,34 +1,42 @@
 import React from "react";
-import { Tooltip, Avatar, colors } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core";
 import { scaleLinear } from "d3-scale";
-import { useStyles } from "../hooks";
 
 const colorScale = scaleLinear<string, string>()
-  .domain([0, 1, 3])
-  .range([colors.red[500], colors.yellow[500], colors.green[500]]);
+  .domain([0, 1, 2, 3])
+  .range(["#FF6A6B", "#FFAB61", "#CCD766", "#91D16F"]);
 
 type ScoreIconProps = {
   score?: number;
 };
 
+const useStyles = makeStyles(() => ({
+  score: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-end",
+    height: "36px",
+    fontSize: "35px",
+    fontWeight: 600,
+    backgroundColor: "transparent",
+  },
+}));
+
 export const ResultScoreIcon = ({ score }: ScoreIconProps) => {
   const classes = useStyles();
 
   return (
-    <Tooltip title="Combined judgement">
-      <Avatar
-        variant="rounded"
-        className={classes.scoreBoxAvatar}
-        style={{
-          background: score !== undefined ? colorScale(score) : undefined,
-        }}
-      >
-        {score === undefined
-          ? "--"
-          : Number.isInteger(score)
-          ? score
-          : score.toFixed(1)}
-      </Avatar>
-    </Tooltip>
+    <div
+      className={classes.score}
+      style={{
+        color: score !== undefined ? colorScale(score) : undefined,
+      }}
+    >
+      {score === undefined
+        ? "--"
+        : Number.isInteger(score)
+        ? score
+        : score.toFixed(1)}
+    </div>
   );
 };
