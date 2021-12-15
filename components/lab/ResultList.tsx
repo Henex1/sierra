@@ -51,7 +51,7 @@ export function ResultList({ displayFields, onClose, searchPhrase }: Props) {
     `/api/lab/searchResult?id=${searchPhrase.id}`
   );
 
-  if (!data) {
+  if (!data?.length) {
     return (
       <Box mt={10}>
         {Array.from(Array(5)).map((item, i) => (
