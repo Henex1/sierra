@@ -43,6 +43,7 @@ export function apiHandler<T>(
       } else if (err instanceof HttpError) {
         res.status(err.statusCode).json(err.data);
       } else {
+        console.error(err);
         res.status(500).json({ error: "internal server error" });
       }
     }
