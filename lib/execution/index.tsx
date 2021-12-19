@@ -236,7 +236,7 @@ export async function getCombinedJudgementForPhrase(
     WHERE JSC."searchConfigurationId" = ${config.id}
     AND JP."phrase" = ${phrase}
     ${
-      documentIds
+      documentIds?.length
         ? Prisma.sql`AND V."documentId" IN (${Prisma.join(documentIds)})`
         : Prisma.empty
     }
