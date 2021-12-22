@@ -130,9 +130,8 @@ async function initAuth(req: IncomingMessage): Promise<UserSession | null> {
   let session = (await getSession({ req })) as UserSession | null;
 
   if (!session) {
-    console.log("NO SESSION - attempting to retrieve API Key");
     // Attempt API Key authentication if there's no user session.
-    let apikey = String(req.headers["authorization"]);
+    let apikey = req.headers["authorization"];
     if (!apikey) {
       return null;
     }
@@ -140,7 +139,7 @@ async function initAuth(req: IncomingMessage): Promise<UserSession | null> {
       apikey = apikey.substr(7).trim();
     }
     const apikeyObject = await prisma.apiKey.findFirst({
-      where: { apikey: apikey },
+      where: { apikey },
     });
     if (!apikeyObject) {
       console.log("API Key not found: " + apikey);
