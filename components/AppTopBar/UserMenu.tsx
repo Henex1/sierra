@@ -51,20 +51,29 @@ export default function UserMenu({ user, org }: Props) {
         onClick={(e) => setAnchorEl(e.currentTarget)}
         focusVisibleClassName={classes.focusVisible}
       >
-        <div className={classes.content}>
-          <OrgAvatar
-            name={org.name}
-            image={org.image}
-            square={true}
-            size={"small"}
-          />
+        {org.name === `${user.name}'s Space` ? (
           <Avatar
             className={classes.avatar}
             alt={user.name}
             title={`Signed in as ${user.name}`}
             src={user.image}
           />
-        </div>
+        ) : (
+          <div className={classes.content}>
+            <OrgAvatar
+              name={org.name}
+              image={org.image}
+              square={true}
+              size={"small"}
+            />
+            <Avatar
+              className={classes.avatar}
+              alt={user.name}
+              title={`Signed in as ${user.name}`}
+              src={user.image}
+            />
+          </div>
+        )}
       </ButtonBase>
       <Menu
         open={Boolean(anchorEl)}
