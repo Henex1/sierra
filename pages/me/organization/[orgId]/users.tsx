@@ -1,9 +1,6 @@
-import {
-  authenticatedPage,
-  requireNumberParam,
-} from "../../../../lib/pageHelpers";
+import React, { ChangeEvent, useState } from "react";
+import useSWR from "swr";
 import { makeStyles } from "@material-ui/core/styles";
-import BreadcrumbsButtons from "../../../../components/common/BreadcrumbsButtons";
 import Link from "../../../../components/common/Link";
 import Typography from "@material-ui/core/Typography";
 import {
@@ -25,71 +22,17 @@ import {
 } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import SaveIcon from "@material-ui/icons/Save";
-import React, { useState } from "react";
+import { authenticatedPage, requireParam } from "../../../../lib/pageHelpers";
+import BreadcrumbsButtons from "../../../../components/common/BreadcrumbsButtons";
+import { OrgUser, User, UserOrgRole } from ".prisma/client";
+import { apiRequest } from "lib/api";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const orgId = requireNumberParam(context, "orgId");
-  const users: Array<any> = [
-    {
-      id: "1",
-      name: "A Test Admin Name",
-      role: "Admin",
-      email: "test@gmail.com",
-    },
-    {
-      id: "2",
-      name: "B Test Admin Name",
-      role: "User",
-      email: "test@gmail.com",
-    },
-    {
-      id: "3",
-      name: "C Test Admin Name",
-      role: "Reviewer",
-      email: "test@gmail.com",
-    },
-    {
-      id: "4",
-      name: "D Test Admin Name",
-      role: "Admin",
-      email: "test@gmail.com",
-    },
-    {
-      id: "5",
-      name: "E Test Admin Name",
-      role: "User",
-      email: "test@gmail.com",
-    },
-    {
-      id: "6",
-      name: "F Test Admin Name",
-      role: "User",
-      email: "test@gmail.com",
-    },
-    {
-      id: "7",
-      name: "G Test Admin Name",
-      role: "Reviewer",
-      email: "test@gmail.com",
-    },
-    {
-      id: "8",
-      name: "H Test Admin Name",
-      role: "User",
-      email: "test@gmail.com",
-    },
-    {
-      id: "9",
-      name: "I Test Admin Name",
-      role: "Reviewer",
-      email: "test@gmail.com",
-    },
-  ];
+  const orgId = requireParam(context, "orgId");
 
   return {
     props: {
       orgId,
-      users,
     },
   };
 });
@@ -102,15 +45,39 @@ const useStyles = makeStyles(() => ({
 }));
 
 type Props = {
-  orgId: number;
-  users: any[];
+  orgId: string;
 };
 
-export default function OrganizationUsers({ orgId, users }: Props) {
+export default function OrganizationUsers({ orgId }: Props) {
   const classes = useStyles();
-  const [newRoleValue, setNewRoleValue] = useState("");
 
-  const handleRoleChange = () => {};
+  const { data: orgUsers, mutate } = useSWR<
+    (OrgUser & {
+      user: User;
+    })[]
+  >(`/api/organization/getusers/${orgId}`);
+
+  const [newUserData, setNewUserData] = useState({ email: "", role: "" });
+
+  const handleChange = (key: string) => (
+    e: ChangeEvent<{ value: unknown }>
+  ) => {
+    setNewUserData((newUserData) => ({
+      ...newUserData,
+      [key]: e.target.value,
+    }));
+  };
+
+  const handleAddUser = async () => {
+    if (!newUserData.email.trim() || !newUserData.role.trim()) {
+      return;
+    }
+
+    await apiRequest(
+      `/api/organization/adduser/${orgId}`,
+      newUserData
+    ).then(() => mutate());
+  };
 
   return (
     <div>
@@ -133,36 +100,21 @@ export default function OrganizationUsers({ orgId, users }: Props) {
                     fullWidth
                     label="Email address"
                     variant="outlined"
+                    onChange={handleChange("email")}
                   />
                 </Grid>
                 <Grid item xs={7}>
                   <FormControl variant="outlined" fullWidth>
-                    <InputLabel>Expiration</InputLabel>
+                    <InputLabel>Role</InputLabel>
                     <Select
-                      label="Expiration"
-                      value={newRoleValue}
-                      onChange={(
-                        event: React.ChangeEvent<{ value: unknown }>
-                      ) => {
-                        return setNewRoleValue(event.target.value as string);
-                      }}
+                      label="Role"
+                      value={newUserData.role}
+                      onChange={handleChange("role")}
                     >
-                      <MenuItem value="Admin">Admin</MenuItem>
-                      <MenuItem value="User">User</MenuItem>
-                      <MenuItem value="Reviewer">Reviewer</MenuItem>
+                      <MenuItem value={UserOrgRole.ADMIN}>Admin</MenuItem>
+                      <MenuItem value={UserOrgRole.USER}>User</MenuItem>
                     </Select>
                   </FormControl>
-                </Grid>
-                <Grid item xs={7}>
-                  <TextField
-                    type="date"
-                    fullWidth
-                    label="Expiration day"
-                    variant="outlined"
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
                 </Grid>
                 <Grid item xs={7}>
                   <Button
@@ -170,7 +122,7 @@ export default function OrganizationUsers({ orgId, users }: Props) {
                     color="primary"
                     startIcon={<SaveIcon />}
                     size="medium"
-                    onClick={() => {}}
+                    onClick={handleAddUser}
                   >
                     Add user
                   </Button>
@@ -191,44 +143,26 @@ export default function OrganizationUsers({ orgId, users }: Props) {
                   <TableCell>Name</TableCell>
                   <TableCell>Email</TableCell>
                   <TableCell>Access granted</TableCell>
-                  <TableCell>Access expires</TableCell>
                   <TableCell>Role</TableCell>
-                  <TableCell>Expiration</TableCell>
                   <TableCell style={{ width: "100px" }} />
                 </TableRow>
               </TableHead>
               <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id}>
+                {orgUsers?.map((orgUser) => (
+                  <TableRow key={orgUser.id}>
                     <TableCell>
-                      <Avatar>{user.name.charAt(0)}</Avatar>
+                      <Avatar>{orgUser.user.name?.charAt(0)}</Avatar>
                     </TableCell>
-                    <TableCell>{user.name}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>2 weeks ago</TableCell>
-                    <TableCell>No expiration set</TableCell>
+                    <TableCell>{orgUser.user.name}</TableCell>
+                    <TableCell>{orgUser.user.email}</TableCell>
+                    <TableCell>{formatDate(orgUser.createdAt)}</TableCell>
                     <TableCell>
-                      <Select
-                        fullWidth
-                        value={user.role}
-                        onChange={handleRoleChange}
-                        variant="outlined"
-                      >
-                        <MenuItem value="Admin">Admin</MenuItem>
-                        <MenuItem value="User">User</MenuItem>
-                        <MenuItem value="Reviewer">Reviewer</MenuItem>
+                      <Select fullWidth value={orgUser.role} variant="outlined">
+                        <MenuItem value={UserOrgRole.ADMIN}>Admin</MenuItem>
+                        <MenuItem value={UserOrgRole.USER}>User</MenuItem>
                       </Select>
                     </TableCell>
-                    <TableCell>
-                      <TextField
-                        type="date"
-                        fullWidth
-                        variant="outlined"
-                        InputLabelProps={{
-                          shrink: true,
-                        }}
-                      />
-                    </TableCell>
+
                     <TableCell>
                       <Button color="primary">Remove</Button>
                     </TableCell>
@@ -253,3 +187,48 @@ export default function OrganizationUsers({ orgId, users }: Props) {
     </div>
   );
 }
+
+const formatDate = (strDate: Date): string => {
+  const todayMs = new Date().getTime();
+  const dateMs = new Date(strDate).getTime();
+
+  const secondsDif = todayMs / 1000 - dateMs / 1000;
+
+  const getOutput = (str: string, seconds: number): string => {
+    return `${Math.floor(secondsDif / seconds)} ${
+      str + (secondsDif > 2 * seconds ? "s" : "")
+    } ago`;
+  };
+
+  // less than a minute
+  if (secondsDif < 60) {
+    return "Now";
+  }
+
+  // less than an hour
+  if (secondsDif < 3600) {
+    return getOutput("minute", 60);
+  }
+
+  // less than a day
+  if (secondsDif < 86400) {
+    return getOutput("hour", 3600);
+  }
+
+  // less than a week
+  if (secondsDif < 604800) {
+    return getOutput("day", 86400);
+  }
+
+  // less than a month
+  if (secondsDif < 2592000) {
+    return getOutput("week", 604800);
+  }
+
+  // less than an year
+  if (secondsDif < 31536000) {
+    return getOutput("month", 2592000);
+  }
+
+  return getOutput("year", 31536000);
+};

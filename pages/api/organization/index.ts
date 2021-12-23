@@ -7,12 +7,13 @@ import {
   requireQuery,
 } from "../../../lib/apiServer";
 import { CreateOrg, CreateOrgSchema } from "../../../lib/org/types/CreateOrg";
-import { create, update } from "../../../lib/org";
+import { create, createOrgUser, getOrgUsers, update } from "../../../lib/org";
 import { UpdateOrg, UpdateOrgSchema } from "../../../lib/org/types/UpdateOrg";
 import * as z from "zod";
 import { notAuthorized } from "../../../lib/errors";
 import { uploadFileToGC } from "../../../lib/gsc";
 import { uid } from "uid";
+import { NewOrgUserSchema } from "lib/org/types/NewOrgUser";
 
 const getType = (s: string): string =>
   s.match(/[^:/]\w+(?=;|,)/)?.[0] as string;
@@ -56,6 +57,37 @@ export const handleUpdateOrganization = apiHandler(async (req, res) => {
   const orgId = await update(user, id, { ...newOrg, image });
 
   res.status(200).send({ orgId });
+});
+
+export const handleAddOrganizationUser = apiHandler(async (req, res) => {
+  requireMethod(req, "POST");
+
+  const { id } = requireQuery(req, z.object({ id: z.string().nonempty() }));
+  const orgUser = requireBody(req, NewOrgUserSchema);
+  const user = req.user;
+
+  if (!user) {
+    return notAuthorized(res);
+  }
+
+  const orgId = await createOrgUser(user, id, orgUser);
+
+  res.status(200).send({ orgId });
+});
+
+export const handleGetOrganizationUsers = apiHandler(async (req, res) => {
+  requireMethod(req, "GET");
+
+  const { id } = requireQuery(req, z.object({ id: z.string().nonempty() }));
+  const user = req.user;
+
+  if (!user) {
+    return notAuthorized(res);
+  }
+
+  const users = await getOrgUsers(user, id);
+
+  res.status(200).send(users);
 });
 
 export default async function handler(
