@@ -53,13 +53,21 @@ export async function getRulesetEditorProps(id: string, user: User) {
   }
   const iface = getQueryInterface(searchEndpoint);
 
+  let facetFilterFields: string[];
+  try {
+    facetFilterFields = await iface.getFields({
+      aggregateable: true,
+      type: "keyword",
+    });
+  } catch (err) {
+    console.error(JSON.stringify(err));
+    facetFilterFields = [];
+  }
+
   return {
     ruleset: formatRuleset(ruleset),
     version: formatRulesetVersion(version),
-    facetFilterFields: await iface.getFields({
-      aggregateable: true,
-      type: "keyword",
-    }),
+    facetFilterFields,
   };
 }
 
