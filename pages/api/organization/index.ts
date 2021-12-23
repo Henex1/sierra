@@ -20,10 +20,11 @@ const getType = (s: string): string =>
 
 const orgImage = async (
   org: CreateOrg | UpdateOrg
-): Promise<string | undefined> => {
-  return org.image
-    ? await uploadFileToGC(`${uid(18)}.${getType(org.image)}`, org.image)
-    : undefined;
+): Promise<string | null | undefined> => {
+  return (
+    org.image &&
+    (await uploadFileToGC(`${uid(18)}.${getType(org.image)}`, org.image))
+  );
 };
 
 export const handleCreateOrganization = apiHandler(async (req, res) => {
@@ -36,7 +37,7 @@ export const handleCreateOrganization = apiHandler(async (req, res) => {
     return res.status(403).send({ error: "Unauthorized" });
   }
 
-  const image = await orgImage(newOrg);
+  const image = (await orgImage(newOrg)) ?? undefined;
   const orgId = await create(user, { ...newOrg, image });
 
   res.status(200).send({ orgId });
