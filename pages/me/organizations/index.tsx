@@ -86,12 +86,16 @@ export default function Index({ orgs, canCreate }: Props) {
         {orgs.map((organization) => (
           <Grid key={organization.id} item xs={4}>
             <Card className={classes.cardWrapper}>
-              <CardMedia
-                component="img"
-                className={classes.media}
-                image={organization.image ? organization.image : ""}
-                alt={`${organization.name}'s logo`}
-              />
+              {organization.image ? (
+                <CardMedia
+                  component="img"
+                  className={classes.media}
+                  image={organization.image}
+                  alt={`${organization.name}'s logo`}
+                />
+              ) : (
+                <div className={classes.media} />
+              )}
               <CardContent className={classes.contentWrapper}>
                 <Typography gutterBottom variant="h5" component="h2">
                   {organization.name}
