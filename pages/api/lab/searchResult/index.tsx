@@ -81,7 +81,15 @@ export default apiHandler(
     );
 
     const iface = getQueryInterface(se);
-    const docs = await iface.getDocumentsByID(docIds);
+    let docs;
+    try {
+      docs = await iface.getDocumentsByID(docIds);
+    } catch (err: any) {
+      console.error(err);
+      return res.status(500).json({
+        error: err.code ?? "internal server error",
+      });
+    }
     const byId = _.keyBy(docs, se.resultId);
     const results = speResults.map((r) => ({
       id: r.id,

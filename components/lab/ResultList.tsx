@@ -6,6 +6,7 @@ import {
   Box,
   IconButton,
   makeStyles,
+  Typography,
 } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 import { Skeleton } from "@material-ui/lab";
@@ -47,11 +48,11 @@ type Props = {
 
 export function ResultList({ displayFields, onClose, searchPhrase }: Props) {
   const classes = useStyles();
-  const { data, mutate } = useSWR<MockSearchResult[]>(
+  const { data, mutate } = useSWR<MockSearchResult[] | { error: string }>(
     `/api/lab/searchResult?id=${searchPhrase.id}`
   );
 
-  if (!data?.length) {
+  if (!data) {
     return (
       <Box mt={10}>
         {Array.from(Array(5)).map((item, i) => (
@@ -75,6 +76,43 @@ export function ResultList({ displayFields, onClose, searchPhrase }: Props) {
         ))}
       </Box>
     );
+  }
+
+  if ("error" in data) {
+    switch (data.error) {
+      case "ECONNREFUSED":
+        return (
+          <Box marginTop={5}>
+            <Typography variant="h4">Connection refused</Typography>
+            <Box marginBottom={3}>
+              <Typography color="error" style={{ fontWeight: "bold" }}>
+                Failed to connect to the search endpoint
+              </Typography>
+            </Box>
+            <Typography style={{ fontWeight: "bold" }}>
+              Possible solutions:
+            </Typography>
+            <ul style={{ padding: "0 16px", margin: "8px 0" }}>
+              <li>Check if the search endpoint is running</li>
+              <li>
+                Go to &quot;search endpoint &gt; edit&quot; and test the
+                connection
+              </li>
+            </ul>
+          </Box>
+        );
+      default:
+        return (
+          <Box marginTop={5}>
+            <Typography variant="h4">Internal server error</Typography>
+            <Box marginBottom={3}>
+              <Typography color="error" style={{ fontWeight: "bold" }}>
+                An internal error has occurred and logged
+              </Typography>
+            </Box>
+          </Box>
+        );
+    }
   }
 
   return (
