@@ -87,7 +87,7 @@ export async function getActiveSearchConfiguration(
   };
 
   if (executionId) {
-    where.execution = {
+    where.executions = {
       some: {
         id: executionId || undefined,
       },
