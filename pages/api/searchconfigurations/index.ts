@@ -173,7 +173,9 @@ export const handleExecuteSearchConfiguration = apiHandler(async (req, res) => {
   const user = requireUser(req);
   const input = requireBody(req, z.object({ id: z.string() }));
 
-  const taskName = "Search Configuration Execution";
+  const taskName = `Search Configuration Execution - ${
+    input.id
+  } - ${Date.now()}`;
   const socketIO = req.io;
 
   // Add task to running tasks list
