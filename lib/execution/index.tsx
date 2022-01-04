@@ -314,11 +314,7 @@ export async function createExecution(
   const judgements = await getCombinedJudgements(config);
   const results: Prisma.SearchPhraseExecutionCreateWithoutExecutionInput[] = [];
   for (const j of judgements) {
-    try {
-      results.push(await newSearchPhraseExecution(endpoint, tpl, rv, j));
-    } catch (e) {
-      console.error("Failed to create search phrase execution.", e);
-    }
+    results.push(await newSearchPhraseExecution(endpoint, tpl, rv, j));
   }
 
   const combinedNumbers = results
