@@ -18,29 +18,38 @@ const getStorage = () => {
   }
 };
 
-export async function uploadFileToGC(
+const gcsBucketName = requireEnv("GOOGLE_STORAGE_BUCKET");
+export async function uploadFileToGCS(
   name: string,
-  file: Blob | string
+  file: Blob | string,
+  path = ""
 ): Promise<string> {
-  // Creates a client
-  const storage = getStorage();
-  const bucketName = requireEnv("GOOGLE_STORAGE_BUCKET");
-  const fileOptions = { public: true };
+  const storage = getStorage(); // TODO reuse storage client?
+  let bucket = storage.bucket(gcsBucketName);
 
-  const [bucketExist] = await storage.bucket(bucketName).exists();
+  const [bucketExist] = await bucket.exists();
   if (!bucketExist) {
-    await storage.createBucket(bucketName);
+    if (process.env.NODE_ENV === "development") {
+      await storage.createBucket(gcsBucketName);
+      bucket = storage.bucket(gcsBucketName);
+    } else {
+      throw "Storage bucket " + gcsBucketName + " does not exist";
+    }
   }
 
-  const bucketFile = storage.bucket(bucketName).file(name);
-
+  const bucketFile = bucket.file(path + name);
   if (typeof file === "string") {
     const base64EncodedString = file.replace(/^data:\w+\/\w+;base64,/, "");
     const fileBuffer = Buffer.from(base64EncodedString, "base64");
-    await bucketFile.save(fileBuffer, fileOptions);
+    await bucketFile.save(fileBuffer, {});
   } else {
-    await bucketFile.save(get(file, "buffer", file), fileOptions);
+    await bucketFile.save(get(file, "buffer", file), {});
   }
 
-  return storage.bucket(bucketName).file(name).publicUrl();
+  try {
+    await bucket.file(path + name).makePublic();
+  } catch (e) {
+    console.error("Error while setting uploaded file public", e);
+  }
+  return bucket.file(path + name).publicUrl();
 }

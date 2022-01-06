@@ -11,7 +11,7 @@ import { create, createOrgUser, getOrgUsers, update } from "../../../lib/org";
 import { UpdateOrg, UpdateOrgSchema } from "../../../lib/org/types/UpdateOrg";
 import * as z from "zod";
 import { notAuthorized } from "../../../lib/errors";
-import { uploadFileToGC } from "../../../lib/gsc";
+import { uploadFileToGCS } from "../../../lib/gsc";
 import { uid } from "uid";
 import { NewOrgUserSchema } from "lib/org/types/NewOrgUser";
 
@@ -21,9 +21,10 @@ const getType = (s: string): string =>
 const orgImage = async (
   org: CreateOrg | UpdateOrg
 ): Promise<string | null | undefined> => {
+  // TODO use orgId for image name (thus overriding existing image) instead of randomizing
   return (
     org.image &&
-    (await uploadFileToGC(`${uid(18)}.${getType(org.image)}`, org.image))
+    (await uploadFileToGCS(`${uid(18)}.${getType(org.image)}`, org.image))
   );
 };
 
