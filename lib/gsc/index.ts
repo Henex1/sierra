@@ -22,7 +22,8 @@ const gcsBucketName = requireEnv("GOOGLE_STORAGE_BUCKET");
 export async function uploadFileToGCS(
   name: string,
   file: Blob | string,
-  path = ""
+  path = "",
+  isPublic = false
 ): Promise<string> {
   const storage = getStorage(); // TODO reuse storage client?
   let bucket = storage.bucket(gcsBucketName);
@@ -46,10 +47,12 @@ export async function uploadFileToGCS(
     await bucketFile.save(get(file, "buffer", file), {});
   }
 
-  try {
-    await bucket.file(path + name).makePublic();
-  } catch (e) {
-    console.error("Error while setting uploaded file public", e);
+  if (isPublic) {
+    try {
+      await bucket.file(path + name).makePublic();
+    } catch (e) {
+      console.error("Error while setting uploaded file public", e);
+    }
   }
   return bucket.file(path + name).publicUrl();
 }

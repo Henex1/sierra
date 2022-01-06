@@ -19,12 +19,18 @@ const getType = (s: string): string =>
   s.match(/[^:/]\w+(?=;|,)/)?.[0] as string;
 
 const orgImage = async (
+  orgId: string,
   org: CreateOrg | UpdateOrg
 ): Promise<string | null | undefined> => {
   // TODO use orgId for image name (thus overriding existing image) instead of randomizing
   return (
     org.image &&
-    (await uploadFileToGCS(`${uid(18)}.${getType(org.image)}`, org.image))
+    (await uploadFileToGCS(
+      `org-${orgId}.${getType(org.image)}`,
+      org.image,
+      "avatars/",
+      true
+    ))
   );
 };
 
@@ -38,7 +44,8 @@ export const handleCreateOrganization = apiHandler(async (req, res) => {
     return res.status(403).send({ error: "Unauthorized" });
   }
 
-  const image = (await orgImage(newOrg)) ?? undefined;
+  // TODO maybe create the org then update image with the right orgId
+  const image = (await orgImage(uid(18), newOrg)) ?? undefined;
   const orgId = await create(user, { ...newOrg, image });
 
   res.status(200).send({ orgId });
@@ -55,7 +62,7 @@ export const handleUpdateOrganization = apiHandler(async (req, res) => {
     return notAuthorized(res);
   }
 
-  const image = await orgImage(newOrg);
+  const image = await orgImage(id, newOrg);
   const orgId = await update(user, id, { ...newOrg, image });
 
   res.status(200).send({ orgId });
