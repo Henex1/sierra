@@ -127,13 +127,13 @@ export const updateProjectSchema = z
 
 export type UpdateProject = z.infer<typeof updateProjectSchema>;
 
-export async function updateProject(
+export function updateProject(
   user: User,
   project: Project,
   searchEndpoint: SearchEndpoint | null,
   input: UpdateProject
-): Promise<Project> {
-  const updated = await prisma.project.update({
+) {
+  return prisma.project.update({
     where: { id: project.id },
     data: {
       ...input,
@@ -142,7 +142,6 @@ export async function updateProject(
       searchEndpointId: searchEndpoint?.id || undefined,
     },
   });
-  return updated;
 }
 
 export async function deleteProject(project: Project): Promise<void> {

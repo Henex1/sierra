@@ -181,6 +181,36 @@ export async function updateJudgement(
   return updated;
 }
 
+export async function getJudgementPhrase(judgement: Judgement, phrase: string) {
+  return await prisma.judgementPhrase.findFirst({
+    where: {
+      judgementId: judgement.id,
+      phrase,
+    },
+  });
+}
+
+export function createJudgementPhrases(
+  judgement: Judgement,
+  phrases: string[]
+) {
+  const createOperations = [];
+
+  for (const phrase of phrases) {
+    if (!phrase.trim().length) continue;
+
+    createOperations.push(
+      prisma.judgementPhrase.create({
+        data: {
+          judgementId: judgement.id,
+          phrase,
+        },
+      })
+    );
+  }
+  return createOperations;
+}
+
 // This structure specifies a set of operations to apply to a Judgement. The
 // following changes can be made using this interface:
 //

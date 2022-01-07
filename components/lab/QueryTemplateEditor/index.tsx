@@ -9,12 +9,14 @@ import SolrQueryPanel from "./SolrQueryPanel";
 const KNOB_DEFAULT_VALUE = 10;
 
 type Props = {
-  queryTemplate: ExposedQueryTemplate;
+  queryTemplate:
+    | ExposedQueryTemplate
+    | Pick<ExposedQueryTemplate, "query" | "knobs">;
   formId: string;
   searchEndpointType: string;
-  onUpdate: (id: string) => void;
+  onUpdate?: (id: string) => void;
   onFormValuesChange: (data: QueryPanelValues) => void;
-  updateQueryTemplate: (
+  updateQueryTemplate?: (
     data: QueryPanelValues
   ) => Promise<{ queryTemplate: ExposedQueryTemplate }>;
 };
@@ -52,6 +54,8 @@ export const QueryTemplateEditor = (props: Props) => {
   };
 
   async function onSubmit(value: { query: string; knobs: any }) {
+    if (!onUpdate || !updateQueryTemplate) return;
+
     const newQueryTemplates = await updateQueryTemplate({
       query: value.query,
       knobs: value.knobs as Record<string, undefined>,
@@ -59,7 +63,6 @@ export const QueryTemplateEditor = (props: Props) => {
 
     await onUpdate(newQueryTemplates.queryTemplate.id);
     router.replace(router.asPath);
-    return Promise.resolve();
   }
 
   const panelProps = {

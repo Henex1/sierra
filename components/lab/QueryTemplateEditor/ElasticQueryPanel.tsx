@@ -12,7 +12,7 @@ const EDITOR_MIN_HEIGHT = 450;
 
 type Props = {
   formId: string;
-  queryTemplate: ExposedQueryTemplate;
+  queryTemplate: ExposedQueryTemplate | Pick<ExposedQueryTemplate, "query">;
   onSubmit: (value: ExposedQueryTemplate) => Promise<void>;
   onQueryChange: (form: any, values: any, query: string) => void;
 };

@@ -33,6 +33,7 @@ type CreateSearchConfigurationInput = {
   projectId: string;
   rulesets: RulesetVersion[];
   judgements: WeightedJudgement[];
+  id?: string;
   tags?: Array<string>;
 };
 
@@ -126,15 +127,18 @@ export async function listSearchConfigurations(
 // [Judgement, weight]
 export type WeightedJudgement = [Judgement, number];
 
-export async function createSearchConfiguration({
+export function createSCOperation({
   queryTemplateId,
-  projectId,
   rulesets,
   judgements,
-  tags,
-}: CreateSearchConfigurationInput): Promise<SearchConfiguration> {
-  const sc = await prisma.searchConfiguration.create({
+  id,
+}: Pick<
+  CreateSearchConfigurationInput,
+  "queryTemplateId" | "rulesets" | "judgements" | "id"
+>) {
+  return prisma.searchConfiguration.create({
     data: {
+      id,
       queryTemplate: {
         connect: { id: queryTemplateId },
       },
@@ -151,6 +155,22 @@ export async function createSearchConfiguration({
       },
     },
     include: { tags: true },
+  });
+}
+
+export async function createSearchConfiguration({
+  queryTemplateId,
+  projectId,
+  rulesets,
+  judgements,
+  id,
+  tags,
+}: CreateSearchConfigurationInput): Promise<SearchConfiguration> {
+  const sc = await createSCOperation({
+    queryTemplateId,
+    rulesets,
+    judgements,
+    id,
   });
   if (tags) {
     await prisma.$transaction(

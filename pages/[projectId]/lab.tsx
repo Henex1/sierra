@@ -7,7 +7,7 @@ import { isAfter } from "date-fns";
 import Filters, { Props as FiltersProps } from "../../components/lab/Filters";
 import SearchPhraseList from "../../components/lab/SearchPhraseList";
 import { ResultList } from "../../components/lab/ResultList";
-import ActionButtons from "../../components/lab/ActionButtons";
+import Configuration from "../../components/lab/Configuration";
 import ExecutionSummary from "../../components/lab/ExecutionSummary";
 import { getProject } from "../../lib/projects";
 import {
@@ -46,7 +46,7 @@ import {
   formatQueryTemplate,
 } from "../../lib/querytemplates";
 import { getSearchEndpoint } from "../../lib/searchendpoints";
-import NoExistingExcution from "components/lab/NoExistingExcution";
+import NoExistingExecution from "components/lab/NoExistingExecution";
 import { listJudgements } from "../../lib/judgements";
 import { BackdropLoadingSpinner } from "../../components/common/BackdropLoadingSpinner";
 import { LabProvider } from "../../utils/react/providers/LabProvider";
@@ -401,12 +401,15 @@ export default function Lab({
             </Grid>
           </div>
         ) : (
-          <NoExistingExcution
-            isSearchConfig={!!searchConfiguration}
-            isRunQuery={searchPhrases === null}
+          <NoExistingExecution
+            searchConfiguration={searchConfiguration}
+            searchEndpointType={searchEndpointType}
+            projectId={router.query.projectId as string}
           />
         )}
-        <ActionButtons searchEndpointType={searchEndpointType} />
+        {!!searchConfiguration && searchPhrases && (
+          <Configuration searchEndpointType={searchEndpointType} />
+        )}
       </div>
     </LabProvider>
   );

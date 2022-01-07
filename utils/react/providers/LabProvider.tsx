@@ -60,7 +60,7 @@ export const LabProvider = ({
   const [isExecutionRunning, setIsExecutionRunning] = useState(false);
   const { addErrorAlert } = useAlertsContext();
 
-  if (!currentExecution || !searchConfiguration) return null;
+  if (!currentExecution || !searchConfiguration) return <>{children}</>;
 
   const runExecution = async (queryTemplateId: string) => {
     const searchConfigurationId = searchConfiguration.id;
