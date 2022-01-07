@@ -1,4 +1,6 @@
 import * as z from "zod";
+import cuid from "cuid";
+import prisma from "../../../lib/prisma";
 
 import {
   createExecution,
@@ -11,11 +13,20 @@ import {
   createSearchConfiguration,
   WeightedJudgement,
   listSearchConfigurations,
+  createSCOperation,
 } from "../../../lib/searchconfigurations";
 import {
   createQueryTemplate,
+  updateQueryTemplate,
+  getLatestQueryTemplates,
   getQueryTemplate,
 } from "../../../lib/querytemplates";
+import {
+  createJudgementPhrases,
+  getJudgementPhrase,
+  getLatestJudgements,
+  updateJudgement,
+} from "../../../lib/judgements";
 import {
   apiHandler,
   HttpError,
@@ -27,7 +38,7 @@ import {
 import { getRuleset, getLatestRulesetVersion } from "../../../lib/rulesets";
 import { RulesetVersion } from "../../../lib/prisma";
 import { addTask, removeTask } from "../../../lib/runningTasks";
-import { getProject } from "../../../lib/projects";
+import { getProject, updateProject } from "../../../lib/projects";
 import { getJudgementForSearchConfiguration } from "../../../lib/judgements";
 import { getSearchEndpoint } from "../../../lib/searchendpoints";
 import { ErrorMessage } from "../../../lib/errors/constants";
@@ -61,6 +72,82 @@ export const handleGetSearchConfigurationById = apiHandler(async (req, res) => {
   return res
     .status(200)
     .json(formatSearchConfiguration(sc, searchEndPoint.type));
+});
+
+export const handleCreateSearchConfiguration = apiHandler(async (req, res) => {
+  requireMethod(req, "POST");
+  const user = requireUser(req);
+  const input = requireBody(
+    req,
+    z.object({
+      projectId: z.string(),
+      queryTemplate: z.object({ query: z.string(), knobs: z.object({}) }),
+      judgementName: z.string(),
+      searchPhrases: z.array(z.string()),
+    })
+  );
+
+  const project = await getProject(user, input.projectId);
+
+  if (!project) {
+    return notFound(res, ErrorMessage.ProjectNotFound);
+  }
+
+  const initialQueryTemplate = (
+    await getLatestQueryTemplates(user, project, 1)
+  )[0];
+
+  let queryTemplate = { ...initialQueryTemplate };
+
+  if (
+    initialQueryTemplate.query !== input.queryTemplate.query ||
+    Object.entries(input.queryTemplate.knobs).length
+  ) {
+    queryTemplate = await updateQueryTemplate(initialQueryTemplate, {
+      ...input.queryTemplate,
+      description: "Update number 1",
+    });
+  }
+
+  let judgement = (await getLatestJudgements(user, project, 1))[0];
+
+  if (judgement.name !== input.judgementName) {
+    judgement = await updateJudgement(judgement, { name: input.judgementName });
+  }
+
+  const searchConfigurationId = cuid();
+
+  const createJPOperations = createJudgementPhrases(
+    judgement,
+    input.searchPhrases.filter(async (phrase) => {
+      const judgementPhrase = await getJudgementPhrase(judgement, phrase);
+      return !judgementPhrase;
+    })
+  );
+
+  const createSCOp = createSCOperation({
+    id: searchConfigurationId,
+    queryTemplateId: queryTemplate.id,
+    rulesets: [],
+    judgements: [[judgement, 1]],
+  });
+
+  const updateProjectOperation = updateProject(user, project, null, {
+    activeSearchConfigurationId: searchConfigurationId,
+  });
+
+  await prisma.$transaction([
+    ...createJPOperations,
+    createSCOp,
+    updateProjectOperation,
+  ]);
+
+  const searchConfiguration = await getSearchConfiguration(
+    user,
+    searchConfigurationId
+  );
+
+  return res.status(200).json(searchConfiguration);
 });
 
 export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {

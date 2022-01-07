@@ -13,7 +13,9 @@ import Knobs from "./Knobs";
 
 type Props = {
   formId: string;
-  queryTemplate: ExposedQueryTemplate;
+  queryTemplate:
+    | ExposedQueryTemplate
+    | Pick<ExposedQueryTemplate, "query" | "knobs">;
   onSubmit: (value: {
     query: string;
     knobs: { [name: string]: any };
@@ -181,7 +183,7 @@ export default function SolrQueryPanel(props: Props) {
 
   let parsedQuery;
   try {
-    parsedQuery = deserializeQuery(queryTemplate.query) as any;
+    parsedQuery = deserializeQuery(queryTemplate?.query ?? "");
   } catch (err) {
     parsedQuery = {};
   }
