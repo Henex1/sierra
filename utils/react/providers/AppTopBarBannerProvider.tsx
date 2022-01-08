@@ -15,11 +15,13 @@ type AppTopBarBannerContextBanner = {
 interface IAppTopBarBannerContext {
   banner?: AppTopBarBannerContextBanner;
   setBanner: (banner: AppTopBarBannerContextBanner) => void;
+  isPageAllowed: () => boolean;
 }
 
 export const AppTopBarBannerContext = createContext({
   banner: undefined,
   setBanner: () => {},
+  isPageAllowed: () => false,
 } as IAppTopBarBannerContext);
 
 interface AppTopBarBannerProviderProps {
@@ -33,8 +35,14 @@ export const AppTopBarBannerProvider = ({
     AppTopBarBannerContextBanner | undefined
   >(undefined);
 
+  const isPageAllowed = () =>
+    !!banner?.pages?.length &&
+    !banner.pages.every((page) => !window.location.href.includes("/" + page));
+
   return (
-    <AppTopBarBannerContext.Provider value={{ banner, setBanner }}>
+    <AppTopBarBannerContext.Provider
+      value={{ banner, setBanner, isPageAllowed }}
+    >
       {children}
     </AppTopBarBannerContext.Provider>
   );

@@ -33,6 +33,9 @@ import Scrollable from "../common/Scrollable";
 import { apiRequest } from "../../lib/api";
 import { useAlertsContext } from "../../utils/react/hooks/useAlertsContext";
 import { useLabContext } from "../../utils/react/hooks/useLabContext";
+import AppTopBarSpacer from "components/common/AppTopBarSpacer";
+import { useAppTopBarBannerContext } from "utils/react/hooks/useAppTopBarBannerContext";
+import { CreateCSSProperties, CSSProperties } from "@material-ui/styles";
 
 type TabPanelProps = {
   index: number;
@@ -87,7 +90,11 @@ export default function ConfigurationDrawer({
   handleClose,
   searchEndpointType,
 }: Props) {
-  const classes = useStyles({ width });
+  const { banner, isPageAllowed } = useAppTopBarBannerContext();
+  const classes = useStyles({
+    pageHasBanner: !!banner && isPageAllowed(),
+    width,
+  });
   const router = useRouter();
   const [activeTab, setActiveTab] = React.useState(0);
   const [isResizing, setIsResizing] = React.useState(false);
@@ -237,7 +244,7 @@ export default function ConfigurationDrawer({
       ) : (
         <>
           <div className={classes.resizer} onMouseDown={handleMousedown} />
-          <Toolbar />
+          <AppTopBarSpacer />
           <Box
             position="relative"
             className={classnames(classes.drawerContent, classes.withToolbar)}
@@ -351,7 +358,28 @@ export default function ConfigurationDrawer({
   );
 }
 
-const useStyles = makeStyles<Theme, { width?: number }>((theme) => ({
+const withToolbar = (
+  theme: Theme,
+  pageHasBanner: boolean,
+  style: CSSProperties
+): CreateCSSProperties => {
+  if (!pageHasBanner) return style as CreateCSSProperties;
+
+  let minHeight = style.height;
+
+  const appTopBarHeight =
+    Number((minHeight as string).split(" - ")[1].slice(0, -3)) +
+    theme.spacing(6);
+
+  minHeight = `calc(100% - ${appTopBarHeight}px)`;
+
+  return { ...style, minHeight };
+};
+
+const useStyles = makeStyles<
+  Theme,
+  { pageHasBanner?: boolean; width?: number }
+>((theme) => ({
   drawer: (props) => ({
     width: props.width,
   }),
@@ -369,7 +397,8 @@ const useStyles = makeStyles<Theme, { width?: number }>((theme) => ({
     flexDirection: "column",
     alignItems: "stretch",
   },
-  withToolbar: theme.mixins.withToolbar(theme),
+  withToolbar: (props) =>
+    withToolbar(theme, !!props.pageHasBanner, theme.mixins.withToolbar(theme)),
   scrollContainer: {
     height: "100%",
     overflowX: "hidden",
