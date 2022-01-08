@@ -10,7 +10,7 @@ import {
 import Link from "./common/Link";
 import AppTopBar from "./AppTopBar/AppTopBar";
 import { useSession } from "../components/Session";
-import { AppTopBarBanner } from "./AppTopBar/AppTopBarBanner";
+import AppTopBarSpacer from "./common/AppTopBarSpacer";
 
 function Copyright() {
   return (
@@ -33,7 +33,6 @@ const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
   },
-  appBarSpacer: theme.mixins.toolbar,
   main: {
     display: "flex",
     flexDirection: "column",
@@ -74,8 +73,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <CssBaseline />
         <AppTopBar />
         <main className={classes.main}>
-          <div className={classes.appBarSpacer} />
-          <AppTopBarBanner />
+          <AppTopBarSpacer />
           <div className={classes.content}>
             <div ref={sidebarRef}></div>
             <Container maxWidth="lg" className={classes.container}>

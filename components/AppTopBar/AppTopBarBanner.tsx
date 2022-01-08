@@ -12,12 +12,9 @@ const ICONS = {
 
 const useStyles = makeStyles((theme) => ({
   container: {
-    position: "sticky",
-    top: 64,
-    color: "white",
     padding: theme.spacing(1),
     display: "flex",
-    zIndex: theme.zIndex.drawer + 1,
+    minHeight: theme.spacing(5),
   },
   title: {
     fontWeight: theme.typography.fontWeightMedium,
@@ -36,13 +33,9 @@ const useStyles = makeStyles((theme) => ({
 
 export const AppTopBarBanner = () => {
   const classes = useStyles();
-  const { banner } = useAppTopBarBannerContext();
+  const { banner, isPageAllowed } = useAppTopBarBannerContext();
 
-  const pageNotAllowed =
-    !banner?.pages ||
-    !banner.pages.every((page) => window.location.href.includes("/" + page));
-
-  if (!banner || pageNotAllowed) {
+  if (!banner || !isPageAllowed()) {
     return null;
   }
 
