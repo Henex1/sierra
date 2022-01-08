@@ -21,6 +21,7 @@ import {
 import { User } from "../../../lib/prisma";
 import { notFound } from "../../../lib/errors";
 import { ErrorMessage } from "../../../lib/errors/constants";
+import * as log from "../../../lib/logging";
 
 export async function getRulesetEditorProps(id: string, user: User) {
   const ruleset = await getRuleset(user, id);
@@ -59,8 +60,8 @@ export async function getRulesetEditorProps(id: string, user: User) {
       aggregateable: true,
       type: "keyword",
     });
-  } catch (err) {
-    console.error(JSON.stringify(err));
+  } catch (err: any) {
+    log.error(err.stack ?? err);
     facetFilterFields = [];
   }
 

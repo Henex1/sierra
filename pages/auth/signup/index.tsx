@@ -26,9 +26,6 @@ export default function SignUpPage({ images }: Props) {
 
   const onSubmitForm = (e: any) => {
     e.preventDefault();
-    console.log(
-      `firstName: ${firstName}; lastName: ${lastName}; email: ${email}; psw: ${password}`
-    );
   };
 
   useEffect(() => {

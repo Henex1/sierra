@@ -25,6 +25,7 @@ import {
 import { notFound } from "../../../../lib/errors";
 import { ErrorMessage } from "../../../../lib/errors/constants";
 import explanationSample from "../explanationSample.json";
+import * as log from "../../../../lib/logging";
 
 function mockExplanation(explanation: any) {
   const queue = [explanation];
@@ -85,7 +86,7 @@ export default apiHandler(
     try {
       docs = await iface.getDocumentsByID(docIds);
     } catch (err: any) {
-      console.error(err);
+      log.error(err.stack ?? err, req, res);
       return res.status(500).json({
         error: err.code ?? "internal server error",
       });

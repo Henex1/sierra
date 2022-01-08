@@ -5,6 +5,7 @@ import { Server, Socket } from "socket.io";
 import { SierraApiRequest } from "../lib/apiServer";
 import { optionalEnv } from "../lib/env";
 import { getTasks } from "../lib/runningTasks";
+import * as log from "../lib/logging";
 
 const dev = process.env.NODE_ENV !== "production";
 const nextApp = next({ dev });
@@ -36,6 +37,6 @@ nextApp.prepare().then(() => {
   });
 
   server.listen(port, () => {
-    console.log(`Server listening on port: ${port}`);
+    log.info(`Server initialized and listening on port: ${port}`);
   });
 });

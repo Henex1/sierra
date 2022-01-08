@@ -15,6 +15,7 @@ import {
   createQueryTemplate,
   updateQueryTemplate,
 } from "../../../lib/querytemplates";
+import * as log from "../../../lib/logging";
 
 // prettier-ignore
 const mockRuleset: RulesetVersionValue = {
@@ -182,8 +183,8 @@ async function handleSolrSeed(
 
   try {
     await createExecution(sc, project.id);
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    log.error(error.stack ?? error, req, res);
     const { statusCode = 500, data } = error;
     return res.status(statusCode).json({ error: data });
   }
@@ -311,8 +312,8 @@ async function handleSeed(
 
   try {
     await createExecution(sc, project.id);
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    log.error(error.stack ?? error, req, res);
     const { statusCode = 500, data } = error as any;
     return res.status(statusCode).json({ error: data });
   }

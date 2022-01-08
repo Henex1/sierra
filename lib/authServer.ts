@@ -1,16 +1,17 @@
 import { IncomingMessage } from "http";
-import { Session, NextAuthOptions } from "next-auth";
+import { NextAuthOptions, Session } from "next-auth";
 import Providers from "next-auth/providers";
 import Adapters from "next-auth/adapters";
 import { getSession } from "next-auth/client";
 import { NextApiRequest } from "next";
 import { isExpired } from "./users/apikey";
 import { getCookies } from "./cookies";
-import prisma, { User, UserOrgRole, OrgType } from "./prisma";
+import prisma, { OrgType, User, UserOrgRole } from "./prisma";
 import { requireEnv } from "./env";
-import { formatProject, listProjects, ExposedProject } from "./projects";
-import { formatOrg, userCanAccessOrg, ExposedOrg, listOrgs } from "./org";
+import { ExposedProject, formatProject, listProjects } from "./projects";
+import { ExposedOrg, formatOrg, listOrgs, userCanAccessOrg } from "./org";
 import { AUTH_CONSTANTS, isAuthTypeEnabled } from "./authSources";
+import * as log from "./logging";
 
 export type ValidUserSession = {
   session: Session;
@@ -97,10 +98,7 @@ export const authOptions = (req: NextApiRequest): NextAuthOptions => ({
     async signIn(user: any, account: any, profile: any) {
       const email = profile.email ?? "";
       // TODO: investigate this. We might want to let users to log in with their personal or company emails
-      const validDomain = allowRegistrationFrom.some((d) =>
-        email.endsWith(`@${d}`)
-      );
-      return validDomain;
+      return allowRegistrationFrom.some((d) => email.endsWith(`@${d}`));
     },
   },
   events: {
@@ -142,15 +140,15 @@ async function initAuth(req: IncomingMessage): Promise<UserSession | null> {
       where: { apikey },
     });
     if (!apikeyObject) {
-      console.log("API Key not found: " + apikey);
+      log.info("API Key not found: " + apikey);
       return null;
     }
     if (isExpired(apikeyObject)) {
-      console.log("API Key has expired");
+      log.info("API Key has expired");
       return null;
     }
     if (apikeyObject.disabled) {
-      console.log("API Key is disabled");
+      log.info("API Key is disabled");
       return null;
     }
     const user = {
