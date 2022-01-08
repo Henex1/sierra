@@ -17,6 +17,7 @@ import { SortOptions, ShowOptions } from "../lab";
 import * as scorers from "../scorers/algorithms";
 import { percentiles } from "../math";
 import { isNotEmpty } from "../../utils/array";
+import * as log from "../logging";
 
 export type { Execution };
 
@@ -314,7 +315,11 @@ export async function createExecution(
   const judgements = await getCombinedJudgements(config);
   const results: Prisma.SearchPhraseExecutionCreateWithoutExecutionInput[] = [];
   for (const j of judgements) {
-    results.push(await newSearchPhraseExecution(endpoint, tpl, rv, j));
+    try {
+      results.push(await newSearchPhraseExecution(endpoint, tpl, rv, j));
+    } catch (e: any) {
+      log.error("Failed to create search phrase execution: " + (e.stack ?? e));
+    }
   }
 
   const combinedNumbers = results

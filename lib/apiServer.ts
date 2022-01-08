@@ -5,6 +5,7 @@ import { Socket } from "socket.io";
 
 import prisma, { User, Org } from "./prisma";
 import { getUser } from "./authServer";
+import * as log from "../lib/logging";
 
 export type SierraApiRequest = NextApiRequest & {
   session?: Session;
@@ -38,12 +39,12 @@ export function apiHandler<T>(
       await handler(req, res);
     } catch (err) {
       if (process.env.NODE_ENV !== "production") {
-        if (err instanceof HttpError) console.error(err.data);
+        if (err instanceof HttpError) log.error(err.data, req, res);
         throw err;
       } else if (err instanceof HttpError) {
         res.status(err.statusCode).json(err.data);
       } else {
-        console.error(err);
+        log.error(err, req, res);
         res.status(500).json({ error: "internal server error" });
       }
     }

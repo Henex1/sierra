@@ -7,6 +7,7 @@ import {
   TEST_PROJECT as mockProject,
   TEST_USER,
 } from "./lib/test";
+import * as log from "./lib/logging";
 
 import "@testing-library/jest-dom/extend-expect";
 
@@ -22,7 +23,7 @@ loadEnvConfig(path.dirname(__filename), true, {
     // Silence info statements while loading environment variables
   },
   error(...args: any[]): void {
-    console.error(...args);
+    log.error(args.join(", "));
   },
 });
 

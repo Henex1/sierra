@@ -4,6 +4,7 @@ import { SearchEndpoint, QueryTemplate, RulesetVersion } from "../prisma";
 import { requireEnv } from "../env";
 import { ErrorMessage } from "../errors/constants";
 import { HttpError } from "../apiServer";
+import * as log from "../../lib/logging";
 
 declare const queryWasExpanded: unique symbol;
 
@@ -54,8 +55,8 @@ export async function expandQuery(
       },
     });
     return await response.json();
-  } catch (err) {
-    console.error(err);
+  } catch (err: any) {
+    log.error(err.stack ?? err);
     throw new HttpError(500, ErrorMessage.FailedToExpandQuery);
   }
 }
