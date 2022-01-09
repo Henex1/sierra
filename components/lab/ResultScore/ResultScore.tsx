@@ -22,6 +22,7 @@ export default function ResultScore({
   onChange,
 }: ResultScoreProps) {
   const [votes, setVotes] = useState<ExtendedVote[] | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
 
   const handleOpen = async () => {
     const { votes: newVotes } = await apiRequest(
@@ -38,9 +39,16 @@ export default function ResultScore({
     setVotes(undefined);
   };
 
-  const handleChange = () => {
-    handleClose();
-    onChange();
+  const handleChange = async (state: string) => {
+    switch (state) {
+      case "changing":
+        setLoading(true);
+        break;
+      case "changed":
+        handleClose();
+        await onChange();
+        setLoading(false);
+    }
   };
 
   return (
@@ -48,11 +56,13 @@ export default function ResultScore({
       onOpen={handleOpen}
       onClose={handleClose}
       score={result?.score}
+      loading={loading}
     >
       <>
         {Array.isArray(votes) && [0, 1].includes(votes.length) && (
           <VoteScores
             vote={votes[0]}
+            phrase={searchPhrase.phrase}
             documentId={result.id}
             onChange={handleChange}
           />
@@ -70,6 +80,7 @@ export default function ResultScore({
                   >
                     <VoteScores
                       vote={vote}
+                      phrase={searchPhrase.phrase}
                       onChange={handleChange}
                       documentId={result.id}
                     />

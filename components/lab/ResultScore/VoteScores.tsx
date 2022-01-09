@@ -1,7 +1,6 @@
 import React from "react";
 import { Button, Paper } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { useRouter } from "next/router";
 import { scaleLinear } from "d3-scale";
 import { apiRequest } from "../../../lib/api";
 import { ExposedVote } from "../../../lib/judgements";
@@ -46,27 +45,29 @@ const useStyles = makeStyles(() => ({
 
 type Props = {
   vote: ExposedVote;
+  phrase: string;
   documentId: number;
-  onChange: () => void;
+  onChange: (state: string) => void;
 };
 
 const BUTTONS = ["0 - Poor", "1 - Fair", "2 - Good", "3 - Perfect"];
 
-export const VoteScores = ({ vote, onChange, documentId }: Props) => {
+export const VoteScores = ({ vote, phrase, documentId, onChange }: Props) => {
   const classes = useStyles();
-  const router = useRouter();
   const { searchConfiguration } = useLabContext();
 
   const handleUpdateVote = async (score: number) => {
+    onChange("changing");
+
     await apiRequest("/api/lab/vote/updateOrCreate", {
       voteId: vote?.id,
       score,
       searchConfigurationId: searchConfiguration?.id,
       documentId,
+      phrase,
     });
-    router.replace(router.asPath);
 
-    onChange();
+    onChange("changed");
   };
 
   return (

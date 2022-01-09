@@ -108,17 +108,6 @@ export async function getJudgementForSearchConfiguration(
   return judgementSearchConfiguration;
 }
 
-export async function getJudgementPhraseForJudgementSearchConfiguration(
-  jsc: JudgementSearchConfiguration
-): Promise<JudgementPhrase | null> {
-  const judgementPhrase = await prisma.judgementPhrase.findFirst({
-    where: {
-      judgementId: jsc.judgementId,
-    },
-  });
-  return judgementPhrase;
-}
-
 export async function listJudgements(project: Project): Promise<Judgement[]> {
   const judgements = await prisma.judgement.findMany({
     where: { projectId: project.id },

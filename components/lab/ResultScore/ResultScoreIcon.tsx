@@ -1,5 +1,5 @@
 import React from "react";
-import { makeStyles } from "@material-ui/core";
+import { CircularProgress, makeStyles } from "@material-ui/core";
 import { scaleLinear } from "d3-scale";
 
 const colorScale = scaleLinear<string, string>()
@@ -8,6 +8,7 @@ const colorScale = scaleLinear<string, string>()
 
 type ScoreIconProps = {
   score?: number;
+  loading?: boolean;
 };
 
 const useStyles = makeStyles(() => ({
@@ -20,9 +21,14 @@ const useStyles = makeStyles(() => ({
     fontWeight: 600,
     backgroundColor: "transparent",
   },
+  loader: {
+    height: "100%",
+    display: "flex",
+    alignItems: "center",
+  },
 }));
 
-export const ResultScoreIcon = ({ score }: ScoreIconProps) => {
+export const ResultScoreIcon = ({ score, loading }: ScoreIconProps) => {
   const classes = useStyles();
 
   return (
@@ -32,11 +38,19 @@ export const ResultScoreIcon = ({ score }: ScoreIconProps) => {
         color: score !== undefined ? colorScale(score) : undefined,
       }}
     >
-      {score === undefined
-        ? "--"
-        : Number.isInteger(score)
-        ? score
-        : score.toFixed(1)}
+      {loading ? (
+        <div className={classes.loader}>
+          <CircularProgress size={25} />
+        </div>
+      ) : (
+        <>
+          {score === undefined
+            ? "--"
+            : Number.isInteger(score)
+            ? score
+            : score.toFixed(1)}
+        </>
+      )}
     </div>
   );
 };

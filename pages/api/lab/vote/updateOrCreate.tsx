@@ -8,8 +8,8 @@ import {
   updateVote,
   getJudgement,
   updateJudgement,
-  getJudgementPhraseForJudgementSearchConfiguration,
   getJudgementForSearchConfiguration,
+  getJudgementPhrase,
 } from "../../../../lib/judgements";
 import { getSearchConfiguration } from "../../../../lib/searchconfigurations";
 import {
@@ -24,11 +24,18 @@ export default apiHandler(
   async (req: SierraApiRequest, res: NextApiResponse) => {
     requireMethod(req, "POST");
     const user = requireUser(req);
-    const { searchConfigurationId, documentId, score, voteId } = requireBody(
+    const {
+      searchConfigurationId,
+      phrase,
+      documentId,
+      score,
+      voteId,
+    } = requireBody(
       req,
       z.object({
         voteId: z.number().optional(),
         searchConfigurationId: z.string(),
+        phrase: z.string(),
         documentId: z.string(),
         score: z.number(),
       })
@@ -61,7 +68,7 @@ export default apiHandler(
       return res.status(200).json(updatedVote);
     }
 
-    const jp = await getJudgementPhraseForJudgementSearchConfiguration(jsc);
+    const jp = await getJudgementPhrase(j, phrase);
     if (!jp) {
       return notFound(res, ErrorMessage.JudgementNotFound);
     }
