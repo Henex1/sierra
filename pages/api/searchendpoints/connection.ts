@@ -7,7 +7,6 @@ import {
   requireUser,
   requireMethod,
   apiHandler,
-  requireOnlyOrg,
   HttpError,
 } from "../../../lib/apiServer";
 import {
@@ -19,8 +18,6 @@ import { SearchEndpointData } from "../../../lib/searchendpoints/elasticsearch";
 export default apiHandler(async (req, res) => {
   requireMethod(req, "POST");
   const user = requireUser(req);
-  const org = await requireOnlyOrg(req);
-  req.body.orgId = org.id;
   delete req.body.testConnection;
 
   let testEndpoint: SearchEndpointData;

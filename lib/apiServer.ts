@@ -3,7 +3,7 @@ import { Session } from "next-auth";
 import * as z from "zod";
 import { Socket } from "socket.io";
 
-import prisma, { User, Org } from "./prisma";
+import { User } from "./prisma";
 import { getUser } from "./authServer";
 import * as log from "../lib/logging";
 
@@ -44,7 +44,7 @@ export function apiHandler<T>(
       } else if (err instanceof HttpError) {
         res.status(err.statusCode).json(err.data);
       } else {
-        log.error(err, req, res);
+        log.error(err as any, req, res);
         res.status(500).json({ error: "internal server error" });
       }
     }
@@ -65,24 +65,6 @@ export function requireUser(req: SierraApiRequest): User {
     throw new HttpError(401, { error: "not authorized" });
   }
   return req.user;
-}
-
-// Return an the only Org that the currently signed in user is a member of.
-// This method is a janky hack which will fail if the user is a member of
-// multiple Orgs. It should not be used in production, instead the Org ID
-// should be included in the request.
-export async function requireOnlyOrg(req: SierraApiRequest): Promise<Org> {
-  const user = requireUser(req);
-  const org = await prisma.org.findMany({
-    where: { users: { some: { userId: user.id } } },
-    take: 2,
-  });
-  if (org.length === 0) {
-    throw new Error("User has no attached Org");
-  } else if (org.length > 1) {
-    throw new Error("User is in multiple Orgs");
-  }
-  return org[0];
 }
 
 export function requireBody<Schema extends z.ZodType<any, any>>(

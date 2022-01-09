@@ -10,6 +10,7 @@ import { apiRequest } from "../../lib/api";
 import Form, { FormValues } from "../../components/searchendpoints/Form";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
+import { useActiveOrg } from "../../components/Session";
 
 export const getServerSideProps = authenticatedPage();
 
@@ -32,10 +33,13 @@ export default function CreateSearchEndpoint() {
   const [connectionTestResult, setConnectionTestResult] = React.useState<
     { success: boolean; title: string; message: string } | undefined
   >();
+  const { activeOrg } = useActiveOrg();
   const classes = useStyles();
   const router = useRouter();
 
-  async function onSubmit(values: ExposedSearchEndpoint) {
+  async function onSubmit(formValues: ExposedSearchEndpoint) {
+    const values = { ...formValues, orgId: activeOrg?.id ?? "" };
+
     if (values.testConnection) {
       const newSearchEndpoint = {
         ...values,
