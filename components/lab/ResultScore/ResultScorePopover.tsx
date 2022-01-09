@@ -16,6 +16,7 @@ type Props = {
   onOpen?: () => void;
   onClose: () => void;
   id?: string;
+  loading?: boolean;
 };
 
 const useStyles = makeStyles(() => ({
@@ -41,6 +42,7 @@ export const ResultScorePopover = ({
   onOpen = () => {},
   onClose,
   id = "result-score-popover",
+  loading = false,
 }: Props) => {
   const classes = useStyles();
   const [tooltipIsOpen, setTooltipIsOpen] = useState(false);
@@ -72,7 +74,7 @@ export const ResultScorePopover = ({
 
   return (
     <>
-      <ResultScoreIcon score={score} />
+      <ResultScoreIcon score={score} loading={loading} />
       <div className={classes.judmentButtonContainer}>
         <Tooltip
           open={tooltipIsOpen}
