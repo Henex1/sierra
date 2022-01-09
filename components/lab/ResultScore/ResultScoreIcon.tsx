@@ -1,6 +1,7 @@
 import React from "react";
-import { CircularProgress, makeStyles } from "@material-ui/core";
 import { scaleLinear } from "d3-scale";
+import { IconButton, makeStyles } from "@material-ui/core";
+import GavelIcon from "@material-ui/icons/Gavel";
 
 const colorScale = scaleLinear<string, string>()
   .domain([0, 1, 2, 3])
@@ -8,49 +9,67 @@ const colorScale = scaleLinear<string, string>()
 
 type ScoreIconProps = {
   score?: number;
-  loading?: boolean;
+  handleClick: () => any;
+  setTooltipIsOpen: (value: boolean) => void;
 };
 
 const useStyles = makeStyles(() => ({
-  score: {
+  judgmentButton: {
+    width: "50px",
+    height: "28px",
     display: "flex",
-    justifyContent: "center",
-    alignItems: "flex-end",
-    height: "36px",
-    fontSize: "35px",
-    fontWeight: 600,
-    backgroundColor: "transparent",
-  },
-  loader: {
-    height: "100%",
-    display: "flex",
+    justifyContent: "space-between",
     alignItems: "center",
+    padding: "4px 11px",
+    borderRadius: "50px",
+    color: "white",
+    cursor: "pointer",
+  },
+  iconButton: {
+    width: "35px",
+    height: "35px",
+  },
+  score: {
+    fontSize: "15px",
+    fontWeight: 400,
   },
 }));
 
-export const ResultScoreIcon = ({ score, loading }: ScoreIconProps) => {
+export const ResultScoreIcon = ({
+  score,
+  handleClick,
+  setTooltipIsOpen,
+}: ScoreIconProps) => {
   const classes = useStyles();
 
   return (
-    <div
-      className={classes.score}
-      style={{
-        color: score !== undefined ? colorScale(score) : undefined,
-      }}
-    >
-      {loading ? (
-        <div className={classes.loader}>
-          <CircularProgress size={25} />
-        </div>
+    <>
+      {score ? (
+        <IconButton
+          classes={{ root: classes.judgmentButton }}
+          style={{
+            backgroundColor:
+              score !== undefined ? colorScale(score) : undefined,
+          }}
+          onClick={handleClick}
+          onMouseEnter={() => setTooltipIsOpen(true)}
+          onMouseLeave={() => setTooltipIsOpen(false)}
+        >
+          <GavelIcon style={{ fontSize: "18px" }} />
+          <p className={classes.score}>
+            {Number.isInteger(score) ? score : score.toFixed(1)}
+          </p>
+        </IconButton>
       ) : (
-        <>
-          {score === undefined
-            ? "--"
-            : Number.isInteger(score)
-            ? score
-            : score.toFixed(1)}
-        </>
+        <IconButton
+          classes={{ root: classes.iconButton }}
+          onClick={handleClick}
+          onMouseEnter={() => setTooltipIsOpen(true)}
+          onMouseLeave={() => setTooltipIsOpen(false)}
+        >
+          <GavelIcon style={{ color: "#C0C0C0" }} fontSize="small" />
+        </IconButton>
       )}
-    </div>
+    </>
   );
 };

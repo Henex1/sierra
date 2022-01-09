@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
+  CircularProgress,
   Fade,
   IconButton,
   makeStyles,
   Popper,
   Tooltip,
 } from "@material-ui/core";
-import GavelIcon from "@material-ui/icons/Gavel";
 import CloseIcon from "@material-ui/icons/Close";
 import { ResultScoreIcon } from "./ResultScoreIcon";
 
@@ -34,6 +34,11 @@ const useStyles = makeStyles(() => ({
     width: "35px",
     height: "35px",
   },
+  loader: {
+    height: "100%",
+    display: "flex",
+    alignItems: "center",
+  },
 }));
 
 export const ResultScorePopover = ({
@@ -46,10 +51,12 @@ export const ResultScorePopover = ({
 }: Props) => {
   const classes = useStyles();
   const [tooltipIsOpen, setTooltipIsOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
 
-  const handleClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
+  const anchorRef = useRef<HTMLDivElement | null>(null);
+
+  const handleClick = async () => {
+    setAnchorEl(anchorRef.current);
     setTooltipIsOpen(false);
     onOpen();
   };
@@ -74,7 +81,6 @@ export const ResultScorePopover = ({
 
   return (
     <>
-      <ResultScoreIcon score={score} loading={loading} />
       <div className={classes.judmentButtonContainer}>
         <Tooltip
           open={tooltipIsOpen}
@@ -84,23 +90,26 @@ export const ResultScorePopover = ({
             tooltip: classes.customTooltip,
           }}
         >
-          {anchorEl ? (
-            <IconButton
-              classes={{ root: classes.iconButton }}
-              onClick={handleClose}
-            >
-              <CloseIcon style={{ color: "#C0C0C0" }} fontSize="small" />
-            </IconButton>
-          ) : (
-            <IconButton
-              classes={{ root: classes.iconButton }}
-              onClick={handleClick}
-              onMouseEnter={() => setTooltipIsOpen(true)}
-              onMouseLeave={() => setTooltipIsOpen(false)}
-            >
-              <GavelIcon style={{ color: "#C0C0C0" }} fontSize="small" />
-            </IconButton>
-          )}
+          <div ref={anchorRef}>
+            {anchorEl ? (
+              <IconButton
+                classes={{ root: classes.iconButton }}
+                onClick={handleClose}
+              >
+                <CloseIcon style={{ color: "#C0C0C0" }} fontSize="small" />
+              </IconButton>
+            ) : loading ? (
+              <div className={classes.loader}>
+                <CircularProgress size={25} />
+              </div>
+            ) : (
+              <ResultScoreIcon
+                score={score}
+                handleClick={handleClick}
+                setTooltipIsOpen={setTooltipIsOpen}
+              />
+            )}
+          </div>
         </Tooltip>
       </div>
       <Popper
