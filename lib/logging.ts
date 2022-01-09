@@ -106,9 +106,9 @@ function ecsSource(
 
   if (!ip || !ip.length) {
     ip =
-      req.connection.remoteAddress ||
+      req.connection?.remoteAddress ||
       req.socket.remoteAddress ||
-      (req.connection as any).socket?.remoteAddress ||
+      (req.connection as any)?.socket?.remoteAddress ||
       null;
   }
 

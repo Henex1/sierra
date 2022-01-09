@@ -19,9 +19,9 @@ describe("api/searchendpoints", () => {
       index: "icecat",
       ignoreSSL: false,
     },
+    orgId: TEST_ORG.id,
   };
   it("POST /", async () => {
-    mockModels("org").action("findMany").with({}).resolvesTo([TEST_ORG]);
     mockModels("orgUser")
       .action("findUnique")
       .with({})

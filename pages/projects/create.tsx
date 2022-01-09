@@ -9,7 +9,7 @@ import { ExposedSearchEndpoint } from "../../lib/searchendpoints/types/ExposedSe
 import { create as createSearchEndpoint } from "../searchendpoints/create";
 import { authenticatedPage } from "../../lib/pageHelpers";
 import { apiRequest } from "../../lib/api";
-import { useSession } from "../../components/Session";
+import { useActiveOrg, useSession } from "../../components/Session";
 import { NewProject, ProjectForm } from "../../components/projects/Form";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
@@ -26,6 +26,7 @@ type Props = {
 export default function CreateProject({ searchEndpoints }: Props) {
   const router = useRouter();
   const { refresh: refreshSession } = useSession();
+  const { activeOrg } = useActiveOrg();
 
   const onSubmit = React.useCallback(
     async (values: NewProject) => {
@@ -39,6 +40,7 @@ export default function CreateProject({ searchEndpoints }: Props) {
 
       await apiRequest(`/api/projects/create`, {
         name: values.name,
+        orgId: activeOrg?.id,
         searchEndpointId,
       });
       router.push("/projects");

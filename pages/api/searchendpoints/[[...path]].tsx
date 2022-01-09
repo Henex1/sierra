@@ -12,15 +12,12 @@ import {
   apiHandler,
   requireMethod,
   requireUser,
-  requireOnlyOrg,
   requireBody,
 } from "../../../lib/apiServer";
 
 const handleCreateSearchEndpoint = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
   const user = requireUser(req);
-  const org = await requireOnlyOrg(req);
-  req.body.orgId = org.id;
   const body = requireBody(req, createSearchEndpointSchema);
   const se = await createSearchEndpoint(user, body);
   res.status(200).json({ searchEndpoint: se });
@@ -32,7 +29,7 @@ const handleDeleteSearchEndpoint = apiHandler(async (req, res) => {
   try {
     await deleteSearchEndpoint(user, req.query.path[0]);
     res.status(200).json({ success: true });
-  } catch (e) {
+  } catch (e: any) {
     res.status(e.statusCode).json(e.data);
   }
 });

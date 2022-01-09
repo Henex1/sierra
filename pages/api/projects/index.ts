@@ -16,24 +16,28 @@ import {
   apiHandler,
   requireMethod,
   requireUser,
-  requireOnlyOrg,
   requireBody,
   requireQuery,
 } from "../../../lib/apiServer";
 import { formatSearchConfiguration } from "../../../lib/searchconfigurations";
 import { ErrorMessage } from "../../../lib/errors/constants";
 import { notFound } from "../../../lib/errors";
+import { getActiveOrg } from "../../../lib/org";
 
 export const handleCreateProject = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
   const user = requireUser(req);
-  const org = await requireOnlyOrg(req);
   const input = requireBody(
     req,
     createProjectSchema.extend({
+      orgId: z.string(),
       searchEndpointId: z.string(),
     })
   );
+  const org = await getActiveOrg(user, input.orgId);
+  if (!org) {
+    return notFound(res, ErrorMessage.OrganisationNotFound);
+  }
   const searchEndpoint = await getSearchEndpoint(user, input.searchEndpointId);
   if (!searchEndpoint) {
     return notFound(res, ErrorMessage.SearchEndpointNotFound);

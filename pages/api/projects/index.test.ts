@@ -15,13 +15,14 @@ import { defaultQueryTemplates } from "../../../lib/querytemplates";
 
 describe("api/projects", () => {
   it("/create", async () => {
-    mockModels("org").action("findMany").with({}).resolvesTo([TEST_ORG]);
+    mockModels("org").action("findFirst").with({}).resolvesTo(TEST_ORG);
     mockModels("searchEndpoint")
       .action("findFirst")
       .with({ where: { AND: { id: TEST_SEARCHENDPOINT.id } } })
       .resolvesTo(TEST_SEARCHENDPOINT);
     const initialInfo = {
       name: "My Test Project",
+      orgId: TEST_ORG.id,
       searchEndpointId: TEST_SEARCHENDPOINT.id,
     };
     mockModels("project")
