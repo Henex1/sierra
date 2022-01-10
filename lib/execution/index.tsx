@@ -379,9 +379,7 @@ async function newSearchPhraseExecution(
           ),
         }
       : null;
-  if (process.env.NODE_ENV === "development" && Math.random() < 0.1) {
-    queryResult.error = "Randomly injected error (development mode)";
-  }
+
   const allScoresNumbers = allScores ? Object.values(allScores) : null;
   const combinedScore =
     allScoresNumbers && isNotEmpty(allScoresNumbers)
