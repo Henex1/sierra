@@ -1,5 +1,6 @@
 import _ from "lodash";
 
+import * as log from "../logging";
 import prisma, {
   Execution,
   OffsetPagination,
@@ -11,13 +12,18 @@ import prisma, {
   SearchPhraseExecution,
   User,
 } from "../prisma";
-import { getQueryInterface, expandQuery } from "../searchendpoints";
+import {
+  getQueryInterface,
+  expandQuery,
+  QueryInterface,
+  QueryResult,
+} from "../searchendpoints";
 import { userCanAccessSearchConfiguration } from "../searchconfigurations";
 import { SortOptions, ShowOptions } from "../lab";
+import { ExpandedQuery } from "../searchendpoints/queryexpander";
 import * as scorers from "../scorers/algorithms";
 import { percentiles } from "../math";
 import { isNotEmpty } from "../../utils/array";
-import * as log from "../logging";
 
 export type { Execution };
 
@@ -312,14 +318,21 @@ export async function createExecution(
   const rv = await prisma.rulesetVersion.findMany({
     where: { searchConfigurations: { some: { id: config.id } } },
   });
+  const iface = getQueryInterface(endpoint);
+  const testConnection = await iface.testConnection();
+  if (!testConnection.success) {
+    throw {
+      message: testConnection.message,
+      errno: testConnection.errno,
+    };
+  }
   const judgements = await getCombinedJudgements(config);
   const results: Prisma.SearchPhraseExecutionCreateWithoutExecutionInput[] = [];
+  const failedExecutions: { [key: string]: number } = {};
   for (const j of judgements) {
-    try {
-      results.push(await newSearchPhraseExecution(endpoint, tpl, rv, j));
-    } catch (e: any) {
-      log.error("Failed to create search phrase execution: " + (e.stack ?? e));
-    }
+    results.push(
+      await newSearchPhraseExecution(failedExecutions, endpoint, tpl, rv, j)
+    );
   }
 
   const combinedNumbers = results
@@ -357,7 +370,46 @@ export async function createExecution(
   });
 }
 
+async function sleep(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+async function executeQuery(
+  iface: QueryInterface,
+  query: ExpandedQuery,
+  failedExecutions: { [key: string]: number },
+  phrase: string
+) {
+  let queryResult: QueryResult;
+  try {
+    queryResult = await iface.executeQuery(query);
+    return queryResult;
+  } catch (error: any) {
+    failedExecutions[phrase] = (failedExecutions[phrase] ?? 0) + 1;
+    if (failedExecutions[phrase] >= 4) {
+      log.error(
+        "Failed to create search phrase execution: " + (error.stack ?? error)
+      );
+      return {
+        tookMs: 0,
+        totalResults: 0,
+        results: [],
+        error: error.message ?? error,
+      };
+    }
+    log.info(
+      `Execution for "${phrase}" failed [${failedExecutions[phrase]}]. Retrying...`
+    );
+    await sleep(failedExecutions[phrase] * 1000);
+    queryResult = await executeQuery(iface, query, failedExecutions, phrase);
+    return queryResult;
+  }
+}
+
 async function newSearchPhraseExecution(
+  failedExecutions: { [key: string]: number },
   endpoint: SearchEndpoint,
   tpl: QueryTemplate,
   rv: RulesetVersion[],
@@ -365,7 +417,12 @@ async function newSearchPhraseExecution(
 ): Promise<Prisma.SearchPhraseExecutionCreateWithoutExecutionInput> {
   const iface = getQueryInterface(endpoint);
   const query = await expandQuery(endpoint, tpl, rv, undefined, jp.phrase);
-  const queryResult = await iface.executeQuery(query);
+  const queryResult = await executeQuery(
+    iface,
+    query,
+    failedExecutions,
+    jp.phrase
+  );
   const allScores =
     jp.results.length > 0
       ? {

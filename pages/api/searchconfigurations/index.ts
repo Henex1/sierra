@@ -1,6 +1,7 @@
 import * as z from "zod";
 import cuid from "cuid";
 import prisma from "../../../lib/prisma";
+import * as log from "../../../lib/logging";
 
 import {
   createExecution,
@@ -29,7 +30,6 @@ import {
 } from "../../../lib/judgements";
 import {
   apiHandler,
-  HttpError,
   requireMethod,
   requireUser,
   requireBody,
@@ -289,14 +289,26 @@ export const handleExecuteSearchConfiguration = apiHandler(async (req, res) => {
     await removeTask(taskName);
 
     res.status(200).json({ execution: formatExecution(execution) });
-  } catch (error) {
+  } catch (error: any) {
     // Remove task from running tasks list
     const tasks = await removeTask(taskName);
     if (socketIO) {
       socketIO.emit("running_tasks", { tasks });
     }
 
-    throw new HttpError(500, { error });
+    log.error(error.stack ?? error, req, res);
+
+    let message;
+    switch (error.errno) {
+      case "ECONNREFUSED":
+        message =
+          "Request to Search Endpoint failed, reason: connect ECONNREFUSED. Please check your cluster, or go to Search Endpoint and fix the connection details.";
+        break;
+      default:
+        message = error.message;
+    }
+
+    res.status(500).json({ error: message ?? "Internal server error" });
   }
 });
 
