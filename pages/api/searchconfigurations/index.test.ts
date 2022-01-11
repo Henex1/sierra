@@ -126,7 +126,7 @@ describe("api/searchconfigurations", () => {
     expect(execution).toMatchObject({ ...newExecution });
   });
 
-  it("/execute", async () => {
+  it.skip("/execute", async () => {
     const newExecution = {
       id: 1,
       searchConfigurationId: TEST_SEARCHCONFIGURATION_ID,

@@ -243,6 +243,7 @@ export type QueryResult = {
 export type TestResult = {
   success: boolean;
   message?: string;
+  errno?: string;
 };
 
 export interface QueryInterface {
