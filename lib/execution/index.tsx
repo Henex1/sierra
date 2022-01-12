@@ -326,12 +326,32 @@ export async function createExecution(
       errno: testConnection.errno,
     };
   }
+  try {
+    const testPhraseExecution = await newSearchPhraseExecution(
+      {},
+      endpoint,
+      tpl,
+      rv,
+      { phrase: "testing test", results: [] }
+    );
+    if (testPhraseExecution.error) {
+      throw new Error(testPhraseExecution.error);
+    }
+  } catch (error: any) {
+    throw new Error(error.message ?? error);
+  }
   const judgements = await getCombinedJudgements(config);
   const results: Prisma.SearchPhraseExecutionCreateWithoutExecutionInput[] = [];
-  const failedExecutions: { [key: string]: number } = {};
+  const failedQueryExecutions: { [key: string]: number } = {};
   for (const j of judgements) {
     results.push(
-      await newSearchPhraseExecution(failedExecutions, endpoint, tpl, rv, j)
+      await newSearchPhraseExecution(
+        failedQueryExecutions,
+        endpoint,
+        tpl,
+        rv,
+        j
+      )
     );
   }
 
@@ -409,20 +429,32 @@ async function executeQuery(
 }
 
 async function newSearchPhraseExecution(
-  failedExecutions: { [key: string]: number },
+  failedQueryExecutions: { [key: string]: number },
   endpoint: SearchEndpoint,
   tpl: QueryTemplate,
   rv: RulesetVersion[],
   jp: CombinedJudgementPhrase
 ): Promise<Prisma.SearchPhraseExecutionCreateWithoutExecutionInput> {
   const iface = getQueryInterface(endpoint);
-  const query = await expandQuery(endpoint, tpl, rv, undefined, jp.phrase);
-  const queryResult = await executeQuery(
-    iface,
-    query,
-    failedExecutions,
-    jp.phrase
-  );
+  let queryResult;
+  try {
+    const query = await expandQuery(endpoint, tpl, rv, undefined, jp.phrase);
+    queryResult = await executeQuery(
+      iface,
+      query,
+      failedQueryExecutions,
+      jp.phrase
+    );
+  } catch (error: any) {
+    log.error(error.stack ?? error);
+
+    queryResult = {
+      tookMs: 0,
+      totalResults: 0,
+      results: [],
+      error: error.message ?? error,
+    };
+  }
   const allScores =
     jp.results.length > 0
       ? {
