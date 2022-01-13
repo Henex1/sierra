@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Avatar, Tooltip, colors } from "@material-ui/core";
+import { Avatar, Tooltip } from "@material-ui/core";
 import { scaleLinear } from "d3-scale";
 import { useStyles } from "./hooks";
 
 const colorScale = scaleLinear<string, string>()
-  .domain([0, 50, 100])
-  .range([colors.red[500], colors.yellow[500], colors.green[500]]);
+  .domain([0, 25, 50, 75, 100])
+  .range(["#FF6A6B", "#FFAB61", "#FFD864", "#CCD766", "#91D16F"]);
 
 type Props = {
   tooltip: React.ReactNode;

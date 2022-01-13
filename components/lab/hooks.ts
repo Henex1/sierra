@@ -43,7 +43,8 @@ export const useStyles = makeStyles((theme) => ({
   executionScore: {
     width: 50,
     height: 50,
-    fontSize: "18px",
-    color: "#111",
+    fontSize: "20px",
+    fontWeight: 700,
+    color: "#fff",
   },
 }));
