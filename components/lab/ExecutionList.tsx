@@ -1,11 +1,21 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
+import { CSSTransition, TransitionGroup } from "react-transition-group";
 import classnames from "classnames";
-import { makeStyles, Tooltip } from "@material-ui/core";
+import {
+  ClickAwayListener,
+  Fade,
+  makeStyles,
+  Popper,
+  Tooltip,
+  Zoom,
+} from "@material-ui/core";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import InfoIcon from "@material-ui/icons/Info";
 
 import ExecutionScore from "../lab/ExecutionScore";
 import { ExposedExecution } from "../../lib/execution";
 import { useLabContext } from "../../utils/react/hooks/useLabContext";
+import ExecutionDetails from "./ExecutionDetails";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -36,31 +46,6 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: "#C3C3C3",
     },
   },
-  viewMoreButton: {
-    border: "none",
-    borderRadius: "50%",
-    background: "transparent",
-    padding: "11px",
-    marginRight: "3px",
-    cursor: "pointer",
-    zIndex: 2,
-    "&:hover": {
-      background: "rgba(132, 132, 132, 0.1)",
-      "& svg": {
-        background: "#F3F3F3",
-      },
-    },
-  },
-  viewMoreIcon: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "#fff",
-    color: "#339EDA",
-    border: "2px solid #339EDA",
-    borderRadius: "50%",
-    padding: "2px",
-  },
   customTooltip: {
     fontSize: "10px",
     fontWeight: 600,
@@ -82,21 +67,85 @@ const useStyles = makeStyles((theme) => ({
   dottedDivider: {
     borderBottom: "2px dotted #DFDFDF",
   },
-  list: {
-    display: "flex",
-    padding: 0,
-  },
-  itemContainer: {
-    position: "relative",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
+  viewMoreButton: {
+    border: "none",
+    borderRadius: "50%",
+    background: "transparent",
+    padding: "11px",
+    marginRight: "3px",
+    cursor: "pointer",
     zIndex: 2,
-    "&:not(li:last-of-type)": {
-      marginRight: "20px",
+    "& svg": {
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      background: "#FFF",
+      color: "#339EDA",
+      border: "2px solid #339EDA",
+      borderRadius: "50%",
+      padding: "2px",
+    },
+    "&:hover": {
+      background: "rgba(132, 132, 132, 0.1)",
+      "& svg": {
+        background: "#F3F3F3",
+      },
     },
   },
-  itemDetails: {
+  infoButton: {
+    position: "absolute",
+    top: "-16px",
+    right: "-16px",
+    border: "none",
+    borderRadius: "50%",
+    background: "transparent",
+    padding: "11px",
+    marginRight: "3px",
+    cursor: "pointer",
+    zIndex: 2,
+    "& svg": {
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      background: "#fff",
+      color: "#339EDA",
+      fontSize: "24px",
+      borderRadius: "50%",
+    },
+    "&:hover": {
+      background: "rgba(132, 132, 132, 0.1)",
+      "& svg": {
+        background: "#F3F3F3",
+      },
+    },
+  },
+  "transition-enter": {
+    maxWidth: 0,
+    opacity: 0,
+  },
+  "transition-enter-active": {
+    maxWidth: "200px",
+    opacity: 1,
+    transitionTimingFunction: "linear",
+    transitionDuration: "400ms",
+    transitionProperty: "max-width, opacity",
+    transitionDelay: "0s, 50ms",
+  },
+  executionList: {
+    display: "flex",
+    padding: 0,
+    "& li": {
+      position: "relative",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      zIndex: 2,
+      "&:not(li:last-of-type)": {
+        marginRight: "20px",
+      },
+    },
+  },
+  execution: {
     position: "relative",
     display: "flex",
     justifyContent: "center",
@@ -105,7 +154,7 @@ const useStyles = makeStyles((theme) => ({
     border: "3px solid transparent",
     borderRadius: "50%",
   },
-  item: {
+  executionScore: {
     width: "50px",
     height: "50px",
     margin: 0,
@@ -113,11 +162,11 @@ const useStyles = makeStyles((theme) => ({
     background: "transparent",
     borderRadius: "50%",
     border: "none",
-    cursor: "pointer",
   },
-  itemOrder: {
+  executionIndex: {
     position: "absolute",
     bottom: "-24px",
+    margin: 0,
     color: "#BFBFBF",
     fontSize: "15px",
     fontWeight: 600,
@@ -128,20 +177,20 @@ const useStyles = makeStyles((theme) => ({
     bottom: "-8px",
     padding: "2px 10px",
     background: "#339EDA",
-    color: "#fff",
-    border: "2px solid #fff",
+    color: "#FFF",
+    border: "2px solid #FFF",
     borderRadius: "15px",
     fontSize: "12px",
+    "&.active": {
+      display: "box",
+    },
   },
-  active: {
-    display: "box",
-  },
-  current: {
+  currentExecution: {
     border: `3px solid #339EDA`,
     padding: 0,
-    "& button": {
+    "& > button[aria-label=select]": {
       boxSizing: "content-box",
-      border: "3px solid #fff",
+      border: "3px solid #FFF",
     },
   },
 }));
@@ -157,8 +206,8 @@ export default function ExecutionList({
   activeExecution,
   onSelected,
 }: Props) {
-  const { currentExecution } = useLabContext();
   const classes = useStyles();
+  const { currentExecution } = useLabContext();
   const sortedExecutions = useMemo(
     () =>
       executions
@@ -172,9 +221,29 @@ export default function ExecutionList({
   const [renderedExecutions, setRenderedExecutions] = useState(
     sortedExecutions.filter((item) => activeExecution.id === item.id)
   );
+  const [hoveredExecutionId, setHoveredExecutionId] = useState<string | null>(
+    null
+  );
+  const [popperAnchorEl, setPopperAnchorEl] = useState<HTMLElement | null>(
+    null
+  );
+  const [
+    popperExecution,
+    setPopperExecution,
+  ] = useState<ExposedExecution | null>(null);
+  const popperElRef = useRef<HTMLDivElement>(null);
 
   const allExecutionsLoaded =
     renderedExecutions.length === sortedExecutions.length;
+
+  const handleInfoButtonClick = (
+    e: React.MouseEvent,
+    execution: ExposedExecution
+  ) => {
+    setHoveredExecutionId(null);
+    setPopperExecution(execution);
+    setPopperAnchorEl(e.currentTarget.parentElement);
+  };
 
   const loadMore = () => {
     const currentStartIndex = sortedExecutions
@@ -196,84 +265,98 @@ export default function ExecutionList({
             }}
           >
             <button className={classes.viewMoreButton} onClick={loadMore}>
-              <ArrowBackIcon classes={{ root: classes.viewMoreIcon }} />
+              <ArrowBackIcon />
             </button>
           </Tooltip>
         )}
-        <ul className={classes.list}>
-          {renderedExecutions.map((item) => {
-            const isActive = activeExecution.id === item.id;
-            const isCurrent = currentExecution?.id === item.id;
-            let tooltip: React.ReactNode[] = [
-              `${new Date(item.createdAt).toLocaleDateString()} ${new Date(
-                item.createdAt
-              ).toLocaleTimeString()}`,
-            ];
-            if (isActive && isCurrent) {
-              tooltip = [
-                ...tooltip,
-                <br key="br" />,
-                "currently being deployed and selected",
-              ];
-            } else if (isActive) {
-              tooltip = [
-                ...tooltip,
-                <br key="br" />,
-                "currently being deployed",
-              ];
-            } else if (isCurrent) {
-              tooltip = [
-                ...tooltip,
-                <br key="br" />,
-                "currently being selected",
-              ];
-            }
-
-            return (
-              <li key={item.id} className={classes.itemContainer}>
+        <TransitionGroup component="ul" className={classes.executionList}>
+          {renderedExecutions.map((item) => (
+            <CSSTransition
+              key={item.id}
+              timeout={500}
+              classNames={{
+                enter: classes["transition-enter"],
+                enterActive: classes["transition-enter-active"],
+              }}
+            >
+              <li>
                 <div
-                  className={classnames(classes.itemDetails, {
-                    [classes.current]: isCurrent,
+                  className={classnames(classes.execution, {
+                    [classes.currentExecution]:
+                      currentExecution?.id === item.id,
                   })}
+                  onMouseEnter={() =>
+                    !popperAnchorEl && setHoveredExecutionId(item.id)
+                  }
+                  onMouseLeave={() =>
+                    !popperAnchorEl && setHoveredExecutionId(null)
+                  }
                 >
+                  <Zoom in={hoveredExecutionId === item.id} timeout={175}>
+                    <button
+                      className={classes.infoButton}
+                      onClick={(e) => handleInfoButtonClick(e, item)}
+                    >
+                      <InfoIcon />
+                    </button>
+                  </Zoom>
                   <button
-                    className={classes.item}
+                    className={classes.executionScore}
                     onClick={() => onSelected(item.id)}
                     aria-label="select"
                   >
                     <ExecutionScore
                       score={Math.round(item.combinedScore * 100)}
-                      tooltip={<React.Fragment>{tooltip}</React.Fragment>}
                     />
                   </button>
                   <div
                     className={classnames(classes.activeLabel, {
-                      [classes.active]: isActive,
+                      active: activeExecution.id === item.id,
                     })}
                   >
                     Active
                   </div>
                 </div>
-                <div className={classes.itemOrder}>
+                <p className={classes.executionIndex}>
                   {sortedExecutions.map((item) => item.id).indexOf(item.id) + 1}
-                </div>
+                </p>
               </li>
-            );
-          })}
-        </ul>
+            </CSSTransition>
+          ))}
+        </TransitionGroup>
+        <Popper
+          ref={popperElRef}
+          open={Boolean(popperAnchorEl)}
+          anchorEl={popperAnchorEl}
+          placement="right-start"
+          transition
+          style={{ zIndex: 4 }}
+        >
+          {({ TransitionProps }) => (
+            <Fade {...TransitionProps} timeout={175}>
+              <div>
+                <ClickAwayListener onClickAway={() => setPopperAnchorEl(null)}>
+                  <div>
+                    <ExecutionDetails
+                      anchorEl={popperAnchorEl}
+                      floatingElRef={popperElRef}
+                      execution={popperExecution}
+                    />
+                  </div>
+                </ClickAwayListener>
+              </div>
+            </Fade>
+          )}
+        </Popper>
         <div className={classes.dividers}>
-          {!allExecutionsLoaded
-            ? renderedExecutions.map((item, index) => (
-                <div
-                  key={item.id}
-                  className={classnames(classes.divider, {
-                    [classes.dottedDivider]: !index,
-                  })}
-                />
-              ))
-            : renderedExecutions.map((item) => (
-                <div key={item.id} className={classes.divider} />
-              ))}
+          {renderedExecutions.map((item, index) => (
+            <div
+              key={item.id}
+              className={classnames(classes.divider, {
+                [classes.dottedDivider]: !allExecutionsLoaded && !index,
+              })}
+            />
+          ))}
         </div>
       </div>
     </div>

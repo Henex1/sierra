@@ -46,5 +46,6 @@ export const useStyles = makeStyles((theme) => ({
     fontSize: "20px",
     fontWeight: 700,
     color: "#fff",
+    cursor: "pointer",
   },
 }));
