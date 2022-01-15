@@ -1,6 +1,7 @@
 import React from "react";
 import { Button, Paper } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
+import { grey } from "@material-ui/core/colors";
 import { scaleLinear } from "d3-scale";
 import { apiRequest } from "../../../lib/api";
 import { ExposedVote } from "../../../lib/judgements";
@@ -44,7 +45,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 type Props = {
-  vote: ExposedVote;
+  vote?: ExposedVote;
   phrase: string;
   documentId: number;
   onChange: (state: string) => void;
@@ -70,6 +71,18 @@ export const VoteScores = ({ vote, phrase, documentId, onChange }: Props) => {
     onChange("changed");
   };
 
+  const handleDeleteVote = async () => {
+    onChange("changing");
+
+    await apiRequest("/api/lab/vote/delete", {
+      voteId: vote?.id,
+      phrase,
+      searchConfigurationId: searchConfiguration?.id,
+    });
+
+    onChange("changed");
+  };
+
   return (
     <Paper className={classes.paper}>
       <div className={classes.paperArrow} />
@@ -83,6 +96,15 @@ export const VoteScores = ({ vote, phrase, documentId, onChange }: Props) => {
           {button}
         </Button>
       ))}
+      {vote && (
+        <Button
+          className={classes.button}
+          style={{ background: grey[500] }}
+          onClick={() => handleDeleteVote()}
+        >
+          Clear
+        </Button>
+      )}
     </Paper>
   );
 };
