@@ -44,7 +44,7 @@ export const ResultScoreIcon = ({
 
   return (
     <>
-      {score ? (
+      {score !== undefined ? (
         <IconButton
           classes={{ root: classes.judgmentButton }}
           style={{
