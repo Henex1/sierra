@@ -34,7 +34,7 @@ import {
 import { trimEnd } from "lodash";
 import { usePageUnload } from "../../utils/react/hooks/usePageUnload";
 
-type Type = "ELASTICSEARCH" | "OPEN_SEARCH" | "SOLR";
+type Type = "ELASTICSEARCH" | "OPENSEARCH" | "SOLR";
 
 interface SearchEndpointConfig {
   label: string;
@@ -52,7 +52,7 @@ export const searchEndpointTypes: SearchEndpointConfig[] = [
   },
   {
     label: "OpenSearch",
-    value: "OPEN_SEARCH",
+    value: "OPENSEARCH",
     imageSrc: "/images/opensearch.png",
     enabled: true,
   },
@@ -79,7 +79,7 @@ export const searchEndpointTypes: SearchEndpointConfig[] = [
 const indexTitle = (id: Type): string => {
   switch (id) {
     case "ELASTICSEARCH":
-    case "OPEN_SEARCH":
+    case "OPENSEARCH":
       return "Index name";
     case "SOLR":
       return "Collection";
@@ -317,7 +317,7 @@ export default function SearchEndpointForm({
                     label="Search URL"
                     helperText={
                       values.type === "ELASTICSEARCH" ||
-                      values.type === "OPEN_SEARCH"
+                      values.type === "OPENSEARCH"
                         ? "This should be endpoint for your search cluster without the index name or _search."
                         : ""
                     }
@@ -345,7 +345,7 @@ export default function SearchEndpointForm({
                 </Grid>
               )}
               <Grid item xs={12}>
-                {["ELASTICSEARCH", "OPEN_SEARCH", "SOLR"].includes(
+                {["ELASTICSEARCH", "OPENSEARCH", "SOLR"].includes(
                   values.type
                 ) ? (
                   <TextField
@@ -365,7 +365,7 @@ export default function SearchEndpointForm({
                   Security options
                 </Typography>
               </Grid>
-              {["ELASTICSEARCH", "OPEN_SEARCH", "SOLR"].includes(
+              {["ELASTICSEARCH", "OPENSEARCH", "SOLR"].includes(
                 values.type
               ) && (
                 <>

@@ -78,7 +78,7 @@ type CleanSearchEndpoint = z.infer<typeof cleanSearchEndpointSchema>;
 function cleanSearchEndpoint(input: CleanSearchEndpoint) {
   switch (input.type) {
     case "ELASTICSEARCH":
-    case "OPEN_SEARCH":
+    case "OPENSEARCH":
       if (!input.info.endpoint.endsWith("/")) {
         input.info.endpoint += "/";
       }
@@ -262,7 +262,7 @@ export function getQueryInterface(
 ): QueryInterface {
   switch (searchEndpoint.type as SearchEndpointType) {
     case "ELASTICSEARCH":
-    case "OPEN_SEARCH":
+    case "OPENSEARCH":
       return new ElasticsearchInterface(searchEndpoint);
     case "SOLR":
       return new SolrQueryInterface(searchEndpoint);

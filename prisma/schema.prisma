@@ -140,7 +140,7 @@ model SearchEndpoint {
 
 enum SearchEndpointType {
   ELASTICSEARCH
-  OPEN_SEARCH
+  OPENSEARCH
   SOLR
   VESPA
   REDIS_SEARCH

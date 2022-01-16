@@ -3,7 +3,7 @@ import { TypeOf } from "zod";
 
 export const SearchEndpointType = z.union([
   z.literal("ELASTICSEARCH"),
-  z.literal("OPEN_SEARCH"),
+  z.literal("OPENSEARCH"),
   z.literal("SOLR"),
   z.literal("VESPA"),
   z.literal("REDIS_SEARCH"),

@@ -107,7 +107,7 @@ export async function createProject(
   });
   if (
     searchEndpoint.type == SearchEndpointType.ELASTICSEARCH ||
-    searchEndpoint.type == SearchEndpointType.OPEN_SEARCH
+    searchEndpoint.type == SearchEndpointType.OPENSEARCH
   ) {
     await createQueryTemplate(project, defaultQueryTemplates.elasticsearch);
   } else if (searchEndpoint.type == SearchEndpointType.SOLR) {

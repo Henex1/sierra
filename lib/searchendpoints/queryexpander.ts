@@ -28,7 +28,7 @@ export async function expandQuery(
     return Promise.resolve({ queryStr } as SolrExpandedQuery);
   }
 
-  if (!["ELASTICSEARCH", "OPEN_SEARCH"].includes(endpoint.type)) {
+  if (!["ELASTICSEARCH", "OPENSEARCH"].includes(endpoint.type)) {
     throw new HttpError(405, ErrorMessage.UnsupportedSearchEndpointType);
   }
   const body = JSON.stringify({

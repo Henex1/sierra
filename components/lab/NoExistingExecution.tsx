@@ -29,7 +29,7 @@ export default function NoExistingExecution({
   const defaultQueryTemplate = useMemo(() => {
     if (
       searchEndpointType === "ELASTICSEARCH" ||
-      searchEndpointType === "OPEN_SEARCH"
+      searchEndpointType === "OPENSEARCH"
     ) {
       return {
         query: JSON.stringify({

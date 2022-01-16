@@ -33,7 +33,7 @@ export function fromPrismaSearchEndpoint(
   };
   switch (ese.type) {
     case "ELASTICSEARCH":
-    case "OPEN_SEARCH":
+    case "OPENSEARCH":
     case "SOLR":
       delete (ese.info as any).password;
       break;
