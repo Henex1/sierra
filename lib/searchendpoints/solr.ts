@@ -41,6 +41,7 @@ export class SolrQueryInterface implements QueryInterface {
 
   async testConnection(): Promise<TestResult> {
     try {
+      // TODO resolve search endpoint host / IP and verify it's not a private IP, throw if it is
       await this.rawQuery(queryString.stringify({ q: "*:*", rows: 0 }));
       return {
         success: true,

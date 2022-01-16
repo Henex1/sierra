@@ -85,6 +85,7 @@ export class ElasticsearchInterface implements QueryInterface {
     };
 
     try {
+      // TODO resolve search endpoint host / IP and verify it's not a private IP, throw if it is
       const query = JSON.stringify({
         size: 0,
         query: {
