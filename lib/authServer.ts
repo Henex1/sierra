@@ -97,6 +97,8 @@ export const authOptions = (req: NextApiRequest): NextAuthOptions => ({
     },
     async signIn(user: any, account: any, profile: any) {
       const email = profile.email ?? "";
+      // the Artur case - remove later when proper access control is implemented
+      if (email === "artur.sorokin.spb@gmail.com") return true;
       // TODO: investigate this. We might want to let users to log in with their personal or company emails
       return allowRegistrationFrom.some((d) => email.endsWith(`@${d}`));
     },
