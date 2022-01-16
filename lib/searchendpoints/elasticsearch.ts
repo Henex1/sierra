@@ -176,6 +176,11 @@ export class ElasticsearchInterface implements QueryInterface {
         size: ids.length,
       })
     );
+
+    if (response.error) {
+      throw new Error(response.error.reason);
+    }
+
     return response.hits.hits;
   }
 
