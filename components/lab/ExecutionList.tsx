@@ -10,6 +10,7 @@ import {
   Zoom,
 } from "@material-ui/core";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
 import InfoIcon from "@material-ui/icons/Info";
 
 import ExecutionScore from "../lab/ExecutionScore";
@@ -208,6 +209,7 @@ export default function ExecutionList({
 }: Props) {
   const classes = useStyles();
   const { currentExecution } = useLabContext();
+
   const sortedExecutions = useMemo(
     () =>
       executions
@@ -218,9 +220,20 @@ export default function ExecutionList({
         ),
     [executions]
   );
-  const [renderedExecutions, setRenderedExecutions] = useState(
-    sortedExecutions.filter((item) => activeExecution.id === item.id)
+
+  const activeExecutionIndex = useMemo(
+    () => sortedExecutions.map((item) => item.id).indexOf(activeExecution.id),
+    [sortedExecutions, activeExecution]
   );
+
+  const [renderedExecutions, setRenderedExecutions] = useState(
+    sortedExecutions.slice(activeExecutionIndex, activeExecutionIndex + 3)
+  );
+  const renderedActiveExecutionIndex = useMemo(
+    () => renderedExecutions.map((item) => item.id).indexOf(activeExecution.id),
+    [renderedExecutions, activeExecution]
+  );
+
   const [hoveredExecutionId, setHoveredExecutionId] = useState<string | null>(
     null
   );
@@ -233,8 +246,12 @@ export default function ExecutionList({
   ] = useState<ExposedExecution | null>(null);
   const popperElRef = useRef<HTMLDivElement>(null);
 
-  const allExecutionsLoaded =
-    renderedExecutions.length === sortedExecutions.length;
+  const allLeftExecutionsLoaded =
+    renderedExecutions.slice(0, renderedActiveExecutionIndex).length ===
+    sortedExecutions.slice(0, activeExecutionIndex).length;
+  const allRightExecutionsLoaded =
+    renderedExecutions.slice(renderedActiveExecutionIndex).length ===
+    sortedExecutions.slice(activeExecutionIndex).length;
 
   const handleInfoButtonClick = (
     e: React.MouseEvent,
@@ -245,18 +262,33 @@ export default function ExecutionList({
     setPopperAnchorEl(e.currentTarget.parentElement);
   };
 
-  const loadMore = () => {
+  const loadMore = (direction: string) => {
     const currentStartIndex = sortedExecutions
       .map((item) => item.id)
       .indexOf(renderedExecutions[0].id);
-    const startIndex = currentStartIndex - 9 > 0 ? currentStartIndex - 9 : 0;
-    setRenderedExecutions(sortedExecutions.slice(startIndex));
+    const currentEndIndex = sortedExecutions
+      .map((item) => item.id)
+      .indexOf(renderedExecutions[renderedExecutions.length - 1].id);
+    if (direction === "left") {
+      const startIndex = currentStartIndex - 9 > 0 ? currentStartIndex - 9 : 0;
+      setRenderedExecutions(
+        sortedExecutions.slice(startIndex, currentEndIndex + 1)
+      );
+    } else if (direction === "right") {
+      const endIndex =
+        currentEndIndex + 9 < sortedExecutions.length - 1
+          ? currentEndIndex + 9
+          : sortedExecutions.length - 1;
+      setRenderedExecutions(
+        sortedExecutions.slice(currentStartIndex, endIndex + 1)
+      );
+    }
   };
 
   return (
     <div className={classes.root}>
       <div>
-        {!allExecutionsLoaded && (
+        {!allLeftExecutionsLoaded && (
           <Tooltip
             title="Load previous executions"
             placement="right"
@@ -264,7 +296,10 @@ export default function ExecutionList({
               tooltip: classes.customTooltip,
             }}
           >
-            <button className={classes.viewMoreButton} onClick={loadMore}>
+            <button
+              className={classes.viewMoreButton}
+              onClick={() => loadMore("left")}
+            >
               <ArrowBackIcon />
             </button>
           </Tooltip>
@@ -324,6 +359,22 @@ export default function ExecutionList({
             </CSSTransition>
           ))}
         </TransitionGroup>
+        {!allRightExecutionsLoaded && (
+          <Tooltip
+            title="Load next executions"
+            placement="right"
+            classes={{
+              tooltip: classes.customTooltip,
+            }}
+          >
+            <button
+              className={classes.viewMoreButton}
+              onClick={() => loadMore("right")}
+            >
+              <ArrowForwardIcon />
+            </button>
+          </Tooltip>
+        )}
         <Popper
           ref={popperElRef}
           open={Boolean(popperAnchorEl)}
@@ -353,7 +404,10 @@ export default function ExecutionList({
             <div
               key={item.id}
               className={classnames(classes.divider, {
-                [classes.dottedDivider]: !allExecutionsLoaded && !index,
+                [classes.dottedDivider]:
+                  (!allLeftExecutionsLoaded && !index) ||
+                  (!allRightExecutionsLoaded &&
+                    index === renderedExecutions.length - 1),
               })}
             />
           ))}

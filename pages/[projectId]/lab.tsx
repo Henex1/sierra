@@ -21,6 +21,7 @@ import {
   getSearchPhrases,
   ExposedExecution,
   formatExecution,
+  getLatestExecution,
   getCurrentExecution,
 } from "../../lib/execution";
 import { ExposedSearchPhrase, ShowOptions, SortOptions } from "../../lib/lab";
@@ -118,18 +119,26 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
     search = "",
   } = context.query;
 
-  // Get active search configuration
-  const activeSearchConfiguration = await getActiveSearchConfiguration(
+  // Get current search configuration
+  const currentSearchConfiguration = await getActiveSearchConfiguration(
     project,
     currentExecutionId as string
   );
 
+  // Get active search configuration
+  const activeSearchConfiguration = await getActiveSearchConfiguration(project);
+
   // Current execution
   const currentExecution = await getCurrentExecution(
     context.user,
-    activeSearchConfiguration,
+    currentSearchConfiguration,
     currentExecutionId as string
   );
+
+  // Active execution
+  const activeExecution =
+    activeSearchConfiguration &&
+    (await getLatestExecution(activeSearchConfiguration));
 
   const judgements = await listJudgements(project);
   const isExecutionDirty = currentExecution
@@ -194,20 +203,20 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
         }
       )
     : null;
-  const queryTemplate = activeSearchConfiguration
+  const queryTemplate = currentSearchConfiguration
     ? await getQueryTemplate(
         context.user,
-        activeSearchConfiguration.queryTemplateId
+        currentSearchConfiguration.queryTemplateId
       )
     : null;
-  const searchConfiguration = activeSearchConfiguration
+  const searchConfiguration = currentSearchConfiguration
     ? {
         ...formatSearchConfiguration(
-          activeSearchConfiguration,
+          currentSearchConfiguration,
           searchEndpoint.type
         ),
         rulesets: (
-          await getRulesetsForSearchConfiguration(activeSearchConfiguration)
+          await getRulesetsForSearchConfiguration(currentSearchConfiguration)
         ).map(formatRulesetVersion),
         queryTemplate: formatQueryTemplate(queryTemplate as QueryTemplate),
       }
@@ -232,10 +241,8 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
       rulesets: rulesetsWithVersions,
       templates: templates.map(formatQueryTemplate),
       executions: executions.map(formatExecution),
-      // TODO: actual active execution
-      // currently it's just using the latest execution
-      activeExecution: executions.length
-        ? formatExecution(executions[0])
+      activeExecution: activeExecution
+        ? formatExecution(activeExecution)
         : null,
       currentExecution: currentExecution
         ? formatExecution(currentExecution)
