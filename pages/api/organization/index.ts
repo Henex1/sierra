@@ -16,7 +16,7 @@ import { uid } from "uid";
 import { NewOrgUserSchema } from "lib/org/types/NewOrgUser";
 
 const getType = (s: string): string =>
-  s.match(/[^:/]\w+(?=;|,)/)?.[0] as string;
+  s.match(/[^:/]\w+(?=[;,])/)?.[0] as string;
 
 const orgImage = async (
   orgId: string,
