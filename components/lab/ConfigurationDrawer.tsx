@@ -193,6 +193,7 @@ export default function ConfigurationDrawer({
         id: searchConfiguration?.id,
         queryTemplateId: searchConfiguration?.queryTemplate.id,
         rulesetIds,
+        executionId: currentExecution?.id,
       });
       router.replace(router.asPath);
     } catch (err) {

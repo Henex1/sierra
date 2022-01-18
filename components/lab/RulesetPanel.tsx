@@ -2,17 +2,15 @@ import React from "react";
 import {
   Box,
   Typography,
-  Select,
   MenuItem,
-  ListItemIcon,
   Chip,
   makeStyles,
+  Button,
+  Popover,
 } from "@material-ui/core";
 import { Form } from "react-final-form";
 import useSWR from "swr";
-import { useRouter } from "next/router";
-import CheckIcon from "@material-ui/icons/Check";
-import EditIcon from "@material-ui/icons/Edit";
+import AddIcon from "@material-ui/icons/Add";
 
 import { apiRequest } from "../../lib/api";
 import RulesetEditor from "../rulesets/RulesetEditor";
@@ -23,20 +21,19 @@ import { useAlertsContext } from "../../utils/react/hooks/useAlertsContext";
 import { useLabContext } from "../../utils/react/hooks/useLabContext";
 
 const useStyles = makeStyles((theme) => ({
-  dropdown: {
-    paddingTop: theme.spacing(1.5),
-    paddingBottom: theme.spacing(1.5),
-  },
-  dropdownIcon: {
-    minWidth: 40,
-  },
   rulesetChip: {
     padding: theme.spacing(0, 0.5),
     marginRight: theme.spacing(1),
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
     "& svg": {
       width: 16,
       height: 16,
     },
+  },
+  addRulesetButton: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
   },
   label: {
     marginBottom: theme.spacing(1),
@@ -57,8 +54,9 @@ export function RulesetPanel({
   onUpdate,
 }: RulesetPanelProps) {
   const classes = useStyles();
-  const router = useRouter();
-  const [rulesetId, setRulesetId] = React.useState<string>("");
+  const [rulesetId, setRulesetId] = React.useState("");
+  const [popoverIsOpen, setPopoverIsOpen] = React.useState(false);
+  const popoverAnchorEl = React.useRef<HTMLButtonElement>(null);
   const { addErrorAlert } = useAlertsContext();
   const { rulesets } = useLabContext();
 
@@ -83,7 +81,6 @@ export function RulesetPanel({
           rulesetId: rulesetId,
           parentId: data.version.id,
         });
-        router.push(router.asPath);
       } catch (error) {
         addErrorAlert(error);
       }
@@ -97,33 +94,6 @@ export function RulesetPanel({
       <Typography variant="h6" className={classes.label} id="rulesetLabel">
         Active Rulesets
       </Typography>
-      <Select
-        multiple
-        fullWidth
-        variant="outlined"
-        aria-labelledby="rulesetLabel"
-        value={activeRulesetIds}
-        onChange={(e: React.ChangeEvent<{ value: unknown }>) => {
-          setActiveRulesetIds(e.target.value as string[]);
-        }}
-        renderValue={(value: any) =>
-          (value as string[])
-            .map((id: string) => rulesets.find((r) => r.id === id)?.name)
-            .join(", ")
-        }
-        classes={{
-          select: classes.dropdown,
-        }}
-      >
-        {rulesets.map((ruleset) => (
-          <MenuItem key={ruleset.id} value={ruleset.id}>
-            <ListItemIcon className={classes.dropdownIcon}>
-              {activeRulesetIds.includes(ruleset.id) && <CheckIcon />}
-            </ListItemIcon>
-            {ruleset.name}
-          </MenuItem>
-        ))}
-      </Select>
       <Box mb={2} />
       <Box mb={4}>
         {rulesets.map((item) => {
@@ -138,11 +108,51 @@ export function RulesetPanel({
               color={rulesetId === item.id ? "primary" : "default"}
               className={classes.rulesetChip}
               onClick={() => setRulesetId(item.id)}
-              onDelete={() => setRulesetId(item.id)}
-              deleteIcon={<EditIcon fontSize="small" />}
+              onDelete={() => {
+                const filteredRulesetIds = activeRulesetIds.filter(
+                  (rulesetId) => rulesetId !== item.id
+                );
+                setActiveRulesetIds(filteredRulesetIds);
+                setRulesetId(filteredRulesetIds[0] ?? "");
+              }}
             />
           );
         })}
+        {rulesets.length > activeRulesetIds.length && (
+          <Button
+            ref={popoverAnchorEl}
+            className={classes.addRulesetButton}
+            variant="outlined"
+            color="primary"
+            size="small"
+            onClick={() => setPopoverIsOpen(true)}
+          >
+            {activeRulesetIds.length > 0 ? (
+              <AddIcon fontSize="small" />
+            ) : (
+              "Add Ruleset"
+            )}
+          </Button>
+        )}
+        <Popover
+          open={popoverIsOpen}
+          anchorEl={popoverAnchorEl.current}
+          onClose={() => setPopoverIsOpen(false)}
+        >
+          {rulesets
+            .filter((ruleset) => !activeRulesetIds.includes(ruleset.id))
+            .map((ruleset) => (
+              <MenuItem
+                key={ruleset.id}
+                onClick={() => {
+                  setActiveRulesetIds([...activeRulesetIds, ruleset.id]);
+                  setPopoverIsOpen(false);
+                }}
+              >
+                {ruleset.name}
+              </MenuItem>
+            ))}
+        </Popover>
       </Box>
       {data ? (
         <RulesetEditor
