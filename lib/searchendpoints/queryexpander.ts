@@ -34,12 +34,19 @@ export async function expandQuery(
   const body = JSON.stringify({
     query: phrase,
     search_configuration: {
-      search_endpoint_type: endpoint.type,
+      search_endpoint_type: endpoint.type.toLowerCase(),
       template: tpl.query,
       config: {
         ltr_model: ltrModelName,
       },
-      rules: rulesets,
+      rules: rulesets.flatMap((rv) =>
+        (rv.value as any).rules
+          .filter((r: any) => r?.enabled)
+          .map((r: any) => ({
+            ...r,
+            instructions: r.instructions?.filter((i: any) => i?.enabled),
+          }))
+      ),
       knobs: tpl.knobs,
     },
   });
