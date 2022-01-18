@@ -1,4 +1,4 @@
-FROM node:15.14.0 AS deps
+FROM node:16 AS deps
 
 #### Install dependencies
 WORKDIR /app
@@ -8,7 +8,7 @@ COPY patches/ patches
 RUN yarn --frozen-lockfile
 
 
-FROM node:15.14.0 AS schema
+FROM node:16 AS schema
 
 WORKDIR /app
 COPY --from=deps /app ./
@@ -16,7 +16,7 @@ COPY . .
 
 RUN yarn prisma generate
 
-FROM node:15.14.0 AS builder
+FROM node:16 AS builder
 #### Build
 ENV DATABASE_URL=postgresql://postgres:example@postgres:5432/postgres?schema=public \
     NEXTAUTH_URL=http://localhost:3000/api/auth \
@@ -37,7 +37,7 @@ COPY --from=schema /app ./
 RUN yarn build
 
 
-FROM node:15.14.0-alpine
+FROM node:16-alpine
 #### Release/minify
 ENV NODE_ENV=production
 
