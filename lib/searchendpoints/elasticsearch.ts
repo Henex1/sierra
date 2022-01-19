@@ -76,6 +76,12 @@ export class ElasticsearchInterface implements QueryInterface {
       ...extra,
     });
 
+    if (!response.ok) {
+      throw new Error(
+        `HTTP ${response.status} (${response.statusText}) - ES query failed.`
+      );
+    }
+
     return await response.json();
   }
 
@@ -176,10 +182,6 @@ export class ElasticsearchInterface implements QueryInterface {
         size: ids.length,
       })
     );
-
-    if (response.error) {
-      throw new Error(response.error.reason);
-    }
 
     return response.hits.hits;
   }

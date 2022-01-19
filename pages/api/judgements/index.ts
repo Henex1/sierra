@@ -95,7 +95,7 @@ export const handleImport = apiHandler(async (req, res) => {
     );
     data.projectId = raw?.fields?.projectId;
     data.name = raw?.fields?.name;
-  } catch (e) {
+  } catch (e: any) {
     res.status(400).json({ success: false, error: e.message });
     return;
   }

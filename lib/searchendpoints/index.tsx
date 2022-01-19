@@ -127,9 +127,11 @@ export async function createSearchEndpoint(
   const encodedCredentials = input.credentials
     ? encryptCredentials(input.credentials)
     : "";
-
   const ds = await prisma.searchEndpoint.create({
-    data: { ...input, credentials: encodedCredentials },
+    data: {
+      ...input,
+      credentials: encodedCredentials,
+    },
   });
   return ExposedSearchEndpoint.fromPrismaSearchEndpoint(ds);
 }
@@ -145,7 +147,7 @@ export async function deleteSearchEndpoint(
 
   try {
     await prisma.searchEndpoint.delete({ where: { id: ds.id } });
-  } catch (e) {
+  } catch (e: any) {
     switch (e.code) {
       case "P2014":
         return Promise.reject(

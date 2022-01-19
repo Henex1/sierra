@@ -107,7 +107,7 @@ export default function EditSearchEndpoint({
         { method: "DELETE" }
       );
       router.push("/searchendpoints");
-    } catch (e) {
+    } catch (e: any) {
       const title = "Delete failed";
 
       try {
