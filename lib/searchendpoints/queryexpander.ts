@@ -56,13 +56,15 @@ export async function expandQuery(
     body,
     headers: {
       "Content-Type": "application/json",
+      "User-Agent": "Sierra",
       // TODO add authorization header
     },
   });
 
   if (!response.ok) {
+    const error = await response.json();
     throw new Error(
-      `HTTP ${response.status} (${response.statusText}) - Failed to expand query. `
+      `Failed to expand query (${error.details ?? error.message})`
     );
   }
 
