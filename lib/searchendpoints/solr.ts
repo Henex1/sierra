@@ -146,6 +146,12 @@ export class SolrQueryInterface implements QueryInterface {
       agent,
     });
 
+    if (!response.ok) {
+      throw new Error(
+        `HTTP ${response.status} (${response.statusText}) - Solr query failed.`
+      );
+    }
+
     return await response.json();
   }
 }

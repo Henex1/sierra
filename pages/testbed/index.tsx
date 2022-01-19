@@ -192,7 +192,7 @@ export default function Testbed({ rulesets, displayFields }: Props) {
       setTotalResults(
         total ? `${total.relation == "gte" ? ">" : ""}${total.value}` : "0"
       );
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
     }
   };
@@ -225,7 +225,7 @@ export default function Testbed({ rulesets, displayFields }: Props) {
             )
           );
         }
-      } catch (err) {
+      } catch (err: any) {
         setError(err.message);
         return;
       }
