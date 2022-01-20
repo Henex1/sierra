@@ -15,7 +15,7 @@ import AddIcon from "@material-ui/icons/Add";
 import { apiRequest } from "../../lib/api";
 import RulesetEditor from "../rulesets/RulesetEditor";
 import { Props as RulesetEditorProps } from "../../pages/rulesets/[id]";
-import { RulesetVersionValue } from "lib/rulesets/rules";
+import { RulesetVersionValue } from "../../lib/rulesets/rules";
 import LoadingContent from "../common/LoadingContent";
 import { useAlertsContext } from "../../utils/react/hooks/useAlertsContext";
 import { useLabContext } from "../../utils/react/hooks/useLabContext";
@@ -45,6 +45,7 @@ type RulesetPanelProps = {
   activeRulesetIds: string[];
   setActiveRulesetIds: (ids: string[]) => void;
   onUpdate: () => void;
+  setRulesetHasPendingAction?: (data: boolean) => void;
 };
 
 export function RulesetPanel({
@@ -52,6 +53,7 @@ export function RulesetPanel({
   activeRulesetIds,
   setActiveRulesetIds,
   onUpdate,
+  setRulesetHasPendingAction,
 }: RulesetPanelProps) {
   const classes = useStyles();
   const [rulesetId, setRulesetId] = React.useState("");
@@ -69,7 +71,7 @@ export function RulesetPanel({
   }, [activeRulesetIds, rulesetId]);
 
   const rulesetSelected = Boolean(rulesetId);
-  const { data } = useSWR<RulesetEditorProps>(
+  const { data, mutate } = useSWR<RulesetEditorProps>(
     rulesetSelected ? `/api/rulesets/${rulesetId}` : null
   );
 
@@ -81,6 +83,7 @@ export function RulesetPanel({
           rulesetId: rulesetId,
           parentId: data.version.id,
         });
+        await mutate({ ...data, version: { ...data.version, value } }, false);
       } catch (error) {
         addErrorAlert(error);
       }
@@ -161,6 +164,7 @@ export function RulesetPanel({
           onSubmit={onSubmit}
           initialValues={data.version.value as RulesetVersionValue}
           facetFilterFields={data.facetFilterFields}
+          setHasPendingAction={setRulesetHasPendingAction}
         />
       ) : rulesetSelected ? (
         <LoadingContent />

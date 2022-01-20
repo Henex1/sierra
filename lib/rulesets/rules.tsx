@@ -11,7 +11,7 @@ export const synonymInstructionSchema = z.object({
 export type SynonymInstruction = z.infer<typeof synonymInstructionSchema>;
 
 export const upDownInstructionSchema = z.object({
-  type: z.literal("updown"),
+  type: z.union([z.literal("upboost"), z.literal("downboost")]),
   weight: z.number(),
   term: z.string(),
   query: z.string().optional(),

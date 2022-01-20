@@ -13,6 +13,7 @@ type Props = {
   className?: string;
   inputRef?: React.MutableRefObject<AceEditor>;
   adaptiveHeight?: boolean;
+  disabled?: boolean;
 };
 
 export default function JsonEditor({
@@ -22,6 +23,7 @@ export default function JsonEditor({
   className,
   inputRef,
   adaptiveHeight,
+  disabled,
 }: Props) {
   const props = adaptiveHeight
     ? {
@@ -51,6 +53,7 @@ export default function JsonEditor({
       }}
       editorProps={{ $blockScrolling: true }}
       minLines={3}
+      readOnly={disabled}
       {...props}
     />
   );

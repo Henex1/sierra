@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import {
   AppBar,
   Drawer,
@@ -98,6 +98,9 @@ export default function ConfigurationDrawer({
   const router = useRouter();
   const [activeTab, setActiveTab] = React.useState(0);
   const [isResizing, setIsResizing] = React.useState(false);
+  const [initialRulesetIds, setInitialRulesetIds] = React.useState<string[]>(
+    []
+  );
   const [rulesetIds, setRulesetIds] = React.useState<string[]>([]);
   const { searchConfiguration } = useLabContext();
   const [queryPanelData, setQueryPanelData] = React.useState<QueryPanelValues>({
@@ -106,6 +109,13 @@ export default function ConfigurationDrawer({
       [key: string]: any;
     },
   });
+  const [rulesetHasPendingAction, setRulesetHasPendingAction] = useState(false);
+  const hasUnsavedChanges = useMemo(
+    () =>
+      JSON.stringify([...initialRulesetIds].sort()) !==
+        JSON.stringify([...rulesetIds].sort()) || rulesetHasPendingAction,
+    [initialRulesetIds, rulesetIds, rulesetHasPendingAction]
+  );
   const { addErrorAlert } = useAlertsContext();
   const {
     runExecution,
@@ -116,11 +126,11 @@ export default function ConfigurationDrawer({
 
   React.useEffect(() => {
     if (searchConfiguration) {
-      setRulesetIds(
-        searchConfiguration.rulesets.map(
-          (item: ExposedRulesetVersion) => item.rulesetId
-        )
+      const ids = searchConfiguration.rulesets.map(
+        (item: ExposedRulesetVersion) => item.rulesetId
       );
+      setInitialRulesetIds(ids);
+      setRulesetIds(ids);
     }
   }, [searchConfiguration]);
 
@@ -316,6 +326,7 @@ export default function ConfigurationDrawer({
                     activeRulesetIds={rulesetIds}
                     setActiveRulesetIds={setRulesetIds}
                     onUpdate={handleRulesetUpdate}
+                    setRulesetHasPendingAction={setRulesetHasPendingAction}
                   />
                 </TabPanel>
               </Scrollable>
@@ -334,7 +345,9 @@ export default function ConfigurationDrawer({
                   color="primary"
                   variant="extended"
                   onClick={handleRun}
-                  disabled={!canRunExecution || isExecutionRunning}
+                  disabled={
+                    !canRunExecution || hasUnsavedChanges || isExecutionRunning
+                  }
                   className={classes.saveAndRunButton}
                   size="medium"
                 >
