@@ -17,13 +17,15 @@ import EditIcon from "@material-ui/icons/Edit";
 import { authenticatedPage } from "../../lib/pageHelpers";
 import { listSearchEndpoints } from "../../lib/searchendpoints";
 import { ExposedSearchEndpoint } from "../../lib/searchendpoints/types/ExposedSearchEndpoint";
+import { getCookies } from "../../lib/cookies";
 
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 import { searchEndpointTypes } from "../../components/searchendpoints/Form";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const searchEndpoints = await listSearchEndpoints(context);
+  const { activeOrgId } = getCookies(context.req as any);
+  const searchEndpoints = await listSearchEndpoints(context, activeOrgId);
   return { props: { searchEndpoints } };
 });
 

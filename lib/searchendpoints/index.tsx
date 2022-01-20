@@ -55,16 +55,19 @@ export async function getSearchEndpoint<T extends Prisma.SearchEndpointInclude>(
   return ds;
 }
 
-export async function listSearchEndpoints({
-  user,
-}: {
-  user: User;
-}): Promise<ExposedSearchEndpoint.ExposedSearchEndpoint[]> {
+export async function listSearchEndpoints(
+  {
+    user,
+  }: {
+    user: User;
+  },
+  orgId?: string
+): Promise<ExposedSearchEndpoint.ExposedSearchEndpoint[]> {
   if (!user) {
     return [];
   }
   const searchEndpoints = await prisma.searchEndpoint.findMany({
-    where: userCanAccessSearchEndpoint(user),
+    where: userCanAccessSearchEndpoint(user, { orgId }),
   });
 
   return searchEndpoints.map(ExposedSearchEndpoint.fromPrismaSearchEndpoint);

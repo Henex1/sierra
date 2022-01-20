@@ -9,13 +9,15 @@ import { ExposedSearchEndpoint } from "../../lib/searchendpoints/types/ExposedSe
 import { create as createSearchEndpoint } from "../searchendpoints/create";
 import { authenticatedPage } from "../../lib/pageHelpers";
 import { apiRequest } from "../../lib/api";
+import { getCookies } from "../../lib/cookies";
 import { useActiveOrg, useSession } from "../../components/Session";
 import { NewProject, ProjectForm } from "../../components/projects/Form";
 import Link from "../../components/common/Link";
 import BreadcrumbsButtons from "../../components/common/BreadcrumbsButtons";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
-  const searchEndpoints = await listSearchEndpoints(context);
+  const { activeOrgId } = getCookies(context.req as any);
+  const searchEndpoints = await listSearchEndpoints(context, activeOrgId);
   return { props: { searchEndpoints } };
 });
 
