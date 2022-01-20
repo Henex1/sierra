@@ -52,20 +52,14 @@ export function InstructionField(props: Props) {
   const classes = useInstructionFieldStyles();
 
   const { name, value, onDelete } = props;
-  const typeValue =
-    value.type === "updown"
-      ? value.weight > 0
-        ? "upBoost"
-        : "downBoost"
-      : value.type;
   const [
     instructionsType,
     setInstructionsType,
-  ] = React.useState<InstructionsType>(typeValue);
+  ] = React.useState<InstructionsType>(value.type);
   const isDisabled = !value.enabled;
 
   const editor = useMemo((): ReactElement => {
-    switch (typeValue as string) {
+    switch (value.type as string) {
       case "synonym":
         return (
           <SynonymField
@@ -73,14 +67,14 @@ export function InstructionField(props: Props) {
             disabled={isDisabled}
           />
         );
-      case "upBoost":
+      case "upboost":
         return (
           <UpBoostField
             {...(props as InstructionFieldProps<UpDownInstruction>)}
             disabled={isDisabled}
           />
         );
-      case "downBoost":
+      case "downboost":
         return (
           <DownBoostField
             {...(props as InstructionFieldProps<UpDownInstruction>)}
@@ -132,12 +126,7 @@ export function InstructionField(props: Props) {
     <Box pb={2}>
       <Grid container spacing={2} alignItems="flex-end">
         <Grid item xs={3}>
-          <Field
-            name={`${name}.type`}
-            parse={(value: any) =>
-              value === "upBoost" || value === "downBoost" ? "updown" : value
-            }
-          >
+          <Field name={`${name}.type`}>
             {({ input }) => (
               <SelectMUI
                 name={input?.name}

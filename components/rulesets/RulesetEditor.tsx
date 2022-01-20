@@ -35,7 +35,7 @@ import DragIndicatorIcon from "@material-ui/icons/DragIndicator";
 import SettingsIcon from "@material-ui/icons/Settings";
 
 import RuleEditor from "./RuleEditor";
-import { RulesetVersionValue, Rule } from "lib/rulesets/rules";
+import { RulesetVersionValue, Rule } from "../../lib/rulesets/rules";
 import RulesetConditionEditor from "./RulesetConditionEditor";
 import FormSubmitButton from "../common/FormSubmitButton";
 
@@ -279,12 +279,14 @@ export type RulesetEditorProps = FormProps<RulesetVersionValue> & {
   facetFilterFields: string[];
   formId?: string;
   compact?: boolean;
+  setHasPendingAction?: (data: boolean) => void;
 };
 
 export default function RulesetEditor({
   facetFilterFields,
   formId,
   compact,
+  setHasPendingAction,
   ...rest
 }: RulesetEditorProps) {
   const [activeRuleset, setActiveRuleset] = React.useState(-1);
@@ -319,6 +321,11 @@ export default function RulesetEditor({
           });
           setActiveRuleset(values.rules.length);
         }
+
+        React.useEffect(() => {
+          setHasPendingAction && setHasPendingAction(dirty);
+        }, [dirty]);
+
         return (
           <form id={formId} onSubmit={handleSubmit}>
             <Grid container spacing={4}>

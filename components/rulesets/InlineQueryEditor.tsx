@@ -91,6 +91,7 @@ export default function InlineQueryEditor({
             onChange={handleJsonChange(input.onChange)}
             className={!value.query ? classes.hidden : undefined}
             inputRef={jsonRef as React.MutableRefObject<AceEditor>}
+            disabled={disabled}
             adaptiveHeight
           />
         )}

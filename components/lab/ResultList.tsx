@@ -34,6 +34,23 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: "Source Sans Pro",
     padding: theme.spacing(1),
     marginBottom: theme.spacing(3),
+    maxWidth: theme.spacing(100),
+    maxHeight: theme.spacing(35),
+    overflow: "auto",
+
+    scrollbarWidth: "thin",
+    "&::-webkit-scrollbar": {
+      height: 8,
+      width: 8,
+    },
+    "&::-webkit-scrollbar-track": {
+      borderRadius: 8,
+      backgroundColor: "#EFEFEF",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      borderRadius: 8,
+      backgroundColor: "#C3C3C3",
+    },
   },
   content: {
     paddingRight: theme.spacing(1),

@@ -10,8 +10,8 @@ export interface InstructionFieldProps<V extends RuleInstruction> {
 
 export type InstructionsType =
   | "synonym"
-  | "upBoost"
-  | "downBoost"
+  | "upboost"
+  | "downboost"
   | "filter"
   | "facetFilter"
   | "delete"
@@ -19,8 +19,8 @@ export type InstructionsType =
 
 export const instructionsTypes: InstructionsType[] = [
   "synonym",
-  "upBoost",
-  "downBoost",
+  "upboost",
+  "downboost",
   "filter",
   "facetFilter",
   "delete",
@@ -30,8 +30,8 @@ export const instructionsTypes: InstructionsType[] = [
 export const instructionTitle = (type: InstructionsType): string => {
   const titles: { [k in InstructionsType]: string } = {
     delete: "DELETE",
-    upBoost: "UP BOOST",
-    downBoost: "DOWN BOOST",
+    upboost: "UP BOOST",
+    downboost: "DOWN BOOST",
     facetFilter: "FACET FILTER",
     filter: "FILTER",
     synonym: "SYNONYM",
