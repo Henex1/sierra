@@ -14,6 +14,7 @@ import {
   getProject,
   ExposedProject,
 } from "../../../lib/projects";
+import { getCookies } from "../../../lib/cookies";
 
 import Link from "../../../components/common/Link";
 import BreadcrumbsButtons from "../../../components/common/BreadcrumbsButtons";
@@ -21,7 +22,8 @@ import BreadcrumbsButtons from "../../../components/common/BreadcrumbsButtons";
 export const getServerSideProps = authenticatedPage(async (context) => {
   const id = requireParam(context, "id");
   const project = await getProject(context.user, id);
-  const searchEndpoints = await listSearchEndpoints(context);
+  const { activeOrgId } = getCookies(context.req as any);
+  const searchEndpoints = await listSearchEndpoints(context, activeOrgId);
 
   if (!project) {
     return { notFound: true };
