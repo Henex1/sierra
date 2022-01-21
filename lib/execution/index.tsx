@@ -23,6 +23,7 @@ import { SortOptions, ShowOptions } from "../lab";
 import { ExpandedQuery } from "../searchendpoints/queryexpander";
 import * as scorers from "../scorers/algorithms";
 import * as cg_scorers from "../scorers/ndcg";
+import * as rr_scorers from "../scorers/reciprocalRank";
 import { percentiles } from "../math";
 import { isNotEmpty } from "../../utils/array";
 
@@ -459,13 +460,19 @@ async function newSearchPhraseExecution(
   const allScores =
     jp.results.length > 0
       ? {
-          "ndcg@10": cg_scorers.ndcgAt10(
+          "nDCG@10": cg_scorers.ndcgAt10(
             queryResult.results.slice(0, 10).map((r) => r.id),
             jp.results
           ),
-          "ap@10": scorers.ap(
+          "AP@10": scorers.ap(
             queryResult.results.slice(0, 10).map((r) => r.id),
             jp.results
+          ),
+          "Reciprocal Rank": rr_scorers.reciprocalRank(
+            queryResult.results.slice(0, 10).map((r) => r.id),
+            jp.results,
+            10,
+            3
           ),
         }
       : null;
