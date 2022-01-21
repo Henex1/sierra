@@ -21,6 +21,7 @@ import {
 import { userCanAccessSearchConfiguration } from "../searchconfigurations";
 import { SortOptions, ShowOptions } from "../lab";
 import { ExpandedQuery } from "../searchendpoints/queryexpander";
+import * as recall_scorers from "../scorers/recall";
 import * as cg_scorers from "../scorers/ndcg";
 import * as rr_scorers from "../scorers/reciprocalRank";
 import { percentiles } from "../math";
@@ -462,6 +463,11 @@ async function newSearchPhraseExecution(
           "nDCG@10": cg_scorers.ndcgAt10(
             queryResult.results.slice(0, 10).map((r) => r.id),
             jp.results
+          ),
+          Recall: recall_scorers.recall(
+            queryResult.results.slice(0, 10).map((r) => r.id),
+            jp.results,
+            3
           ),
           // "AP@10": scorers.ap(
           //   queryResult.results.slice(0, 10).map((r) => r.id),
