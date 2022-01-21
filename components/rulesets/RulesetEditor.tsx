@@ -35,6 +35,7 @@ import DragIndicatorIcon from "@material-ui/icons/DragIndicator";
 import SettingsIcon from "@material-ui/icons/Settings";
 
 import RuleEditor from "./RuleEditor";
+import { isInstructionsType } from "./Instructions/types";
 import { RulesetVersionValue, Rule } from "../../lib/rulesets/rules";
 import RulesetConditionEditor from "./RulesetConditionEditor";
 import FormSubmitButton from "../common/FormSubmitButton";
@@ -300,9 +301,22 @@ export default function RulesetEditor({
     setActiveRuleset(-1);
   }, [rest.initialValues]);
 
+  const parseValue = (value: RulesetVersionValue) => {
+    return {
+      ...value,
+      rules: value.rules.map((r) => ({
+        ...r,
+        instructions: r.instructions.filter((i) => isInstructionsType(i.type)),
+      })),
+    };
+  };
+
   return (
     <Form
       {...rest}
+      onSubmit={(value, form) =>
+        rest.onSubmit && rest.onSubmit(parseValue(value), form)
+      }
       mutators={{
         ...arrayMutators,
         setRulesValue: ([args], state, tools) => {
