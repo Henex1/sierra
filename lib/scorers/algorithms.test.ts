@@ -18,7 +18,7 @@ const FIFTEEN_SEARCH_HITS = [
   "99250",
 ];
 
-describe("RRE", () => {
+describe("Average Precision", () => {
   it("If all results in the window are relevant, then the AP is 1", () => {
     const scores: [string, number][] = FIFTEEN_SEARCH_HITS.map((id) => [id, 3]);
 

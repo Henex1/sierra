@@ -21,7 +21,6 @@ import {
 import { userCanAccessSearchConfiguration } from "../searchconfigurations";
 import { SortOptions, ShowOptions } from "../lab";
 import { ExpandedQuery } from "../searchendpoints/queryexpander";
-import * as scorers from "../scorers/algorithms";
 import * as cg_scorers from "../scorers/ndcg";
 import * as rr_scorers from "../scorers/reciprocalRank";
 import { percentiles } from "../math";
@@ -464,10 +463,10 @@ async function newSearchPhraseExecution(
             queryResult.results.slice(0, 10).map((r) => r.id),
             jp.results
           ),
-          "AP@10": scorers.ap(
-            queryResult.results.slice(0, 10).map((r) => r.id),
-            jp.results
-          ),
+          // "AP@10": scorers.ap(
+          //   queryResult.results.slice(0, 10).map((r) => r.id),
+          //   jp.results
+          // ),
           "Reciprocal Rank": rr_scorers.reciprocalRank(
             queryResult.results.slice(0, 10).map((r) => r.id),
             jp.results,
