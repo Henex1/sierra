@@ -58,7 +58,7 @@ export function InstructionField(props: Props) {
   ] = React.useState<InstructionsType>(value.type);
   const isDisabled = !value.enabled;
 
-  const editor = useMemo((): ReactElement => {
+  const editor = useMemo((): ReactElement | undefined => {
     switch (value.type as string) {
       case "synonym":
         return (
@@ -109,8 +109,6 @@ export function InstructionField(props: Props) {
             disabled={isDisabled}
           />
         );
-      default:
-        return <Grid item>Unsupported instruction: {(value as any).type}</Grid>;
     }
   }, [props, isDisabled]);
 
@@ -121,6 +119,8 @@ export function InstructionField(props: Props) {
   const handleCloseMenu = () => {
     setAnchorEl(null);
   };
+
+  if (!isInstructionsType(instructionsType)) return null;
 
   return (
     <Box pb={2}>
