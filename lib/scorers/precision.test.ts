@@ -22,13 +22,15 @@ describe("Average Precision", () => {
   it("If all results in the window are relevant, then the AP is 1", () => {
     const scores: [string, number][] = FIFTEEN_SEARCH_HITS.map((id) => [id, 3]);
 
-    // ap@10
-    const ap10 = scorers.apAt5(FIFTEEN_SEARCH_HITS, scores);
-    expect(ap10).toEqual(1);
+    expect(scorers.ap(FIFTEEN_SEARCH_HITS, scores)).toEqual(1);
 
     // ap@5
-    const ap5 = scorers.apAt10(FIFTEEN_SEARCH_HITS, scores);
-    expect(ap5).toEqual(1);
+    const ap5 = scorers.apAt5(FIFTEEN_SEARCH_HITS, scores);
+    expect(ap5).toEqual(0.3333333333333333);
+
+    // ap@10
+    const ap10 = scorers.apAt10(FIFTEEN_SEARCH_HITS, scores);
+    expect(ap10).toEqual(0.6666666666666666);
   });
 
   it("If no results in the window are relevant, then the AP is 0.", () => {
@@ -37,12 +39,14 @@ describe("Average Precision", () => {
       3,
     ]);
 
+    expect(scorers.ap(FIFTEEN_SEARCH_HITS, scores)).toEqual(0);
+
     // ap@10
-    const ap10 = scorers.apAt5(FIFTEEN_SEARCH_HITS, scores);
+    const ap10 = scorers.apAt10(FIFTEEN_SEARCH_HITS, scores);
     expect(ap10).toEqual(0);
 
     // ap@5
-    const ap5 = scorers.apAt10(FIFTEEN_SEARCH_HITS, scores);
+    const ap5 = scorers.apAt5(FIFTEEN_SEARCH_HITS, scores);
     expect(ap5).toEqual(0);
   });
 
@@ -52,13 +56,15 @@ describe("Average Precision", () => {
       10
     ).map((id) => [id, 3]);
 
+    expect(scorers.ap(FIFTEEN_SEARCH_HITS, scores)).toEqual(1);
+
     // ap@10
-    const ap10 = scorers.apAt5(FIFTEEN_SEARCH_HITS, scores);
+    const ap10 = scorers.apAt10(FIFTEEN_SEARCH_HITS, scores);
     expect(ap10).toEqual(1);
 
     // ap@5
-    const ap5 = scorers.apAt10(FIFTEEN_SEARCH_HITS, scores);
-    expect(ap5).toEqual(1);
+    const ap5 = scorers.apAt5(FIFTEEN_SEARCH_HITS, scores);
+    expect(ap5).toEqual(0.5); // TODO need to confirm this mathematically
   });
 
   it("Scenario: 10 judgments, 15 search results, 5 relevant results in top positions.", () => {
@@ -71,25 +77,23 @@ describe("Average Precision", () => {
       FIFTEEN_SEARCH_HITS.slice(5, 15).map((id) => id + "_SUFFIX")
     );
 
-    expect(scorers.ap(hits, scores, FIFTEEN_SEARCH_HITS.length)).toEqual(
-      (1 / 10) * 5
-    );
+    expect(scorers.ap(hits, scores)).toEqual((1 / 10) * 5);
   });
 
-  // it("Scenario: 10 judgments, 15 search results, 5 relevant results in middle positions.", () => {
-  //   const scores: [string, number][] = FIFTEEN_SEARCH_HITS.slice(
-  //     0,
-  //     10
-  //   ).map((id) => [id, 3]);
-  //
-  //   const hits = FIFTEEN_SEARCH_HITS.slice(0, 5)
-  //     .map((id) => id + "_PRE")
-  //     .concat(
-  //       FIFTEEN_SEARCH_HITS.slice(5, 10).concat(
-  //         FIFTEEN_SEARCH_HITS.slice(10, 15).map((id) => id + "_POST")
-  //       )
-  //     );
-  //
-  //   expect(scorers.ap(hits, scores)).toEqual(0.1772);
-  // });
+  it("Scenario: 10 judgments, 15 search results, 5 relevant results in middle positions.", () => {
+    const scores: [string, number][] = FIFTEEN_SEARCH_HITS.slice(
+      0,
+      10
+    ).map((id) => [id, 3]);
+
+    const hits = FIFTEEN_SEARCH_HITS.slice(0, 5)
+      .map((id) => id + "_PRE")
+      .concat(
+        FIFTEEN_SEARCH_HITS.slice(5, 10).concat(
+          FIFTEEN_SEARCH_HITS.slice(10, 15).map((id) => id + "_POST")
+        )
+      );
+
+    expect(scorers.ap(hits, scores)).toEqual(0.17718253968253966);
+  });
 });

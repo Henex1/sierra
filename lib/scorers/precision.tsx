@@ -1,31 +1,44 @@
-// Average precision, the ratio of documents scored higher than threshold in
-// the list of results.
+/**
+ * Average precision, the ratio of documents scored higher than threshold in
+ * the list of results. The threshold is by definition binary - relevant or not.
+ * @param docIds Document IDs for actual results
+ * @param scores List of pairs [docId, rank] of judgments
+ * @param k position to measure at, defaults to length of results set
+ */
 export function ap(
   docIds: string[],
   scores: [string, number][],
-  k: number
+  k: number = docIds.length
 ): number {
-  if (scores.length === 0) {
-    return docIds.length ? 1 : 0;
-  }
-
   const scoresDict: { [p: string]: number } = scores.reduce(
     (a, x) => ({ ...a, [x[0]]: x[1] }),
     {}
   );
 
-  docIds = docIds.splice(0, k);
+  docIds = docIds.slice(0, k);
 
-  const howManyRelevantDocuments = scores.length;
-  const relevantItemsFound = docIds.filter((id) => id in scoresDict).length;
+  const howManyRelevantDocuments = scores.filter((x) => x[1] > 0).length;
+  if (howManyRelevantDocuments === 0) {
+    return docIds.length ? 1 : 0;
+  }
 
+  let lastCollectedRecallLevel = 0;
   return docIds.reduce((previousValue, docId, index) => {
+    const relevantItemsFound = docIds
+      .slice(0, index + 1)
+      .filter((id) => id in scoresDict && scoresDict[id] > 0).length;
+
     const currentPrecision = relevantItemsFound / (index + 1);
     const currentRecall =
       howManyRelevantDocuments === 1
         ? 1
         : relevantItemsFound / howManyRelevantDocuments;
-    return previousValue + currentPrecision * (currentRecall - previousValue);
+
+    const retValue =
+      previousValue +
+      currentPrecision * (currentRecall - lastCollectedRecallLevel);
+    lastCollectedRecallLevel = currentRecall;
+    return retValue;
   }, 0);
 }
 
