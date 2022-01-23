@@ -90,14 +90,15 @@ export async function getActiveSearchConfiguration(
   if (executionId) {
     where.executions = {
       some: {
-        id: executionId || undefined,
+        id: executionId,
       },
     };
+  } else if (project.activeSearchConfigurationId) {
+    where.id = project.activeSearchConfigurationId;
   }
 
   const sc = await prisma.searchConfiguration.findFirst({
     where,
-    orderBy: [{ updatedAt: "desc" }],
     include: { tags: true },
   });
   return sc;

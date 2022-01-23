@@ -1,4 +1,5 @@
 import React from "react";
+import { useRouter } from "next/router";
 import {
   Grid,
   Box,
@@ -8,6 +9,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 
+import { apiRequest } from "../../lib/api";
 import { ExposedQueryTemplate } from "../../lib/querytemplates";
 import { ExposedExecution } from "../../lib/execution";
 import ExecutionModal from "./ExecutionModal";
@@ -55,13 +57,24 @@ export default function ExecutionSummary({
   onSelected,
 }: Props) {
   const classes = useStyles();
-  const { currentExecution } = useLabContext();
+  const router = useRouter();
+  const { currentExecution, searchConfiguration } = useLabContext();
   const [modalOpen, setModalOpen] = React.useState(false);
+
   const handleOpenModal = () => {
     setModalOpen(true);
   };
+
   const handleCloseModal = () => {
     setModalOpen(false);
+  };
+
+  const handleSetAsActive = async () => {
+    await apiRequest("/api/projects/update", {
+      id: router.query.projectId,
+      activeSearchConfigurationId: searchConfiguration?.id,
+    });
+    router.replace(router.asPath);
   };
 
   if (!currentExecution) return null;
@@ -143,7 +156,11 @@ export default function ExecutionSummary({
         </Grid>
         {currentExecution.id !== activeExecution.id && (
           <Grid item>
-            <Button variant="outlined" color="primary">
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={handleSetAsActive}
+            >
               Set as active
             </Button>
           </Grid>
