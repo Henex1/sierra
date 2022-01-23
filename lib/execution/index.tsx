@@ -24,6 +24,7 @@ import { ExpandedQuery } from "../searchendpoints/queryexpander";
 import * as recall_scorers from "../scorers/recall";
 import * as cg_scorers from "../scorers/ndcg";
 import * as rr_scorers from "../scorers/reciprocalRank";
+import * as precision_scorers from "../scorers/precision";
 import { percentiles } from "../math";
 import { isNotEmpty } from "../../utils/array";
 
@@ -462,6 +463,7 @@ async function newSearchPhraseExecution(
     jp.results.length > 0
       ? {
           "nDCG@10": cg_scorers.ndcgAt10(first10ResultIds, jp.results),
+          "AP@10": precision_scorers.apAt10(first10ResultIds, jp.results),
           Recall: recall_scorers.recallAt10(first10ResultIds, jp.results, 3),
           "Reciprocal Rank": rr_scorers.reciprocalRank(
             first10ResultIds,

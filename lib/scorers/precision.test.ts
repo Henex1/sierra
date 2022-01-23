@@ -1,4 +1,4 @@
-import * as scorers from "./algorithms";
+import * as scorers from "./precision";
 
 const FIFTEEN_SEARCH_HITS = [
   "1",
@@ -22,8 +22,6 @@ describe("Average Precision", () => {
   it("If all results in the window are relevant, then the AP is 1", () => {
     const scores: [string, number][] = FIFTEEN_SEARCH_HITS.map((id) => [id, 3]);
 
-    expect(scorers.ap(FIFTEEN_SEARCH_HITS, scores)).toEqual(1);
-
     // ap@10
     const ap10 = scorers.apAt5(FIFTEEN_SEARCH_HITS, scores);
     expect(ap10).toEqual(1);
@@ -38,9 +36,6 @@ describe("Average Precision", () => {
       id + "_SUFFIX",
       3,
     ]);
-
-    // ap
-    expect(scorers.ap(FIFTEEN_SEARCH_HITS, scores)).toEqual(0);
 
     // ap@10
     const ap10 = scorers.apAt5(FIFTEEN_SEARCH_HITS, scores);
@@ -76,7 +71,9 @@ describe("Average Precision", () => {
       FIFTEEN_SEARCH_HITS.slice(5, 15).map((id) => id + "_SUFFIX")
     );
 
-    expect(scorers.ap(hits, scores)).toEqual((1 / 10) * 5);
+    expect(scorers.ap(hits, scores, FIFTEEN_SEARCH_HITS.length)).toEqual(
+      (1 / 10) * 5
+    );
   });
 
   // it("Scenario: 10 judgments, 15 search results, 5 relevant results in middle positions.", () => {
