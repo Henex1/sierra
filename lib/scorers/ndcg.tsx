@@ -42,7 +42,7 @@ export function ndcg(
   scores: [string, number][],
   k: number
 ): number {
-  scores.sort((a, b) => a[1] - b[1]); // TODO confirm / apply sorting before passing to func
+  scores.sort((a, b) => b[1] - a[1]); // TODO confirm / apply sorting before passing to func
   const ideal = scores.slice(0, k).map((x) => x[0]);
   const n = dcg(docIds, scores, k);
   const d = dcg(ideal, scores, k);

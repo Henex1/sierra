@@ -18,14 +18,14 @@ const FIFTEEN_SEARCH_HITS = [
   "99250",
 ];
 
-describe("RRE", () => {
+describe("NDCG", () => {
   it("If all results in the window are relevant, then the NDCG is 1.", () => {
     const scores: [string, number][] = FIFTEEN_SEARCH_HITS.map((id) => [id, 3]);
 
     expect(scorers.ndcgAt10(FIFTEEN_SEARCH_HITS, scores)).toEqual(1);
   });
 
-  it("If no results in the window are relevant, then the AP is 0.", () => {
+  it("If no results in the window are relevant, then the NDCG is 0.", () => {
     const scores: [string, number][] = FIFTEEN_SEARCH_HITS.map((id) => [
       id + "_SUFFIX",
       3,
@@ -40,8 +40,7 @@ describe("RRE", () => {
       10
     ).map((id) => [id, 3]);
 
-    const ap10 = scorers.ndcgAt10(FIFTEEN_SEARCH_HITS, scores);
-    expect(ap10).toEqual(1);
+    expect(scorers.ndcgAt10(FIFTEEN_SEARCH_HITS, scores)).toEqual(1);
   });
 
   it("Scenario: 10 judgments, 15 search results, 5 relevant results in top positions.", () => {
@@ -72,5 +71,30 @@ describe("RRE", () => {
       );
 
     expect(scorers.ndcgAt10(hits, scores)).toEqual(0.35106842466815336);
+  });
+
+  it("Scenario: 5 judgments, 10 search results, 5 relevant results from first position.", () => {
+    const scores: [string, number][] = FIFTEEN_SEARCH_HITS.slice(
+      0,
+      5
+    ).map((id) => [id, 3]);
+
+    const hits = FIFTEEN_SEARCH_HITS.slice(0, 5).concat(
+      FIFTEEN_SEARCH_HITS.slice(5, 10).map((id) => id + "_POST")
+    );
+
+    expect(scorers.ndcgAt10(hits, scores)).toEqual(1);
+  });
+
+  it("Scenario: 6 judgments, 10 search results, different scores.", () => {
+    const tmp = [3, 3, 2, 1, 0, 3, 3, 2, 0, 0];
+    const scores: [string, number][] = FIFTEEN_SEARCH_HITS.slice(
+      0,
+      10
+    ).map((id, index) => [id, tmp[index]]);
+
+    expect(scorers.ndcgAt10(FIFTEEN_SEARCH_HITS.slice(0, 10), scores)).toEqual(
+      0.9329847446717803
+    );
   });
 });
