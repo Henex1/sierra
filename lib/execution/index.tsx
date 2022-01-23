@@ -457,24 +457,14 @@ async function newSearchPhraseExecution(
       error: error.message ?? error,
     };
   }
+  const first10ResultIds = queryResult.results.slice(0, 10).map((r) => r.id);
   const allScores =
     jp.results.length > 0
       ? {
-          "nDCG@10": cg_scorers.ndcgAt10(
-            queryResult.results.slice(0, 10).map((r) => r.id),
-            jp.results
-          ),
-          Recall: recall_scorers.recall(
-            queryResult.results.slice(0, 10).map((r) => r.id),
-            jp.results,
-            3
-          ),
-          // "AP@10": scorers.ap(
-          //   queryResult.results.slice(0, 10).map((r) => r.id),
-          //   jp.results
-          // ),
+          "nDCG@10": cg_scorers.ndcgAt10(first10ResultIds, jp.results),
+          Recall: recall_scorers.recallAt10(first10ResultIds, jp.results, 3),
           "Reciprocal Rank": rr_scorers.reciprocalRank(
-            queryResult.results.slice(0, 10).map((r) => r.id),
+            first10ResultIds,
             jp.results,
             10,
             3

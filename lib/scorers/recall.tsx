@@ -23,3 +23,27 @@ export function recall(
     .filter((x) => x >= threshold).length;
   return relevantItemsFound / relevantDocuments;
 }
+
+/**
+ * Recall measure
+ * @param docIds list of documents returned
+ * @param scores the judgments list, list of tuples docId x score
+ * @param k window size of the results to consider as "found"
+ * @param threshold the threshold of a document to be considered relevant
+ */
+export function recallAtK(
+  docIds: string[],
+  scores: [string, number][],
+  k: number,
+  threshold = 3
+): number {
+  return recall(docIds.slice(0, k), scores, threshold);
+}
+
+export function recallAt10(
+  docIds: string[],
+  scores: [string, number][],
+  threshold = 3
+): number {
+  return recallAtK(docIds, scores, 10, threshold);
+}
