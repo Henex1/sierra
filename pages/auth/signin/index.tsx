@@ -1,5 +1,9 @@
 import React, { useEffect } from "react";
-import { getProviders, signIn } from "next-auth/client";
+import {
+  getProviders,
+  signIn,
+  SignInAuthorisationParams,
+} from "next-auth/client";
 import { useSession } from "../../../components/Session";
 import { Button, Link, Box, Grid } from "@material-ui/core";
 import LoginWrapper from "../../../components/login/LoginWrapper";
@@ -9,9 +13,11 @@ type AuthTargetProps = {
   title: string;
   icon: string;
   name: string;
+  authorizationParams?: SignInAuthorisationParams;
+  callbackUrl?: string;
 };
 
-const getGreeting = () => {
+export const getGreeting = () => {
   const hours = new Date().getHours();
   let txt = "Good ";
 
@@ -33,10 +39,16 @@ const getCallbackURL = () => {
   return window.location.origin;
 };
 
-const SignInButton = ({ name, icon, title }: AuthTargetProps) => {
+export const SignInButton = ({
+  name,
+  icon,
+  title,
+  authorizationParams,
+  callbackUrl,
+}: AuthTargetProps) => {
   const handleClick = () => {
     const url = getCallbackURL();
-    signIn(name, { callbackUrl: url });
+    signIn(name, { callbackUrl: callbackUrl ?? url }, authorizationParams);
   };
   return (
     <Grid item xs={12} key={title}>
@@ -50,7 +62,7 @@ const SignInButton = ({ name, icon, title }: AuthTargetProps) => {
   );
 };
 
-type Provider = {
+export type Provider = {
   title: string;
   name: string;
   icon: string;

@@ -1,7 +1,7 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { generateUniqueId } from "../../../lib/common";
-import { ErrorAlert } from "../../../components/Alerts";
+import { ErrorAlert, SuccessAlert } from "../../../components/Alerts";
 
 export const AlertsContext = React.createContext(undefined as any);
 
@@ -43,8 +43,14 @@ export const AlertsProvider = ({ children }: Props) => {
     addAlert(<ErrorAlert message={error} />);
   };
 
+  const addSuccessAlert = (message: string): void => {
+    addAlert(<SuccessAlert message={message} />);
+  };
+
   return (
-    <AlertsContext.Provider value={{ addAlert, removeAlert, addErrorAlert }}>
+    <AlertsContext.Provider
+      value={{ addAlert, removeAlert, addErrorAlert, addSuccessAlert }}
+    >
       {children}
       <div className={classes.root}>
         {alerts.map((alert) =>
