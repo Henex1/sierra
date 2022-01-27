@@ -59,14 +59,16 @@ export default function EditOrganization({ org }: Props) {
       <Grid container spacing={3}>
         <Grid item xs={12} className={classes.headerWrapper}>
           <Typography variant="h4">Edit Organization</Typography>
-          <LinkButton
-            variant="outlined"
-            startIcon={<EditIcon />}
-            size="medium"
-            href={`${org.id}/users`}
-          >
-            Manage Users
-          </LinkButton>
+          {org.orgType !== "USER_SPACE" && (
+            <LinkButton
+              variant="outlined"
+              startIcon={<EditIcon />}
+              size="medium"
+              href={`${org.id}/users`}
+            >
+              Manage Users
+            </LinkButton>
+          )}
         </Grid>
         <Grid item xs={12}>
           <Typography variant="h6">Organization details</Typography>

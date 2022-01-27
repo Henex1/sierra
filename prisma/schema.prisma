@@ -93,6 +93,7 @@ model Org {
   searchEndpoints         SearchEndpoint[]
   users                   OrgUser[]
   apiKeys                 ApiKey[]
+  invitations             Invitation[]
   // Prisma requires that all relations are bidirectional like this, even
   // though this relationship isn't useful to us.
   usersWithThisDefaultOrg User[]
@@ -117,6 +118,18 @@ model OrgUser {
 enum UserOrgRole {
   USER
   ADMIN
+}
+
+model Invitation {
+  id        String       @id @default(cuid())
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  expiresAt DateTime
+  orgId     String?
+  email     String
+  role      UserOrgRole? @default(USER)
+
+  org Org? @relation(fields: [orgId], references: [id])
 }
 
 // SearchEndpoint represents a remote datasource which can be queried.

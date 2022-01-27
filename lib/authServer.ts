@@ -12,6 +12,7 @@ import { ExposedProject, formatProject, listProjects } from "./projects";
 import { ExposedOrg, formatOrg, listOrgs, userCanAccessOrg } from "./org";
 import { AUTH_CONSTANTS, isAuthTypeEnabled } from "./authSources";
 import * as log from "./logging";
+import { deleteInvitation, getInvitation } from "./invitation";
 
 export type ValidUserSession = {
   session: Session;
@@ -97,28 +98,59 @@ export const authOptions = (req: NextApiRequest): NextAuthOptions => ({
     },
     async signIn(user: any, account: any, profile: any) {
       const email = profile.email ?? "";
-      // the Artur case - remove later when proper access control is implemented
-      if (email === "artur.sorokin.spb@gmail.com") return true;
-      // TODO: investigate this. We might want to let users to log in with their personal or company emails
-      return allowRegistrationFrom.some((d) => email.endsWith(`@${d}`));
+      const invitationId = req.cookies.invitationId ?? "";
+      const invitation = await getInvitation(invitationId, {
+        expiresAt: { gt: new Date(Date.now()) },
+        email,
+      });
+
+      if (!invitation && process.env.NODE_ENV === "development") {
+        // the Artur case - remove later when proper access control is implemented
+        if (email === "artur.sorokin.spb@gmail.com") return true;
+        // TODO: investigate this. We might want to let users to log in with their personal or company emails
+        return allowRegistrationFrom.some((d) => email.endsWith(`@${d}`));
+      }
+
+      return !!invitation;
     },
   },
   events: {
     async createUser(user: any) {
-      // Automatically create an organization for each user. Eventually,
-      // replace this with an Org invitation system.
-      await prisma.org.create({
-        data: {
-          name: `${user.name}'s Space`,
-          orgType: OrgType.USER_SPACE,
-          users: {
-            create: {
-              userId: user.id,
-              role: "ADMIN" as UserOrgRole,
+      const invitationId = req.cookies.invitationId ?? "";
+      const invitation = await getInvitation(invitationId, {
+        email: user.email,
+      });
+      if (invitation?.orgId) {
+        await prisma.orgUser.create({
+          data: {
+            role: invitation.role!,
+            user: {
+              connect: {
+                email: user.email,
+              },
+            },
+            org: {
+              connect: {
+                id: invitation.orgId,
+              },
             },
           },
-        },
-      });
+        });
+      } else {
+        await prisma.org.create({
+          data: {
+            name: `${user.name}'s Space`,
+            orgType: OrgType.USER_SPACE,
+            users: {
+              create: {
+                userId: user.id,
+                role: "ADMIN" as UserOrgRole,
+              },
+            },
+          },
+        });
+      }
+      await deleteInvitation(invitationId);
     },
   },
   pages: {

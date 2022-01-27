@@ -1,16 +1,19 @@
 import _ from "lodash";
 
-import prisma, { Prisma, User, Org } from "../prisma";
+import * as log from "../logging";
+import prisma, { Prisma, User, Org, UserOrgRole } from "../prisma";
+import { getClient } from "../sendgrid";
+import { createInvitation, deleteInvitation } from "../invitation";
 import type { CreateOrg } from "./types/CreateOrg";
 import type { UpdateOrg } from "./types/UpdateOrg";
 import type { NewOrgUser } from "./types/NewOrgUser";
-import { UserOrgRole } from ".prisma/client";
 
 const selectKeys = {
   id: true,
   name: true,
   image: true,
   domain: true,
+  orgType: true,
 };
 
 export type ExposedOrg = Pick<Org, keyof typeof selectKeys>;
@@ -101,7 +104,18 @@ export async function update(
   return prisma.org.update({ data, where: { id } }).then((t) => t.id);
 }
 
-export async function createOrgUser(user: User, id: string, data: NewOrgUser) {
+export async function createOrgUser(
+  user: User,
+  id: string,
+  data: NewOrgUser,
+  baseUrl: string
+): Promise<{ orgUserId: number | null; message?: string }> {
+  const org = await getOrg(user, id);
+
+  if (org?.orgType === "USER_SPACE") {
+    throw new Error("User-scoped organizations can only have a single user");
+  }
+
   const orgUser = await prisma.orgUser.findFirst({
     where: {
       userId: user.id,
@@ -111,7 +125,7 @@ export async function createOrgUser(user: User, id: string, data: NewOrgUser) {
   });
 
   if (!orgUser) {
-    throw new Error("Current user doesn't belong to organization");
+    throw new Error("Current user doesn't belong to this organization");
   }
 
   const emailUser = await prisma.user.findFirst({
@@ -121,37 +135,76 @@ export async function createOrgUser(user: User, id: string, data: NewOrgUser) {
   });
 
   if (!emailUser) {
-    // create signup invite link
-    return;
+    try {
+      const client = getClient();
+
+      if (!client) {
+        throw new Error();
+      }
+
+      const invitation = await createInvitation({
+        email: data.email,
+        role: data.role as UserOrgRole,
+        orgId: id,
+      });
+      const invitationUrl = `${baseUrl}/auth/${invitation.id}`;
+      await client.send({
+        from: "info@bigdataboutique.com",
+        to: data.email,
+        subject: `${user.name} invited you to a Sierra Organization`,
+        html: `Organization name: <b>${org!.name}</b> <br />
+             Sign in link: <a href=${invitationUrl}>${invitationUrl}</a>`,
+      });
+    } catch (err: any) {
+      log.error(err.stack ?? err);
+
+      const createdInvitation = await prisma.invitation.findFirst({
+        where: {
+          email: data.email,
+          role: data.role as UserOrgRole,
+          orgId: id,
+        },
+      });
+      if (createdInvitation) await deleteInvitation(createdInvitation.id);
+      throw err;
+    }
+    return {
+      orgUserId: null,
+      message: "Invitation sent",
+    };
   }
 
   const emailOrgUser = await prisma.orgUser.findFirst({
     where: {
       userId: emailUser.id,
+      orgId: id,
     },
   });
 
   if (emailOrgUser) {
-    return;
+    throw new Error("User already belongs to this organization");
   }
 
-  return prisma.orgUser
-    .create({
-      data: {
-        role: data.role as UserOrgRole,
-        user: {
-          connect: {
-            email: data.email,
-          },
-        },
-        org: {
-          connect: {
-            id,
-          },
+  const createdOrgUser = await prisma.orgUser.create({
+    data: {
+      role: data.role as UserOrgRole,
+      user: {
+        connect: {
+          email: data.email,
         },
       },
-    })
-    .then((t) => t.orgId);
+      org: {
+        connect: {
+          id,
+        },
+      },
+    },
+  });
+
+  return {
+    orgUserId: createdOrgUser?.id,
+    message: "User added",
+  };
 }
 
 export async function getOrgUsers(user: User, id: string) {
@@ -159,7 +212,6 @@ export async function getOrgUsers(user: User, id: string) {
     where: {
       userId: user.id,
       orgId: id,
-      role: "ADMIN",
     },
   });
 
@@ -177,4 +229,18 @@ export async function getOrgUsers(user: User, id: string) {
   });
 
   return users;
+}
+
+export async function getOrgUserRole(
+  user: User,
+  id: string
+): Promise<UserOrgRole | undefined> {
+  return (
+    await prisma.orgUser.findFirst({
+      where: {
+        orgId: id,
+        userId: user.id,
+      },
+    })
+  )?.role;
 }

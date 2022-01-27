@@ -13,7 +13,7 @@ import * as z from "zod";
 import { notAuthorized } from "../../../lib/errors";
 import { uploadFileToGCS } from "../../../lib/gsc";
 import { uid } from "uid";
-import { NewOrgUserSchema } from "lib/org/types/NewOrgUser";
+import { NewOrgUserSchema } from "../../../lib/org/types/NewOrgUser";
 
 const getType = (s: string): string =>
   s.match(/[^:/]\w+(?=[;,])/)?.[0] as string;
@@ -79,9 +79,17 @@ export const handleAddOrganizationUser = apiHandler(async (req, res) => {
     return notAuthorized(res);
   }
 
-  const orgId = await createOrgUser(user, id, orgUser);
-
-  res.status(200).send({ orgId });
+  try {
+    const { orgUserId, message } = await createOrgUser(
+      user,
+      id,
+      orgUser,
+      req.headers.origin!
+    );
+    res.status(200).send({ orgUserId, message });
+  } catch (err: any) {
+    res.status(500).send({ error: err.message ?? "Internal server error" });
+  }
 });
 
 export const handleGetOrganizationUsers = apiHandler(async (req, res) => {

@@ -23,16 +23,20 @@ import {
 import Button from "@material-ui/core/Button";
 import SaveIcon from "@material-ui/icons/Save";
 import { authenticatedPage, requireParam } from "../../../../lib/pageHelpers";
+import { apiRequest } from "../../../../lib/api";
+import { getOrgUserRole } from "../../../../lib/org";
 import BreadcrumbsButtons from "../../../../components/common/BreadcrumbsButtons";
 import { OrgUser, User, UserOrgRole } from ".prisma/client";
-import { apiRequest } from "lib/api";
+import { useAlertsContext } from "../../../../utils/react/hooks/useAlertsContext";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const orgId = requireParam(context, "orgId");
+  const orgUserRole = (await getOrgUserRole(context.user, orgId)) ?? "";
 
   return {
     props: {
       orgId,
+      orgUserRole,
     },
   };
 });
@@ -46,10 +50,13 @@ const useStyles = makeStyles(() => ({
 
 type Props = {
   orgId: string;
+  orgUserRole: UserOrgRole;
 };
 
-export default function OrganizationUsers({ orgId }: Props) {
+export default function OrganizationUsers({ orgId, orgUserRole }: Props) {
   const classes = useStyles();
+
+  const { addErrorAlert, addSuccessAlert } = useAlertsContext();
 
   const { data: orgUsers, mutate } = useSWR<
     (OrgUser & {
@@ -58,6 +65,8 @@ export default function OrganizationUsers({ orgId }: Props) {
   >(`/api/organization/getusers/${orgId}`);
 
   const [newUserData, setNewUserData] = useState({ email: "", role: "" });
+
+  const isAdmin = orgUserRole === "ADMIN";
 
   const handleChange = (key: string) => (
     e: ChangeEvent<{ value: unknown }>
@@ -73,10 +82,16 @@ export default function OrganizationUsers({ orgId }: Props) {
       return;
     }
 
-    await apiRequest(
-      `/api/organization/adduser/${orgId}`,
-      newUserData
-    ).then(() => mutate());
+    try {
+      const response = await apiRequest(
+        `/api/organization/adduser/${orgId}`,
+        newUserData
+      );
+      await mutate();
+      response.message && addSuccessAlert(response.message);
+    } catch (err: any) {
+      addErrorAlert(err);
+    }
   };
 
   return (
@@ -88,49 +103,52 @@ export default function OrganizationUsers({ orgId }: Props) {
         <Typography>Organization Users</Typography>
       </BreadcrumbsButtons>
       <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Paper>
-            <Box p={2}>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <Typography variant="h6">Add user</Typography>
-                </Grid>
-                <Grid item xs={7}>
-                  <TextField
-                    fullWidth
-                    label="Email address"
-                    variant="outlined"
-                    onChange={handleChange("email")}
-                  />
-                </Grid>
-                <Grid item xs={7}>
-                  <FormControl variant="outlined" fullWidth>
-                    <InputLabel>Role</InputLabel>
-                    <Select
-                      label="Role"
-                      value={newUserData.role}
-                      onChange={handleChange("role")}
+        {isAdmin && (
+          <Grid item xs={12}>
+            <Paper>
+              <Box p={2}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <Typography variant="h6">Add user</Typography>
+                  </Grid>
+                  <Grid item xs={7}>
+                    <TextField
+                      fullWidth
+                      label="Email address"
+                      variant="outlined"
+                      value={newUserData.email}
+                      onChange={handleChange("email")}
+                    />
+                  </Grid>
+                  <Grid item xs={7}>
+                    <FormControl variant="outlined" fullWidth>
+                      <InputLabel>Role</InputLabel>
+                      <Select
+                        label="Role"
+                        value={newUserData.role}
+                        onChange={handleChange("role")}
+                      >
+                        <MenuItem value={UserOrgRole.ADMIN}>Admin</MenuItem>
+                        <MenuItem value={UserOrgRole.USER}>User</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={7}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<SaveIcon />}
+                      size="medium"
+                      onClick={handleAddUser}
                     >
-                      <MenuItem value={UserOrgRole.ADMIN}>Admin</MenuItem>
-                      <MenuItem value={UserOrgRole.USER}>User</MenuItem>
-                    </Select>
-                  </FormControl>
+                      Add user
+                    </Button>
+                  </Grid>
                 </Grid>
-                <Grid item xs={7}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<SaveIcon />}
-                    size="medium"
-                    onClick={handleAddUser}
-                  >
-                    Add user
-                  </Button>
-                </Grid>
-              </Grid>
-            </Box>
-          </Paper>
-        </Grid>
+              </Box>
+            </Paper>
+          </Grid>
+        )}
         <Grid item xs={12}>
           <Typography variant="h6">Organization users</Typography>
         </Grid>
@@ -157,15 +175,24 @@ export default function OrganizationUsers({ orgId }: Props) {
                     <TableCell>{orgUser.user.email}</TableCell>
                     <TableCell>{formatDate(orgUser.createdAt)}</TableCell>
                     <TableCell>
-                      <Select fullWidth value={orgUser.role} variant="outlined">
-                        <MenuItem value={UserOrgRole.ADMIN}>Admin</MenuItem>
-                        <MenuItem value={UserOrgRole.USER}>User</MenuItem>
-                      </Select>
+                      {isAdmin ? (
+                        <Select
+                          fullWidth
+                          value={orgUser.role}
+                          variant="outlined"
+                        >
+                          <MenuItem value={UserOrgRole.ADMIN}>Admin</MenuItem>
+                          <MenuItem value={UserOrgRole.USER}>User</MenuItem>
+                        </Select>
+                      ) : (
+                        orgUser.role
+                      )}
                     </TableCell>
-
-                    <TableCell>
-                      <Button color="primary">Remove</Button>
-                    </TableCell>
+                    {isAdmin && (
+                      <TableCell>
+                        <Button color="primary">Remove</Button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
