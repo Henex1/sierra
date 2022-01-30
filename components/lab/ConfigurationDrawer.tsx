@@ -105,7 +105,7 @@ export default function ConfigurationDrawer({
   const { searchConfiguration } = useLabContext();
   const [queryPanelData, setQueryPanelData] = React.useState<QueryPanelValues>({
     query: searchConfiguration?.queryTemplate.query || "",
-    knobs: (searchConfiguration?.queryTemplate.knobs || {}) as {
+    knobs: (searchConfiguration?.knobs || {}) as {
       [key: string]: any;
     },
   });
@@ -183,13 +183,25 @@ export default function ConfigurationDrawer({
     setAnchorEl(null);
   };
 
-  async function handleQueryTemplateUpdate(queryTemplateId: string) {
+  async function handleQueryTemplateUpdate(
+    queryTemplateId: string,
+    { knobs }: QueryPanelValues
+  ) {
     try {
       await apiRequest(`/api/searchconfigurations/update`, {
         id: searchConfiguration?.id,
         queryTemplateId,
         rulesetIds,
         executionId: currentExecution?.id,
+        knobs: knobs
+          ? Object.entries(knobs).reduce(
+              (result: { [key: string]: number }, item) => {
+                result[item[0]] = parseFloat(item[1]) || 10;
+                return result;
+              },
+              {}
+            )
+          : {},
       });
       router.replace(router.asPath);
     } catch (err) {
@@ -214,7 +226,7 @@ export default function ConfigurationDrawer({
   const handleQueryPanelChange = (data: QueryPanelValues) =>
     setQueryPanelData(data);
 
-  const updateQueryTemplate = async ({ query, knobs }: QueryPanelValues) => {
+  const updateQueryTemplate = async ({ query }: QueryPanelValues) => {
     const newQueryTemplates: {
       queryTemplate: ExposedQueryTemplate;
     } = await apiRequest(`/api/querytemplates/update`, {
@@ -222,15 +234,6 @@ export default function ConfigurationDrawer({
       description: searchConfiguration?.queryTemplate.description || "",
       projectId: searchConfiguration?.queryTemplate.projectId,
       query,
-      knobs: knobs
-        ? Object.entries(knobs).reduce(
-            (result: { [key: string]: number }, item) => {
-              result[item[0]] = parseFloat(item[1]) || 10;
-              return result;
-            },
-            {}
-          )
-        : {},
     });
 
     return newQueryTemplates;
@@ -238,6 +241,7 @@ export default function ConfigurationDrawer({
 
   const handleRun = async () => {
     const { queryTemplate } = await updateQueryTemplate(queryPanelData);
+    await handleQueryTemplateUpdate(queryTemplate.id, queryPanelData);
     runExecution(queryTemplate.id);
   };
 
@@ -313,7 +317,10 @@ export default function ConfigurationDrawer({
                 <TabPanel value={activeTab} index={0}>
                   <QueryTemplateEditor
                     formId={formId}
-                    queryTemplate={searchConfiguration.queryTemplate}
+                    queryTemplate={{
+                      ...searchConfiguration.queryTemplate,
+                      knobs: searchConfiguration.knobs,
+                    }}
                     searchEndpointType={searchEndpointType}
                     onUpdate={handleQueryTemplateUpdate}
                     updateQueryTemplate={updateQueryTemplate}

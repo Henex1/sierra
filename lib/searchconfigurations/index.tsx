@@ -21,6 +21,7 @@ export interface SearchConfiguration extends PrismaSearchConfiguration {
 
 const scSelect = {
   id: true,
+  knobs: true,
 };
 
 export type ExposedSearchConfiguration = Pick<
@@ -31,8 +32,10 @@ export type ExposedSearchConfiguration = Pick<
 type CreateSearchConfigurationInput = {
   queryTemplateId: string;
   projectId: string;
+  knobs: any;
   rulesets: RulesetVersion[];
   judgements: WeightedJudgement[];
+  parentId?: string;
   id?: string;
   tags?: Array<string>;
 };
@@ -130,18 +133,30 @@ export type WeightedJudgement = [Judgement, number];
 
 export function createSCOperation({
   queryTemplateId,
+  projectId,
+  knobs,
+  parentId,
   rulesets,
   judgements,
   id,
 }: Pick<
   CreateSearchConfigurationInput,
-  "queryTemplateId" | "rulesets" | "judgements" | "id"
+  | "queryTemplateId"
+  | "projectId"
+  | "knobs"
+  | "rulesets"
+  | "judgements"
+  | "parentId"
+  | "id"
 >) {
   return prisma.searchConfiguration.create({
     data: {
       id,
       queryTemplate: {
         connect: { id: queryTemplateId },
+      },
+      project: {
+        connect: { id: projectId },
       },
       judgements: {
         create: judgements.map(([judgement, weight]) => ({
@@ -154,6 +169,10 @@ export function createSCOperation({
           id: rsv.id,
         })),
       },
+      knobs,
+      parent: {
+        connect: { id: parentId },
+      },
     },
     include: { tags: true },
   });
@@ -162,6 +181,8 @@ export function createSCOperation({
 export async function createSearchConfiguration({
   queryTemplateId,
   projectId,
+  knobs,
+  parentId,
   rulesets,
   judgements,
   id,
@@ -169,6 +190,9 @@ export async function createSearchConfiguration({
 }: CreateSearchConfigurationInput): Promise<SearchConfiguration> {
   const sc = await createSCOperation({
     queryTemplateId,
+    projectId,
+    knobs,
+    parentId,
     rulesets,
     judgements,
     id,

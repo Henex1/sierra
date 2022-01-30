@@ -90,6 +90,9 @@ export const TEST_SEARCHCONFIGURATION_JUDGEMENT: NoTimestamps<JudgementSearchCon
 export const TEST_SEARCHCONFIGURATION: NoTimestamps<SearchConfiguration> = {
   id: TEST_SEARCHCONFIGURATION_ID,
   queryTemplateId: TEST_QUERYTEMPLATE_ID,
+  parentId: "TEST_PARENT_SC_123123123123",
+  projectId: TEST_PROJECT_ID,
+  knobs: {},
 };
 
 export const TEST_EXECUTION: NoTimestamps<Execution> = {
@@ -106,7 +109,6 @@ export const TEST_QUERYTEMPLATE: NoTimestamps<QueryTemplate> = {
   projectId: TEST_PROJECT_ID,
   parentId: "TEST_PARENT_QT_123123123123",
   query: "test query",
-  knobs: {},
   description: "test description",
 };
 

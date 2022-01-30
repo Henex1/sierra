@@ -10,11 +10,11 @@ const KNOB_DEFAULT_VALUE = 10;
 
 type Props = {
   queryTemplate:
-    | ExposedQueryTemplate
-    | Pick<ExposedQueryTemplate, "query" | "knobs">;
+    | (ExposedQueryTemplate & { knobs: any })
+    | Pick<ExposedQueryTemplate & { knobs: any }, "query" | "knobs">;
   formId: string;
   searchEndpointType: string;
-  onUpdate?: (id: string) => void;
+  onUpdate?: (id: string, data: QueryPanelValues) => void;
   onFormValuesChange: (data: QueryPanelValues) => void;
   updateQueryTemplate?: (
     data: QueryPanelValues
@@ -58,10 +58,10 @@ export const QueryTemplateEditor = (props: Props) => {
 
     const newQueryTemplates = await updateQueryTemplate({
       query: value.query,
-      knobs: value.knobs as Record<string, undefined>,
+      knobs: value.knobs,
     });
 
-    await onUpdate(newQueryTemplates.queryTemplate.id);
+    await onUpdate(newQueryTemplates.queryTemplate.id, value);
     router.replace(router.asPath);
   }
 

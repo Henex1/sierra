@@ -177,7 +177,7 @@ model Project {
   searchEndpoint            SearchEndpoint           @relation(fields: [searchEndpointId], references: [id])
   queryTemplateTags         QueryTemplateTag[]
   Execution                 Execution[]
-  activeSearchConfiguration SearchConfiguration?     @relation(fields: [activeSearchConfigurationId], references: [id])
+  searchConfigurations      SearchConfiguration[]
 }
 
 // A QueryTemplate is an immutable backend query that can be populated combined
@@ -192,12 +192,11 @@ model QueryTemplate {
   projectId   String
   parentId    String?
   query       String
-  knobs       Json
   // Longer description of the QueryTemplate. Compare to a git commit message.
   description String?
 
   children             QueryTemplate[]       @relation("QueryTemplateToQueryTemplate")
-  parent               QueryTemplate?        @relation(fields: [parentId], references: [id])
+  parent               QueryTemplate?        @relation("QueryTemplateToQueryTemplate", fields: [parentId], references: [id])
   project              Project               @relation(fields: [projectId], references: [id])
   searchConfigurations SearchConfiguration[]
   // All tags this QueryTemplate has.
@@ -270,15 +269,20 @@ model SearchConfiguration {
   id              String   @id @default(cuid())
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  knobs           Json     @default("{}")
   queryTemplateId String
+  projectId       String
+  parentId        String?
 
+  children      SearchConfiguration[]          @relation("SearchConfigurationToSearchConfiguration")
+  parent        SearchConfiguration?           @relation("SearchConfigurationToSearchConfiguration", fields: [parentId], references: [id])
   executions    Execution[]
   judgements    JudgementSearchConfiguration[]
   queryTemplate QueryTemplate                  @relation(fields: [queryTemplateId], references: [id])
   rulesets      RulesetVersion[]
   // All of the tags which this SearchConfiguration has
   tags          SearchConfigurationTag[]
-  Project       Project[]
+  project       Project                        @relation(fields: [projectId], references: [id])
 }
 
 // A SearchConfigurationTag allows us to assign a unique label per project to
@@ -376,7 +380,7 @@ model RulesetVersion {
   value     Json
 
   children             RulesetVersion[]      @relation("RulesetVersionToRulesetVersion")
-  parent               RulesetVersion?       @relation(fields: [parentId], references: [id])
+  parent               RulesetVersion?       @relation("RulesetVersionToRulesetVersion", fields: [parentId], references: [id])
   ruleset              Ruleset               @relation(fields: [rulesetId], references: [id])
   searchConfigurations SearchConfiguration[]
 }

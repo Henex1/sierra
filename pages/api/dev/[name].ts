@@ -126,14 +126,12 @@ async function handleSolrSeed(
   let qtBase = await createQueryTemplate(project, {
     description: "Solr query template",
     query: "qt=/select&q=#$query#",
-    knobs: {},
   });
   // Fake a tree of revisions
   for (let i = 0; i < 2; i++) {
     qtBase = await updateQueryTemplate(qtBase, {
       description: `Update number ${i + 1}`,
       query: qtBase.query,
-      knobs: qtBase.knobs,
     });
   }
   const qtChildren = [qtBase, qtBase];
@@ -142,7 +140,6 @@ async function handleSolrSeed(
       qtChildren[j] = await updateQueryTemplate(qtChildren[j], {
         description: `Fork ${j + 1}.${i + 1}`,
         query: qtChildren[j].query,
-        knobs: qtChildren[j].knobs,
         tags: [`fork-${j + 1}`],
       });
     }
@@ -164,12 +161,16 @@ async function handleSolrSeed(
           id: qtChildren[0].id,
         },
       },
+      project: {
+        connect: { id: project.id },
+      },
       judgements: { create: [{ judgementId: judgement.id, weight: 1.0 }] },
       rulesets: {
         connect: {
           id: rulesetVersionId,
         },
       },
+      knobs: {},
     },
   });
 
@@ -264,14 +265,12 @@ async function handleSeed(
   let qtBase = await createQueryTemplate(project, {
     description: "Initial query template",
     query: mockQuery,
-    knobs: {},
   });
   // Fake a tree of revisions
   for (let i = 0; i < 2; i++) {
     qtBase = await updateQueryTemplate(qtBase, {
       description: `Update number ${i + 1}`,
       query: qtBase.query,
-      knobs: qtBase.knobs,
     });
   }
   const qtChildren = [qtBase, qtBase];
@@ -280,7 +279,6 @@ async function handleSeed(
       qtChildren[j] = await updateQueryTemplate(qtChildren[j], {
         description: `Fork ${j + 1}.${i + 1}`,
         query: qtChildren[j].query,
-        knobs: qtChildren[j].knobs,
         tags: [`fork-${j + 1}`],
       });
     }
@@ -293,12 +291,16 @@ async function handleSeed(
           id: qtChildren[0].id,
         },
       },
+      project: {
+        connect: { id: project.id },
+      },
       judgements: { create: [{ judgementId: judgement.id, weight: 1.0 }] },
       rulesets: {
         connect: {
           id: rulesetVersionId,
         },
       },
+      knobs: {},
     },
   });
 

@@ -81,7 +81,8 @@ export const handleCreateSearchConfiguration = apiHandler(async (req, res) => {
     req,
     z.object({
       projectId: z.string(),
-      queryTemplate: z.object({ query: z.string(), knobs: z.object({}) }),
+      queryTemplateQuery: z.string(),
+      knobs: z.any(),
       judgementName: z.string(),
       searchPhrases: z.array(z.string()),
     })
@@ -100,11 +101,11 @@ export const handleCreateSearchConfiguration = apiHandler(async (req, res) => {
   let queryTemplate = { ...initialQueryTemplate };
 
   if (
-    initialQueryTemplate.query !== input.queryTemplate.query ||
-    Object.entries(input.queryTemplate.knobs).length
+    initialQueryTemplate.query !== input.queryTemplateQuery ||
+    Object.entries(input.knobs).length
   ) {
     queryTemplate = await updateQueryTemplate(initialQueryTemplate, {
-      ...input.queryTemplate,
+      query: input.queryTemplateQuery,
       description: "Update number 1",
     });
   }
@@ -128,7 +129,9 @@ export const handleCreateSearchConfiguration = apiHandler(async (req, res) => {
   const createSCOp = createSCOperation({
     id: searchConfigurationId,
     queryTemplateId: queryTemplate.id,
+    projectId: project.id,
     rulesets: [],
+    knobs: input.knobs,
     judgements: [[judgement, 1]],
   });
 
@@ -159,6 +162,7 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
       id: z.string(),
       queryTemplateId: z.string(),
       executionId: z.string(),
+      knobs: z.any(),
       rulesetIds: z.array(z.string()).optional(),
     })
   );
@@ -238,6 +242,8 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
     queryTemplateId: createdQueryTemplate.id,
     projectId: currentQueryTemplate.projectId,
     rulesets,
+    knobs: input.knobs,
+    parentId: currentSearchConfiguration.id,
     judgements: judgements as WeightedJudgement[],
   });
 

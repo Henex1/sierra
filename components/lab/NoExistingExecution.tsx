@@ -96,7 +96,8 @@ export default function NoExistingExecution({
 
     apiRequest("/api/searchconfigurations/create", {
       projectId,
-      queryTemplate,
+      queryTemplateQuery: queryTemplate.query,
+      knobs: queryTemplate.knobs,
       judgementName,
       searchPhrases,
     }).then((searchConfiguration) => {
