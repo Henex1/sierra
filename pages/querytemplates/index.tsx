@@ -52,13 +52,6 @@ export default function QueryTemplates({ templates }: Props) {
         accessor: "query",
       },
       {
-        Header: "Knobs",
-        Cell({ row }: CellProps<ExposedQueryTemplate>) {
-          return JSON.stringify(row.original.knobs);
-        },
-        accessor: "knobs",
-      },
-      {
         Header: "Project id",
         accessor: "projectId",
       },

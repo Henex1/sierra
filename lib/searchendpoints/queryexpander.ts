@@ -1,6 +1,11 @@
 import fetch from "node-fetch";
 
-import { SearchEndpoint, QueryTemplate, RulesetVersion } from "../prisma";
+import {
+  Prisma,
+  SearchEndpoint,
+  QueryTemplate,
+  RulesetVersion,
+} from "../prisma";
 import { requireEnv } from "../env";
 import { ErrorMessage } from "../errors/constants";
 import { HttpError } from "../apiServer";
@@ -19,6 +24,7 @@ const QUERY_EXPANDER_URL = requireEnv("QUERY_EXPANDER_URL");
 export async function expandQuery(
   endpoint: SearchEndpoint,
   tpl: QueryTemplate,
+  knobs: Prisma.JsonValue,
   rulesets: RulesetVersion[],
   ltrModelName: string | undefined,
   phrase: string
@@ -47,7 +53,7 @@ export async function expandQuery(
             instructions: r.instructions?.filter((i: any) => i?.enabled),
           }))
       ),
-      knobs: tpl.knobs,
+      knobs,
     },
   });
 

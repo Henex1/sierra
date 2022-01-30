@@ -14,8 +14,8 @@ import Knobs from "./Knobs";
 type Props = {
   formId: string;
   queryTemplate:
-    | ExposedQueryTemplate
-    | Pick<ExposedQueryTemplate, "query" | "knobs">;
+    | (ExposedQueryTemplate & { knobs: any })
+    | Pick<ExposedQueryTemplate & { knobs: any }, "query" | "knobs">;
   onSubmit: (value: {
     query: string;
     knobs: { [name: string]: any };

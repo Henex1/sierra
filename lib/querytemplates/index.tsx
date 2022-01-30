@@ -20,7 +20,6 @@ const selectKeys = {
   projectId: true,
   parentId: true,
   description: true,
-  knobs: true,
   query: true,
   createdAt: true,
   updatedAt: true,
@@ -92,7 +91,6 @@ export async function listQueryTemplatesFromAllProjects(
 export const createQueryTemplateSchema = z.object({
   description: z.string(),
   query: z.string(),
-  knobs: z.any(),
   tags: z.array(z.string()).optional(),
 });
 
@@ -103,12 +101,10 @@ export const defaultQueryTemplates = {
   elasticsearch: {
     description: "Initial query",
     query: '{"query":{"match":{"title":"#$query#"}}}', // TODO rely on the data source title: field
-    knobs: {},
   },
   solr: {
     description: "Initial query",
     query: "qt=/select&q=#$query#&q.op=OR",
-    knobs: {},
   },
 };
 
@@ -117,7 +113,7 @@ export async function createQueryTemplate(
   { tags, ...input }: CreateQueryTemplate
 ): Promise<QueryTemplate> {
   const queryTemplate = await prisma.queryTemplate.create({
-    data: { ...input, knobs: input.knobs, projectId: project.id },
+    data: { ...input, projectId: project.id },
     include: { tags: true },
   });
   if (tags) {
@@ -131,7 +127,6 @@ export async function createQueryTemplate(
 export const updateQueryTemplateSchema = z.object({
   description: z.string(),
   query: z.string(),
-  knobs: z.any(),
   // What tags to apply to the new QueryTemplate. These will be replace any
   // existing tags with the same names.
   tags: z.array(z.string()).optional(),
@@ -146,7 +141,6 @@ export async function updateQueryTemplate(
   const updated = await prisma.queryTemplate.create({
     data: {
       ...input,
-      knobs: input.knobs,
       parentId: queryTemplate.id,
       projectId: queryTemplate.projectId,
     },

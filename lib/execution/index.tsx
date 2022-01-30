@@ -333,6 +333,7 @@ export async function createExecution(
     const testPhraseExecution = await newSearchPhraseExecution(
       {},
       endpoint,
+      config,
       tpl,
       rv,
       { phrase: "testing test", results: [] }
@@ -351,6 +352,7 @@ export async function createExecution(
       await newSearchPhraseExecution(
         failedQueryExecutions,
         endpoint,
+        config,
         tpl,
         rv,
         j
@@ -434,6 +436,7 @@ async function executeQuery(
 async function newSearchPhraseExecution(
   failedQueryExecutions: { [key: string]: number },
   endpoint: SearchEndpoint,
+  sc: SearchConfiguration,
   tpl: QueryTemplate,
   rv: RulesetVersion[],
   jp: CombinedJudgementPhrase
@@ -441,7 +444,14 @@ async function newSearchPhraseExecution(
   const iface = getQueryInterface(endpoint);
   let queryResult;
   try {
-    const query = await expandQuery(endpoint, tpl, rv, undefined, jp.phrase);
+    const query = await expandQuery(
+      endpoint,
+      tpl,
+      sc.knobs,
+      rv,
+      undefined,
+      jp.phrase
+    );
     queryResult = await executeQuery(
       iface,
       query,

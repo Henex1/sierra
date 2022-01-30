@@ -54,7 +54,6 @@ export default function EditQueryTemplate({ template, projects }: Props) {
       id: template.id,
       description: value.description,
       query: value.query,
-      knobs: value.knobs,
       tags: value.tags,
     });
     router.push("/querytemplates");

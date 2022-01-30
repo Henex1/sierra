@@ -12,6 +12,7 @@ import {
   userCanAccessSearchEndpoint,
 } from "../../../lib/searchendpoints";
 import { userCanAccessQueryTemplate } from "../../../lib/querytemplates";
+import { userCanAccessSearchConfiguration } from "../../../lib/searchconfigurations";
 
 const ontologyRequestSchema = z.object({
   query: z.string(),
@@ -61,9 +62,19 @@ export default async function executeQuery(
     rulesetVersions.forEach((r) => rules.push(...r?.value?.rules));
   }
 
+  const searchConfiguration = await prisma.searchConfiguration.findFirst({
+    where: userCanAccessSearchConfiguration(user, {
+      id: project.activeSearchConfigurationId!,
+    }),
+  });
+  if (!searchConfiguration) {
+    return res.status(500).json({ error: "Can't find search configuration" });
+  }
+
   const queryTemplate = await prisma.queryTemplate.findFirst({
-    where: userCanAccessQueryTemplate(user, { projectId: project.id }),
-    orderBy: [{ updatedAt: "desc" }],
+    where: userCanAccessQueryTemplate(user, {
+      id: searchConfiguration.queryTemplateId,
+    }),
   });
   if (!queryTemplate) {
     return res.status(500).json({ error: "Can't find query template" });
@@ -79,6 +90,7 @@ export default async function executeQuery(
   const query = await expandQuery(
     searchEndpoint,
     queryTemplate,
+    searchConfiguration.knobs,
     rules,
     input.data.ltrModelName,
     input.data.query
