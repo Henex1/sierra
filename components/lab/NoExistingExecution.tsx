@@ -64,7 +64,9 @@ export default function NoExistingExecution({
 
   const handleSearchPhrasesKeyUp = (e: any) => {
     if (e.key === "Enter" && searchPhrasesInputValue.trim().length) {
-      setSearchPhrases((searchPhrases) => [...searchPhrases, e.target.value]);
+      setSearchPhrases((searchPhrases) => [
+        ...new Set([...searchPhrases, e.target.value]),
+      ]);
       setSearchPhrasesInputValue("");
     }
   };

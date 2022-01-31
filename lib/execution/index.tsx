@@ -5,6 +5,7 @@ import prisma, {
   Execution,
   OffsetPagination,
   Prisma,
+  Project,
   QueryTemplate,
   RulesetVersion,
   SearchConfiguration,
@@ -110,10 +111,11 @@ export async function getCurrentExecution(
 }
 
 export async function getLatestExecution(
-  sc: SearchConfiguration
+  sc?: SearchConfiguration,
+  project?: Project
 ): Promise<Execution | null> {
   const execution = await prisma.execution.findFirst({
-    where: { searchConfigurationId: sc.id },
+    where: { searchConfigurationId: sc?.id, projectId: project?.id },
     orderBy: [{ createdAt: "desc" }],
   });
   return execution;
