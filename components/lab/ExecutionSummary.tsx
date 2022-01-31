@@ -40,6 +40,7 @@ const useStyles = makeStyles((theme) => ({
 type Props = {
   templates: ExposedQueryTemplate[];
   executions: ExposedExecution[];
+  allExecutionsLength: number;
   activeExecution: ExposedExecution;
   onSelected: (id: string) => void;
 };
@@ -53,6 +54,7 @@ const getExecutionTime = (date: Date | string): string => {
 export default function ExecutionSummary({
   templates,
   executions,
+  allExecutionsLength,
   activeExecution,
   onSelected,
 }: Props) {
@@ -87,6 +89,7 @@ export default function ExecutionSummary({
       <Box mt={2} mb={3}>
         <ExecutionList
           executions={executions}
+          allExecutionsLength={allExecutionsLength}
           activeExecution={activeExecution}
           onSelected={onSelected}
         />

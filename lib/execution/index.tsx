@@ -50,6 +50,7 @@ export type ExposedExecution = Omit<
   "createdAt"
 > & {
   createdAt: string;
+  index: number;
 };
 
 const speSelect = {
@@ -74,7 +75,7 @@ export type ExecutionUpdateInput = {
 export function formatExecution(val: Execution): ExposedExecution {
   return _.pick(
     { ...val, createdAt: val.createdAt.toString() },
-    _.keys(executionSelect)
+    _.keys({ ...executionSelect, index: true })
   ) as ExposedExecution;
 }
 
@@ -121,13 +122,77 @@ export async function getLatestExecution(
   return execution;
 }
 
-export async function listExecutions(projectId: string): Promise<Execution[]> {
-  const execution = await prisma.execution.findMany({
+export async function loadExecutions(
+  projectId: string,
+  refExecutionId?: string,
+  direction?: "left" | "right"
+): Promise<{
+  executions: (Execution & { index: number })[];
+  allExecutionsLength: number;
+}> {
+  const allExecutionsLength = await prisma.execution.count({
     where: { projectId },
-    orderBy: [{ createdAt: "desc" }],
-    take: 10,
   });
-  return execution;
+
+  if (!refExecutionId) {
+    const executions = await prisma.execution.findMany({
+      where: { projectId },
+      take: 10,
+      orderBy: [{ createdAt: "asc" }],
+    });
+    return {
+      executions: executions.map((execution, index) => ({
+        ...execution,
+        index,
+      })),
+      allExecutionsLength,
+    };
+  }
+
+  let executions: Execution[];
+  if (direction === "left" || direction === "right") {
+    executions = await prisma.execution.findMany({
+      take: { left: -5, right: 5 }[direction],
+      skip: 1,
+      cursor: {
+        id: refExecutionId,
+      },
+      where: { projectId },
+    });
+  } else {
+    const leftExecutions = await prisma.execution.findMany({
+      take: -2,
+      skip: 1,
+      cursor: {
+        id: refExecutionId,
+      },
+      where: { projectId },
+    });
+    const rightExecutionsWithCursor = await prisma.execution.findMany({
+      take: 3,
+      cursor: {
+        id: refExecutionId,
+      },
+      where: { projectId },
+    });
+    executions = [...leftExecutions, ...rightExecutionsWithCursor];
+  }
+  const startIndex = await prisma.execution.count({
+    where: {
+      projectId,
+      createdAt: {
+        lt: executions[0].createdAt,
+      },
+    },
+  });
+
+  return {
+    executions: executions.map((execution, index) => ({
+      ...execution,
+      index: startIndex + index,
+    })),
+    allExecutionsLength,
+  };
 }
 
 const sortMapping: Record<
