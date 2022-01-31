@@ -148,7 +148,7 @@ async function handleSolrSeed(
   const judgement = await prisma.judgement.create({
     data: {
       projectId: project.id,
-      name: "Crowdsourced Judgements",
+      name: "Crowd-sourced Judgements",
     },
   });
   const votes = parseVotesCsv(fs.readFileSync(seedJudgementFile, "utf-8"));
@@ -233,7 +233,7 @@ async function handleSeed(
   const judgement = await prisma.judgement.create({
     data: {
       projectId: project.id,
-      name: "Crowdsourced Judgements",
+      name: "Crowd-sourced Judgements",
     },
   });
   const votes = parseVotesCsv(fs.readFileSync(seedJudgementFile, "utf-8"));
