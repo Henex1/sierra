@@ -21,7 +21,6 @@ FROM node:16 AS builder
 ENV DATABASE_URL=postgresql://postgres:example@postgres:5432/postgres?schema=public \
     NEXTAUTH_URL=http://localhost:3000/api/auth \
     SECRET=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
-    ALLOW_REGISTRATION_FROM=bigdataboutique.com \
     QUERY_EXPANDER_URL=http://localhost:8080 \
     GOOGLE_ID=unset_google_id \
     GOOGLE_SECRET=unset_google_secret \

@@ -23,7 +23,6 @@ export type ValidUserSession = {
 
 export type UserSession = Partial<ValidUserSession>;
 
-const allowRegistrationFrom = requireEnv("ALLOW_REGISTRATION_FROM").split(",");
 const nextAuthSecret = requireEnv("SECRET");
 
 export const authOptions = (req: NextApiRequest): NextAuthOptions => ({
@@ -104,11 +103,9 @@ export const authOptions = (req: NextApiRequest): NextAuthOptions => ({
         email,
       });
 
-      if (!invitation && process.env.NODE_ENV === "development") {
-        // the Artur case - remove later when proper access control is implemented
-        if (email === "artur.sorokin.spb@gmail.com") return true;
-        // TODO: investigate this. We might want to let users to log in with their personal or company emails
-        return allowRegistrationFrom.some((d) => email.endsWith(`@${d}`));
+      // Allow bdbq personnel to sign up and create their own user space
+      if (!invitation && email.endsWith(`@bigdataboutique.com`)) {
+        return true;
       }
 
       return !!invitation;
