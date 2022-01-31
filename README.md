@@ -184,6 +184,25 @@ yarn build
 docker build . -t sierra
 ```
 
+### Staging deployment
+
+### WARNING - THIS WILL NUKE THE DATABASE
+
+1. edit .env to hit the prod DB url with:
+
+```
+DATABASE_URL="postgresql://postgres:<db_pass>@postgres-postgresql.sierra-staging.svc.cluster.local:5432/sierra?schema=public"
+```
+
+2. To apply the schema run:
+
+```bash
+# clear all existing migrations
+rm -rf ./prisma/migrations/
+# Create a new one and apply
+prisma migrate dev --name init
+```
+
 ### Test datasets
 
 There are several test datasets available on https://elasticsearch-demos.bigdataboutique.com (using credentials demo-user:demo:password):

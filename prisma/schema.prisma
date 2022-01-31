@@ -169,15 +169,15 @@ model Project {
   name                        String
   activeSearchConfigurationId String?
 
-  judgements                Judgement[]
-  org                       Org                      @relation(fields: [orgId], references: [id])
-  queryTemplates            QueryTemplate[]
-  rulesets                  Ruleset[]
-  searchConfigurationTags   SearchConfigurationTag[]
-  searchEndpoint            SearchEndpoint           @relation(fields: [searchEndpointId], references: [id])
-  queryTemplateTags         QueryTemplateTag[]
-  Execution                 Execution[]
-  searchConfigurations      SearchConfiguration[]
+  judgements              Judgement[]
+  org                     Org                      @relation(fields: [orgId], references: [id])
+  queryTemplates          QueryTemplate[]
+  rulesets                Ruleset[]
+  searchConfigurationTags SearchConfigurationTag[]
+  searchEndpoint          SearchEndpoint           @relation(fields: [searchEndpointId], references: [id])
+  queryTemplateTags       QueryTemplateTag[]
+  Execution               Execution[]
+  searchConfigurations    SearchConfiguration[]
 }
 
 // A QueryTemplate is an immutable backend query that can be populated combined
