@@ -16,7 +16,7 @@ import {
   getActiveSearchConfiguration,
 } from "../../lib/searchconfigurations";
 import {
-  listExecutions,
+  loadExecutions,
   countSearchPhrases,
   getSearchPhrases,
   ExposedExecution,
@@ -78,6 +78,7 @@ type Props = {
   rulesets: ExposedRulesetWithVersions[];
   templates: ExposedQueryTemplate[];
   executions: ExposedExecution[];
+  allExecutionsLength: number;
   activeExecution: ExposedExecution | null; // execution being deployed
   currentExecution: ExposedExecution | null; // execution being viewed/selected
   displayOptions: {
@@ -107,9 +108,6 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
   }
 
   const page = optionalNumberQuery(context, "page", 1) - 1;
-
-  // Get all executions for selected project
-  const executions = projectId ? await listExecutions(projectId) : [];
 
   // Query parameters
   const {
@@ -176,6 +174,12 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
       activeSearchConfiguration &&
       (await getLatestExecution(activeSearchConfiguration));
   }
+
+  // Get executions for selected project
+  const { executions, allExecutionsLength } = await loadExecutions(
+    projectId,
+    activeExecution?.id
+  );
 
   const judgements = await listJudgements(project);
   const isExecutionDirty = currentExecution
@@ -278,6 +282,7 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
       rulesets: rulesetsWithVersions,
       templates: templates.map(formatQueryTemplate),
       executions: executions.map(formatExecution),
+      allExecutionsLength,
       activeExecution: activeExecution
         ? formatExecution(activeExecution)
         : null,
@@ -302,6 +307,7 @@ export default function Lab({
   activeExecution,
   currentExecution,
   executions,
+  allExecutionsLength,
   searchEndpointType,
   displayFields,
   isExecutionDirty,
@@ -435,6 +441,7 @@ export default function Lab({
                       <ExecutionSummary
                         templates={templates}
                         executions={executions}
+                        allExecutionsLength={allExecutionsLength}
                         activeExecution={activeExecution}
                         onSelected={(id: string) => setCurrentExecutionId(id)}
                       />

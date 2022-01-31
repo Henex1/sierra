@@ -1,7 +1,9 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
+import { useRouter } from "next/router";
 import classnames from "classnames";
 import {
+  CircularProgress,
   ClickAwayListener,
   Fade,
   makeStyles,
@@ -15,6 +17,7 @@ import InfoIcon from "@material-ui/icons/Info";
 
 import ExecutionScore from "../lab/ExecutionScore";
 import { ExposedExecution } from "../../lib/execution";
+import { apiRequest } from "../../lib/api";
 import { useLabContext } from "../../utils/react/hooks/useLabContext";
 import ExecutionDetails from "./ExecutionDetails";
 
@@ -198,42 +201,24 @@ const useStyles = makeStyles((theme) => ({
 
 type Props = {
   executions: ExposedExecution[];
+  allExecutionsLength: number;
   activeExecution: ExposedExecution;
   onSelected: (id: string) => void;
 };
 
 export default function ExecutionList({
-  executions,
+  executions: initialExecutions,
+  allExecutionsLength,
   activeExecution,
   onSelected,
 }: Props) {
   const classes = useStyles();
+  const router = useRouter();
   const { currentExecution } = useLabContext();
 
-  const sortedExecutions = useMemo(
-    () =>
-      executions
-        .slice()
-        .sort(
-          (a, b) =>
-            new Date(a.createdAt).valueOf() - new Date(b.createdAt).valueOf()
-        ),
-    [executions]
-  );
-
-  const activeExecutionIndex = useMemo(
-    () => sortedExecutions.map((item) => item.id).indexOf(activeExecution.id),
-    [sortedExecutions, activeExecution]
-  );
-
-  const [renderedExecutions, setRenderedExecutions] = useState(
-    sortedExecutions.slice(activeExecutionIndex, activeExecutionIndex + 3)
-  );
-  const renderedActiveExecutionIndex = useMemo(
-    () => renderedExecutions.map((item) => item.id).indexOf(activeExecution.id),
-    [renderedExecutions, activeExecution]
-  );
-
+  const [executions, setExecutions] = useState(initialExecutions);
+  const [leftArrowIsLoading, setLeftArrowIsLoading] = useState(false);
+  const [rightArrowIsLoading, setRightArrowIsLoading] = useState(false);
   const [hoveredExecutionId, setHoveredExecutionId] = useState<string | null>(
     null
   );
@@ -246,12 +231,9 @@ export default function ExecutionList({
   ] = useState<ExposedExecution | null>(null);
   const popperElRef = useRef<HTMLDivElement>(null);
 
-  const allLeftExecutionsLoaded =
-    renderedExecutions.slice(0, renderedActiveExecutionIndex).length ===
-    sortedExecutions.slice(0, activeExecutionIndex).length;
+  const allLeftExecutionsLoaded = !executions[0].index;
   const allRightExecutionsLoaded =
-    renderedExecutions.slice(renderedActiveExecutionIndex).length ===
-    sortedExecutions.slice(activeExecutionIndex).length;
+    executions[executions.length - 1].index === allExecutionsLength - 1;
 
   const handleInfoButtonClick = (
     e: React.MouseEvent,
@@ -262,27 +244,25 @@ export default function ExecutionList({
     setPopperAnchorEl(e.currentTarget.parentElement);
   };
 
-  const loadMore = (direction: string) => {
-    const currentStartIndex = sortedExecutions
-      .map((item) => item.id)
-      .indexOf(renderedExecutions[0].id);
-    const currentEndIndex = sortedExecutions
-      .map((item) => item.id)
-      .indexOf(renderedExecutions[renderedExecutions.length - 1].id);
-    if (direction === "left") {
-      const startIndex = currentStartIndex - 9 > 0 ? currentStartIndex - 9 : 0;
-      setRenderedExecutions(
-        sortedExecutions.slice(startIndex, currentEndIndex + 1)
-      );
-    } else if (direction === "right") {
-      const endIndex =
-        currentEndIndex + 9 < sortedExecutions.length - 1
-          ? currentEndIndex + 9
-          : sortedExecutions.length - 1;
-      setRenderedExecutions(
-        sortedExecutions.slice(currentStartIndex, endIndex + 1)
-      );
-    }
+  const loadMore = async (direction: "left" | "right") => {
+    const refExecutionId =
+      executions[{ left: 0, right: executions.length - 1 }[direction]].id;
+    const setLoading = {
+      left: setLeftArrowIsLoading,
+      right: setRightArrowIsLoading,
+    }[direction];
+    setLoading(true);
+    const loadedExecutions = await apiRequest(`/api/executions/load`, {
+      projectId: router.query.projectId,
+      refExecutionId,
+      direction,
+    });
+    setLoading(false);
+    setExecutions((executions) => [
+      ...{ left: loadedExecutions, right: [] }[direction],
+      ...executions,
+      ...{ left: [], right: loadedExecutions }[direction],
+    ]);
   };
 
   return (
@@ -300,12 +280,16 @@ export default function ExecutionList({
               className={classes.viewMoreButton}
               onClick={() => loadMore("left")}
             >
-              <ArrowBackIcon />
+              {leftArrowIsLoading ? (
+                <CircularProgress size={24} />
+              ) : (
+                <ArrowBackIcon />
+              )}
             </button>
           </Tooltip>
         )}
         <TransitionGroup component="ul" className={classes.executionList}>
-          {renderedExecutions.map((item) => (
+          {executions.map((item) => (
             <CSSTransition
               key={item.id}
               timeout={500}
@@ -352,9 +336,7 @@ export default function ExecutionList({
                     Active
                   </div>
                 </div>
-                <p className={classes.executionIndex}>
-                  {sortedExecutions.map((item) => item.id).indexOf(item.id) + 1}
-                </p>
+                <p className={classes.executionIndex}>{item.index + 1}</p>
               </li>
             </CSSTransition>
           ))}
@@ -371,7 +353,11 @@ export default function ExecutionList({
               className={classes.viewMoreButton}
               onClick={() => loadMore("right")}
             >
-              <ArrowForwardIcon />
+              {rightArrowIsLoading ? (
+                <CircularProgress size={24} />
+              ) : (
+                <ArrowForwardIcon />
+              )}
             </button>
           </Tooltip>
         )}
@@ -400,14 +386,14 @@ export default function ExecutionList({
           )}
         </Popper>
         <div className={classes.dividers}>
-          {renderedExecutions.map((item, index) => (
+          {executions.map((item, index) => (
             <div
               key={item.id}
               className={classnames(classes.divider, {
                 [classes.dottedDivider]:
                   (!allLeftExecutionsLoaded && !index) ||
                   (!allRightExecutionsLoaded &&
-                    index === renderedExecutions.length - 1),
+                    index === executions.length - 1),
               })}
             />
           ))}
