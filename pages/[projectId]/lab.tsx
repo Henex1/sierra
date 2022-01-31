@@ -9,7 +9,7 @@ import SearchPhraseList from "../../components/lab/SearchPhraseList";
 import { ResultList } from "../../components/lab/ResultList";
 import Configuration from "../../components/lab/Configuration";
 import ExecutionSummary from "../../components/lab/ExecutionSummary";
-import { getProject } from "../../lib/projects";
+import { getProject, updateProject } from "../../lib/projects";
 import {
   formatSearchConfiguration,
   ExposedSearchConfiguration,
@@ -120,32 +120,69 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
   } = context.query;
 
   // Get current search configuration
-  const currentSearchConfiguration = await getActiveSearchConfiguration(
+  let currentSearchConfiguration = await getActiveSearchConfiguration(
     project,
     currentExecutionId as string
   );
 
   // Get active search configuration
-  const activeSearchConfiguration = await getActiveSearchConfiguration(project);
+  let activeSearchConfiguration = await getActiveSearchConfiguration(project);
 
   // Current execution
-  const currentExecution = await getCurrentExecution(
+  let currentExecution = await getCurrentExecution(
     context.user,
     currentSearchConfiguration,
     currentExecutionId as string
   );
 
   // Active execution
-  const activeExecution =
+  let activeExecution =
     activeSearchConfiguration &&
     (await getLatestExecution(activeSearchConfiguration));
+
+  if (!activeExecution) {
+    // Temp hack - lab's execution list should be refactored
+    const updatedProject = await updateProject(
+      context.user,
+      project,
+      searchEndpoint,
+      {
+        activeSearchConfigurationId: (
+          await getLatestExecution(undefined, project)
+        )?.searchConfigurationId,
+      }
+    );
+
+    // Get current search configuration
+    currentSearchConfiguration = await getActiveSearchConfiguration(
+      updatedProject,
+      currentExecutionId as string
+    );
+
+    // Get active search configuration
+    activeSearchConfiguration = await getActiveSearchConfiguration(
+      updatedProject
+    );
+
+    // Current execution
+    currentExecution = await getCurrentExecution(
+      context.user,
+      currentSearchConfiguration,
+      currentExecutionId as string
+    );
+
+    // Active execution
+    activeExecution =
+      activeSearchConfiguration &&
+      (await getLatestExecution(activeSearchConfiguration));
+  }
 
   const judgements = await listJudgements(project);
   const isExecutionDirty = currentExecution
     ? judgements.find((judgement) =>
         isAfter(
           new Date(judgement.updatedAt),
-          new Date(currentExecution.createdAt)
+          new Date(currentExecution!.createdAt)
         )
       )
     : false;

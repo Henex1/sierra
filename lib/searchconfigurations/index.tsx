@@ -87,7 +87,7 @@ export async function getActiveSearchConfiguration(
   executionId?: string
 ): Promise<SearchConfiguration | null> {
   const where: any = {
-    queryTemplate: { projectId: project.id },
+    projectId: project.id,
   };
 
   if (executionId) {
@@ -170,7 +170,7 @@ export function createSCOperation({
         })),
       },
       knobs,
-      parent: {
+      parent: (Boolean(parentId) || undefined) && {
         connect: { id: parentId },
       },
     },

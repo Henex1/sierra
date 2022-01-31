@@ -58,7 +58,7 @@ describe("Home", () => {
       .action("findFirst")
       .with({
         where: {
-          queryTemplate: { projectId: TEST_PROJECT_ID },
+          projectId: TEST_PROJECT_ID,
         },
       })
       .resolvesTo(TEST_SEARCHCONFIGURATION);

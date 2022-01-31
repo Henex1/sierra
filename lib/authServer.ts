@@ -150,7 +150,7 @@ export const authOptions = (req: NextApiRequest): NextAuthOptions => ({
           },
         });
       }
-      await deleteInvitation(invitationId);
+      invitation && (await deleteInvitation(invitation.id));
     },
   },
   pages: {
