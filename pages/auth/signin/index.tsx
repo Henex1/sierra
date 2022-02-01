@@ -44,11 +44,10 @@ export const SignInButton = ({
   icon,
   title,
   authorizationParams,
-  callbackUrl,
 }: AuthTargetProps) => {
   const handleClick = () => {
     const url = getCallbackURL();
-    signIn(name, { callbackUrl: callbackUrl ?? url }, authorizationParams);
+    signIn(name, { callbackUrl: url }, authorizationParams);
   };
   return (
     <Grid item xs={12} key={title}>
