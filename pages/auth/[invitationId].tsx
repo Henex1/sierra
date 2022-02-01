@@ -70,15 +70,18 @@ export default function InvitationSignup({
   const session = useSession();
 
   useEffect(() => {
+    if (session.session.loading) return;
+
     if (session.session.user) {
       router.replace("/");
+      return;
     }
-    Cookies.set("invitationId", router.query.invitationId as string);
+    Cookies.set("invitationId", router.query.invitationId as string, {
+      expires: 7,
+    });
+  }, [session]);
 
-    return () => Cookies.remove("invitationId");
-  }, []);
-
-  if (session.session.user) return null;
+  if (session.session.loading || session.session.user) return null;
 
   if (!invitation)
     return (
