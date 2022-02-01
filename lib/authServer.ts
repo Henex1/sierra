@@ -96,6 +96,10 @@ export const authOptions = (req: NextApiRequest): NextAuthOptions => ({
       return { ...session, orgs: orgs.map(formatOrg), projects, activeOrgId };
     },
     async signIn(user: any, account: any, profile: any) {
+      // Allow users who already have an account to log in
+      if (user.createdAt) {
+        return true;
+      }
       const email = profile.email ?? "";
       const invitationId = req.cookies.invitationId ?? "";
       const invitation = await getInvitation(invitationId, {
