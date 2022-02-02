@@ -37,6 +37,13 @@ Given enough judgments of hopefully more than one type and source, we are able t
 
 Based on those judgements we can create a well-defined iterative process that can show when there's progress and alert when there's regression. Then we can safely iterate on index mapping, query json, knobs, rulesets, synonyms and more.
 
+## Getting started
+
+1. Create a new Search Endpoint (see below for available clusters with demo data).
+2. Create a new Project, selecting the Search Endpoint you created.
+3. From the list of projects (available on home screen), go to Lab for the project you created.
+4. The Lab is empty. Add a few search phrases (e.g. for icecat you can use backpack, iphone, laptop) and click Execute.
+
 # Developer Guide
 
 ## Overview
