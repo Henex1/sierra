@@ -8,6 +8,7 @@ variables:
   QUERY_EXPANDER_URL: http://localhost:8080
   GOOGLE_ID: "unset_google_id"
   GOOGLE_SECRET: "unset_google_secret"
+  SENDGRID_API_KEY: "SG.foo"
   REDIS_URL: "redis://localhost:6379"
   DEPS_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}-deps
   SCHEMA_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}-schema
