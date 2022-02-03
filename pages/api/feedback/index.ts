@@ -1,5 +1,5 @@
 import { getUser } from "../../../lib/authServer";
-import { getClient } from "../../../lib/sendgrid";
+import { getSendGridClient } from "../../../lib/sendgrid";
 import { requireEnv } from "../../../lib/env";
 import { SierraApiRequest } from "../../../lib/apiServer";
 import { NextApiResponse } from "next";
@@ -14,7 +14,7 @@ export const send = async (
     const session = await getUser(req);
     const from = session.user?.email ?? undefined;
     const to = requireEnv("FEEDBACK_SEND_TO");
-    const client = getClient();
+    const client = getSendGridClient();
 
     if (!from || !client || !to) {
       throw new Error();
