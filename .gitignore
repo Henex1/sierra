@@ -42,8 +42,6 @@ yarn-error.log*
 # VSCode
 .vscode/
 
-#prisma
-/prisma/
 
 #build
 /dist
