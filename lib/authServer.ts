@@ -97,7 +97,7 @@ export const authOptions = (req: NextApiRequest): NextAuthOptions => ({
     },
     async signIn(user: any, account: any, profile: any) {
       // Allow users who already have an account to log in
-      if (user.createdAt) {
+      if (user.active) {
         return true;
       }
       const email = profile.email ?? "";
