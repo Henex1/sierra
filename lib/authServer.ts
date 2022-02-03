@@ -100,6 +100,8 @@ export const authOptions = (req: NextApiRequest): NextAuthOptions => ({
       if (user.active) {
         return true;
       }
+
+      // TODO check cookie only if request came from invite url
       const email = profile.email ?? "";
       const invitationId = req.cookies.invitationId ?? "";
       const invitation = await getInvitation(invitationId, {
