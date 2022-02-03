@@ -9,20 +9,20 @@ import SearchPhraseList from "../../components/lab/SearchPhraseList";
 import { ResultList } from "../../components/lab/ResultList";
 import Configuration from "../../components/lab/Configuration";
 import ExecutionSummary from "../../components/lab/ExecutionSummary";
-import { getProject, updateProject } from "../../lib/projects";
+import { getProject } from "../../lib/projects";
 import {
   formatSearchConfiguration,
   ExposedSearchConfiguration,
   getActiveSearchConfiguration,
+  loadSearchConfigurations,
+  getSearchConfiguration,
 } from "../../lib/searchconfigurations";
 import {
-  loadExecutions,
   countSearchPhrases,
   getSearchPhrases,
   ExposedExecution,
-  formatExecution,
   getLatestExecution,
-  getCurrentExecution,
+  formatExecution,
 } from "../../lib/execution";
 import { ExposedSearchPhrase, ShowOptions, SortOptions } from "../../lib/lab";
 import {
@@ -72,15 +72,15 @@ type Props = {
         queryTemplate: ExposedQueryTemplate;
         rulesets: ExposedRulesetVersion[];
       })
-    | null;
+    | null; // search configuration being viewed/selected
   searchPhrases: ExposedSearchPhrase[] | null;
   searchPhrasesTotal: number;
   rulesets: ExposedRulesetWithVersions[];
   templates: ExposedQueryTemplate[];
-  executions: ExposedExecution[];
-  allExecutionsLength: number;
-  activeExecution: ExposedExecution | null; // execution being deployed
-  currentExecution: ExposedExecution | null; // execution being viewed/selected
+  searchConfigurations: ExposedSearchConfiguration[];
+  allSCsLength: number;
+  activeSearchConfiguration: ExposedSearchConfiguration | null; // search configuration being deployed
+  currentExecution: ExposedExecution | null;
   displayOptions: {
     show: ShowOptions;
     sort: SortOptions;
@@ -111,74 +111,28 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
 
   // Query parameters
   const {
-    execution: currentExecutionId,
+    sc: currentSCId = "",
     show = "all",
     sort = "score-desc",
     search = "",
   } = context.query;
 
   // Get current search configuration
-  let currentSearchConfiguration = await getActiveSearchConfiguration(
-    project,
-    currentExecutionId as string
-  );
+  const currentSearchConfiguration =
+    (await getSearchConfiguration(context.user, currentSCId as string)) ??
+    (await getActiveSearchConfiguration(project));
 
+  // Get current execution
+  const currentExecution = await getLatestExecution(
+    currentSearchConfiguration ?? undefined
+  );
   // Get active search configuration
-  let activeSearchConfiguration = await getActiveSearchConfiguration(project);
+  const activeSearchConfiguration = await getActiveSearchConfiguration(project);
 
-  // Current execution
-  let currentExecution = await getCurrentExecution(
-    context.user,
-    currentSearchConfiguration,
-    currentExecutionId as string
-  );
-
-  // Active execution
-  let activeExecution =
-    activeSearchConfiguration &&
-    (await getLatestExecution(activeSearchConfiguration));
-
-  if (!activeExecution) {
-    // Temp hack - lab's execution list should be refactored
-    const updatedProject = await updateProject(
-      context.user,
-      project,
-      searchEndpoint,
-      {
-        activeSearchConfigurationId: (
-          await getLatestExecution(undefined, project)
-        )?.searchConfigurationId,
-      }
-    );
-
-    // Get current search configuration
-    currentSearchConfiguration = await getActiveSearchConfiguration(
-      updatedProject,
-      currentExecutionId as string
-    );
-
-    // Get active search configuration
-    activeSearchConfiguration = await getActiveSearchConfiguration(
-      updatedProject
-    );
-
-    // Current execution
-    currentExecution = await getCurrentExecution(
-      context.user,
-      currentSearchConfiguration,
-      currentExecutionId as string
-    );
-
-    // Active execution
-    activeExecution =
-      activeSearchConfiguration &&
-      (await getLatestExecution(activeSearchConfiguration));
-  }
-
-  // Get executions for selected project
-  const { executions, allExecutionsLength } = await loadExecutions(
-    projectId,
-    activeExecution?.id
+  // Get SCs for selected project
+  const { searchConfigurations, allSCsLength } = await loadSearchConfigurations(
+    project.id,
+    activeSearchConfiguration?.id
   );
 
   const judgements = await listJudgements(project);
@@ -190,7 +144,6 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
         )
       )
     : false;
-
   const searchPhrasesTotal = currentExecution
     ? await countSearchPhrases(
         currentExecution,
@@ -281,10 +234,15 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
       searchPhrasesTotal,
       rulesets: rulesetsWithVersions,
       templates: templates.map(formatQueryTemplate),
-      executions: executions.map(formatExecution),
-      allExecutionsLength,
-      activeExecution: activeExecution
-        ? formatExecution(activeExecution)
+      searchConfigurations: searchConfigurations.map((searchConfig) =>
+        formatSearchConfiguration(searchConfig, searchEndpoint.type)
+      ),
+      allSCsLength,
+      activeSearchConfiguration: activeSearchConfiguration
+        ? formatSearchConfiguration(
+            activeSearchConfiguration,
+            searchEndpoint.type
+          )
         : null,
       currentExecution: currentExecution
         ? formatExecution(currentExecution)
@@ -304,10 +262,10 @@ export default function Lab({
   searchPhrasesTotal,
   rulesets,
   templates,
-  activeExecution,
+  searchConfigurations,
+  allSCsLength,
+  activeSearchConfiguration,
   currentExecution,
-  executions,
-  allExecutionsLength,
   searchEndpointType,
   displayFields,
   isExecutionDirty,
@@ -356,7 +314,7 @@ export default function Lab({
     sort: props.displayOptions.sort,
     search: props.displayOptions.search,
   });
-  const [currentExecutionId, setCurrentExecutionId] = React.useState<
+  const [currentSearchConfigId, setCurrentSearchConfigId] = React.useState<
     string | null
   >(null);
   const [page, setPage] = React.useState(props.page);
@@ -369,11 +327,11 @@ export default function Lab({
         show: displayOptions.show,
         sort: displayOptions.sort,
         search: displayOptions.search,
-        execution: currentExecutionId,
+        sc: currentSearchConfigId,
         page,
       },
     });
-  }, [displayOptions, page, currentExecutionId]);
+  }, [displayOptions, page, currentSearchConfigId]);
 
   const handleFilterChange = useCallback<FiltersProps["onFilterChange"]>(
     ({ type, value }) => {
@@ -396,37 +354,48 @@ export default function Lab({
     >
       <BackdropLoadingSpinner open={propsLoading} />
       <div>
-        {!!searchConfiguration && searchPhrases ? (
+        {searchConfiguration ? (
           <div>
             <Grid container spacing={4} className={classes.listContainer}>
               <Grid item sm={4} className={classes.listBorder}>
-                <Box>
-                  <Box mb={2}>
-                    <Typography>
-                      Showing {searchPhrasesTotal} search phrases
+                {searchPhrases ? (
+                  <>
+                    <Box>
+                      <Box mb={2}>
+                        <Typography>
+                          Showing {searchPhrasesTotal} search phrases
+                        </Typography>
+                      </Box>
+                      <Box mb={2}>
+                        <Filters
+                          filters={displayOptions}
+                          onFilterChange={handleFilterChange}
+                        />
+                      </Box>
+                    </Box>
+                    <SearchPhraseList
+                      searchPhrases={searchPhrases}
+                      activePhrase={activeSearchPhrase}
+                      setActivePhrase={setActiveSearchPhrase}
+                    />
+                    <Box mt={4} display="flex" justifyContent="center">
+                      <Pagination
+                        page={page}
+                        count={Math.ceil(searchPhrasesTotal / pageSize)}
+                        onChange={(
+                          e: React.ChangeEvent<unknown>,
+                          value: number
+                        ) => setPage(value)}
+                      />
+                    </Box>
+                  </>
+                ) : (
+                  <Box>
+                    <Typography variant="h6">
+                      Current search configuration has never been run
                     </Typography>
                   </Box>
-                  <Box mb={2}>
-                    <Filters
-                      filters={displayOptions}
-                      onFilterChange={handleFilterChange}
-                    />
-                  </Box>
-                </Box>
-                <SearchPhraseList
-                  searchPhrases={searchPhrases}
-                  activePhrase={activeSearchPhrase}
-                  setActivePhrase={setActiveSearchPhrase}
-                />
-                <Box mt={4} display="flex" justifyContent="center">
-                  <Pagination
-                    page={page}
-                    count={Math.ceil(searchPhrasesTotal / pageSize)}
-                    onChange={(e: React.ChangeEvent<unknown>, value: number) =>
-                      setPage(value)
-                    }
-                  />
-                </Box>
+                )}
               </Grid>
               <Grid item md={8}>
                 {activeSearchPhrase ? (
@@ -437,13 +406,15 @@ export default function Lab({
                   />
                 ) : (
                   <Box>
-                    {activeExecution && currentExecution && (
+                    {activeSearchConfiguration && (
                       <ExecutionSummary
                         templates={templates}
-                        executions={executions}
-                        allExecutionsLength={allExecutionsLength}
-                        activeExecution={activeExecution}
-                        onSelected={(id: string) => setCurrentExecutionId(id)}
+                        searchConfigurations={searchConfigurations}
+                        allSCsLength={allSCsLength}
+                        activeSearchConfig={activeSearchConfiguration}
+                        onSelected={(id: string) =>
+                          setCurrentSearchConfigId(id)
+                        }
                       />
                     )}
                   </Box>
@@ -458,7 +429,7 @@ export default function Lab({
             projectId={router.query.projectId as string}
           />
         )}
-        {!!searchConfiguration && searchPhrases && (
+        {!!searchConfiguration && (
           <Configuration searchEndpointType={searchEndpointType} />
         )}
       </div>

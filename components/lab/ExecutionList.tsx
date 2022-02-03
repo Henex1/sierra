@@ -16,7 +16,7 @@ import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
 import InfoIcon from "@material-ui/icons/Info";
 
 import ExecutionScore from "../lab/ExecutionScore";
-import { ExposedExecution } from "../../lib/execution";
+import { ExposedSearchConfiguration } from "../../lib/searchconfigurations";
 import { apiRequest } from "../../lib/api";
 import { useLabContext } from "../../utils/react/hooks/useLabContext";
 import ExecutionDetails from "./ExecutionDetails";
@@ -135,7 +135,7 @@ const useStyles = makeStyles((theme) => ({
     transitionProperty: "max-width, opacity",
     transitionDelay: "0s, 50ms",
   },
-  executionList: {
+  searchConfigList: {
     display: "flex",
     padding: 0,
     "& li": {
@@ -149,7 +149,7 @@ const useStyles = makeStyles((theme) => ({
       },
     },
   },
-  execution: {
+  searchConfig: {
     position: "relative",
     display: "flex",
     justifyContent: "center",
@@ -158,7 +158,7 @@ const useStyles = makeStyles((theme) => ({
     border: "3px solid transparent",
     borderRadius: "50%",
   },
-  executionScore: {
+  latestExecutionScore: {
     width: "50px",
     height: "50px",
     margin: 0,
@@ -167,7 +167,7 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: "50%",
     border: "none",
   },
-  executionIndex: {
+  searchConfigIndex: {
     position: "absolute",
     bottom: "-24px",
     margin: 0,
@@ -189,7 +189,7 @@ const useStyles = makeStyles((theme) => ({
       display: "box",
     },
   },
-  currentExecution: {
+  currentSearchConfig: {
     border: `3px solid #339EDA`,
     padding: 0,
     "& > button[aria-label=select]": {
@@ -200,23 +200,23 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 type Props = {
-  executions: ExposedExecution[];
-  allExecutionsLength: number;
-  activeExecution: ExposedExecution;
+  searchConfigurations: ExposedSearchConfiguration[];
+  allSCsLength: number;
+  activeSearchConfig: ExposedSearchConfiguration;
   onSelected: (id: string) => void;
 };
 
-export default function ExecutionList({
-  executions: initialExecutions,
-  allExecutionsLength,
-  activeExecution,
+export default function SearchConfigurationList({
+  searchConfigurations: initialSCs,
+  allSCsLength,
+  activeSearchConfig,
   onSelected,
 }: Props) {
   const classes = useStyles();
   const router = useRouter();
-  const { currentExecution } = useLabContext();
+  const { searchConfiguration: currentSearchConfig } = useLabContext();
 
-  const [executions, setExecutions] = useState(initialExecutions);
+  const [searchConfigurations, setSearchConfigurations] = useState(initialSCs);
   const [leftArrowIsLoading, setLeftArrowIsLoading] = useState(false);
   const [rightArrowIsLoading, setRightArrowIsLoading] = useState(false);
   const [hoveredExecutionId, setHoveredExecutionId] = useState<string | null>(
@@ -226,41 +226,47 @@ export default function ExecutionList({
     null
   );
   const [
-    popperExecution,
-    setPopperExecution,
-  ] = useState<ExposedExecution | null>(null);
+    popperSearchConfig,
+    setPopperSearchConfig,
+  ] = useState<ExposedSearchConfiguration | null>(null);
   const popperElRef = useRef<HTMLDivElement>(null);
 
-  const allLeftExecutionsLoaded = !executions[0].index;
+  const allLeftExecutionsLoaded = !searchConfigurations[0].index;
   const allRightExecutionsLoaded =
-    executions[executions.length - 1].index === allExecutionsLength - 1;
+    searchConfigurations[searchConfigurations.length - 1].index ===
+    allSCsLength - 1;
 
   const handleInfoButtonClick = (
     e: React.MouseEvent,
-    execution: ExposedExecution
+    searchConfiguration: ExposedSearchConfiguration
   ) => {
     setHoveredExecutionId(null);
-    setPopperExecution(execution);
+    setPopperSearchConfig(searchConfiguration);
     setPopperAnchorEl(e.currentTarget.parentElement);
   };
 
   const loadMore = async (direction: "left" | "right") => {
-    const refExecutionId =
-      executions[{ left: 0, right: executions.length - 1 }[direction]].id;
+    const refSearchConfigId =
+      searchConfigurations[
+        { left: 0, right: searchConfigurations.length - 1 }[direction]
+      ].id;
     const setLoading = {
       left: setLeftArrowIsLoading,
       right: setRightArrowIsLoading,
     }[direction];
     setLoading(true);
-    const loadedExecutions = await apiRequest(`/api/executions/load`, {
-      projectId: router.query.projectId,
-      refExecutionId,
-      direction,
-    });
+    const loadedExecutions = await apiRequest(
+      `/api/searchconfigurations/load`,
+      {
+        projectId: router.query.projectId,
+        refSearchConfigId,
+        direction,
+      }
+    );
     setLoading(false);
-    setExecutions((executions) => [
+    setSearchConfigurations((searchConfigurations) => [
       ...{ left: loadedExecutions, right: [] }[direction],
-      ...executions,
+      ...searchConfigurations,
       ...{ left: [], right: loadedExecutions }[direction],
     ]);
   };
@@ -288,8 +294,8 @@ export default function ExecutionList({
             </button>
           </Tooltip>
         )}
-        <TransitionGroup component="ul" className={classes.executionList}>
-          {executions.map((item) => (
+        <TransitionGroup component="ul" className={classes.searchConfigList}>
+          {searchConfigurations.map((item) => (
             <CSSTransition
               key={item.id}
               timeout={500}
@@ -300,9 +306,9 @@ export default function ExecutionList({
             >
               <li>
                 <div
-                  className={classnames(classes.execution, {
-                    [classes.currentExecution]:
-                      currentExecution?.id === item.id,
+                  className={classnames(classes.searchConfig, {
+                    [classes.currentSearchConfig]:
+                      currentSearchConfig?.id === item.id,
                   })}
                   onMouseEnter={() =>
                     !popperAnchorEl && setHoveredExecutionId(item.id)
@@ -320,23 +326,27 @@ export default function ExecutionList({
                     </button>
                   </Zoom>
                   <button
-                    className={classes.executionScore}
+                    className={classes.latestExecutionScore}
                     onClick={() => onSelected(item.id)}
                     aria-label="select"
                   >
                     <ExecutionScore
-                      score={Math.round(item.combinedScore * 100)}
+                      score={
+                        item.latestExecution
+                          ? Math.round(item.latestExecution.combinedScore * 100)
+                          : null
+                      }
                     />
                   </button>
                   <div
                     className={classnames(classes.activeLabel, {
-                      active: activeExecution.id === item.id,
+                      active: activeSearchConfig.id === item.id,
                     })}
                   >
                     Active
                   </div>
                 </div>
-                <p className={classes.executionIndex}>{item.index + 1}</p>
+                <p className={classes.searchConfigIndex}>{item.index + 1}</p>
               </li>
             </CSSTransition>
           ))}
@@ -377,7 +387,7 @@ export default function ExecutionList({
                     <ExecutionDetails
                       anchorEl={popperAnchorEl}
                       floatingElRef={popperElRef}
-                      execution={popperExecution}
+                      searchConfig={popperSearchConfig}
                     />
                   </div>
                 </ClickAwayListener>
@@ -386,14 +396,14 @@ export default function ExecutionList({
           )}
         </Popper>
         <div className={classes.dividers}>
-          {executions.map((item, index) => (
+          {searchConfigurations.map((item, index) => (
             <div
               key={item.id}
               className={classnames(classes.divider, {
                 [classes.dottedDivider]:
                   (!allLeftExecutionsLoaded && !index) ||
                   (!allRightExecutionsLoaded &&
-                    index === executions.length - 1),
+                    index === searchConfigurations.length - 1),
               })}
             />
           ))}

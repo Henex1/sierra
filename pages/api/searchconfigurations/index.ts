@@ -3,21 +3,16 @@ import cuid from "cuid";
 import prisma from "../../../lib/prisma";
 import * as log from "../../../lib/logging";
 
-import {
-  createExecution,
-  formatExecution,
-  updateExecution,
-} from "../../../lib/execution";
+import { createExecution, formatExecution } from "../../../lib/execution";
 import {
   getSearchConfiguration,
   formatSearchConfiguration,
   createSearchConfiguration,
   WeightedJudgement,
-  listSearchConfigurations,
+  loadSearchConfigurations,
   createSCOperation,
 } from "../../../lib/searchconfigurations";
 import {
-  createQueryTemplate,
   updateQueryTemplate,
   getLatestQueryTemplates,
   getQueryTemplate,
@@ -161,7 +156,6 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
     z.object({
       id: z.string(),
       queryTemplateId: z.string(),
-      executionId: z.string(),
       knobs: z.any(),
       rulesetIds: z.array(z.string()).optional(),
     })
@@ -175,16 +169,10 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
     return notFound(res, ErrorMessage.SearchConfigurationNotFound);
   }
 
-  // Current query template
-  const currentQueryTemplate = await getQueryTemplate(
-    user,
-    input.queryTemplateId
-  );
-  if (!currentQueryTemplate) {
+  const queryTemplate = await getQueryTemplate(user, input.queryTemplateId);
+  if (!queryTemplate) {
     return notFound(res, ErrorMessage.QueryTemplateNotFound);
   }
-
-  const { id, tags, description, ...queryTemplateInput } = currentQueryTemplate;
 
   // Populate rulesets
   let rulesets: RulesetVersion[] = [];
@@ -217,7 +205,7 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
       ]
     : [];
 
-  const currentProject = await getProject(user, currentQueryTemplate.projectId);
+  const currentProject = await getProject(user, queryTemplate.projectId);
   if (!currentProject) {
     return notFound(res, ErrorMessage.ProjectNotFound);
   }
@@ -230,26 +218,14 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
     return notFound(res, ErrorMessage.SearchEndpointNotFound);
   }
 
-  // Create new version of query template
-  const createdQueryTemplate = await createQueryTemplate(currentProject, {
-    ...queryTemplateInput,
-    description: description as string,
-    tags: tags as any,
-  });
-
   // Create new search configuration with created query template and rulesets
   const createdSearchConfiguration = await createSearchConfiguration({
-    queryTemplateId: createdQueryTemplate.id,
-    projectId: currentQueryTemplate.projectId,
+    queryTemplateId: queryTemplate.id,
+    projectId: queryTemplate.projectId,
     rulesets,
     knobs: input.knobs,
     parentId: currentSearchConfiguration.id,
     judgements: judgements as WeightedJudgement[],
-  });
-
-  // Update current execution with newly created search configuration
-  const updatedExecution = await updateExecution(input.executionId, {
-    searchConfigurationId: createdSearchConfiguration.id,
   });
 
   return res.status(200).json({
@@ -257,7 +233,6 @@ export const handleUpdateSearchConfiguration = apiHandler(async (req, res) => {
       createdSearchConfiguration,
       searchEndpoint.type
     ),
-    execution: updatedExecution,
   });
 });
 
@@ -328,7 +303,7 @@ export default apiHandler(async (req, res) => {
     return notFound(res, ErrorMessage.ProjectNotFound);
   }
 
-  const searchConfigurations = await listSearchConfigurations(project);
+  const searchConfigurations = await loadSearchConfigurations(project.id);
 
   return res.status(200).json({ searchConfigurations });
 });

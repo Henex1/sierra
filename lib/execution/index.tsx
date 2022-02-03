@@ -50,7 +50,6 @@ export type ExposedExecution = Omit<
   "createdAt"
 > & {
   createdAt: string;
-  index: number;
 };
 
 const speSelect = {
@@ -75,7 +74,7 @@ export type ExecutionUpdateInput = {
 export function formatExecution(val: Execution): ExposedExecution {
   return _.pick(
     { ...val, createdAt: val.createdAt.toString() },
-    _.keys({ ...executionSelect, index: true })
+    _.keys(executionSelect)
   ) as ExposedExecution;
 }
 
@@ -95,26 +94,11 @@ export async function getExecution(
   return execution;
 }
 
-export async function getCurrentExecution(
-  user: User,
-  sc: SearchConfiguration | null,
-  executionId?: string
-): Promise<Execution | null> {
-  // Current execution
-  let currentExecution = null;
-  if (executionId) {
-    currentExecution = await getExecution(user, executionId as string);
-  } else if (sc) {
-    currentExecution = await getLatestExecution(sc);
-  }
-
-  return currentExecution;
-}
-
 export async function getLatestExecution(
   sc?: SearchConfiguration,
   project?: Project
 ): Promise<Execution | null> {
+  if (!sc && !project) return null;
   const execution = await prisma.execution.findFirst({
     where: { searchConfigurationId: sc?.id, projectId: project?.id },
     orderBy: [{ createdAt: "desc" }],
