@@ -39,6 +39,7 @@ export const TEST_PROJECT: NoTimestamps<Project> = {
 
 export const TEST_USER: NoTimestamps<User> = {
   id: TEST_USER_ID,
+  active: true,
   name: "Test User",
   email: "devs@bigdataboutique.com",
   emailVerified: new Date(2020, 1, 1),

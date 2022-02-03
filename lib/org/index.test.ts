@@ -7,6 +7,7 @@ describe("'canCreate' - Checks is current user can create organizations", () => 
     image: "",
     name: "",
     id: "212",
+    active: true,
     createdAt: new Date(),
     updatedAt: new Date(),
     defaultOrgId: "",
