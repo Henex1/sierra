@@ -1,13 +1,13 @@
 import Sendgrid from "@sendgrid/mail";
-import { requireEnv } from "./env";
+import { optionalEnv } from "./env";
 
 const getSendGridClient = (): Sendgrid.MailService | undefined => {
-  const key = requireEnv("SENDGRID_API_KEY");
+  const key = optionalEnv("SENDGRID_API_KEY");
   if (!key) {
     return undefined;
   }
 
-  Sendgrid.setApiKey(key);
+  Sendgrid.setApiKey(key.toString());
 
   return Sendgrid;
 };
