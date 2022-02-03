@@ -14,6 +14,8 @@ import { AUTH_CONSTANTS, isAuthTypeEnabled } from "./authSources";
 import * as log from "./logging";
 import { deleteInvitation, getInvitation } from "./invitation";
 
+const IS_DEV = process.env.NODE_ENV === "development";
+
 export type ValidUserSession = {
   session: Session;
   user: User;
@@ -105,6 +107,10 @@ export const authOptions = (req: NextApiRequest): NextAuthOptions => ({
 
       // Allow bdbq personnel to sign up and create their own user space
       if (!invitation && email.endsWith(`@bigdataboutique.com`)) {
+        return true;
+      }
+
+      if (IS_DEV && !invitation) {
         return true;
       }
 
