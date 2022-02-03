@@ -98,6 +98,12 @@ export const authOptions = (req: NextApiRequest): NextAuthOptions => ({
       return { ...session, orgs: orgs.map(formatOrg), projects, activeOrgId };
     },
     async signIn(user: any, account: any, profile: any) {
+      // Only users who already have an account have the "active" flag
+      if (user.active !== undefined) {
+        return user.active;
+      }
+
+      // TODO check cookie only if request came from invite url
       const email = profile.email ?? "";
       const invitationId = req.cookies.invitationId ?? "";
       const invitation = await getInvitation(invitationId, {
@@ -119,6 +125,15 @@ export const authOptions = (req: NextApiRequest): NextAuthOptions => ({
   },
   events: {
     async createUser(user: any) {
+      await prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          active: true,
+        },
+      });
+
       const invitationId = req.cookies.invitationId ?? "";
       const invitation = await getInvitation(invitationId, {
         email: user.email,
