@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from "react";
+import { useRouter } from "next/router";
+import classnames from "classnames";
 import {
   AppBar,
   Drawer,
@@ -21,8 +23,7 @@ import CloseIcon from "@material-ui/icons/Close";
 import CodeIcon from "@material-ui/icons/Code";
 import LayersIcon from "@material-ui/icons/Layers";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
-import classnames from "classnames";
-import { useRouter } from "next/router";
+import { CreateCSSProperties, CSSProperties } from "@material-ui/styles";
 
 import { ExposedRulesetVersion } from "../../lib/rulesets";
 import { ExposedQueryTemplate } from "../../lib/querytemplates";
@@ -33,9 +34,9 @@ import Scrollable from "../common/Scrollable";
 import { apiRequest } from "../../lib/api";
 import { useAlertsContext } from "../../utils/react/hooks/useAlertsContext";
 import { useLabContext } from "../../utils/react/hooks/useLabContext";
-import AppTopBarSpacer from "components/common/AppTopBarSpacer";
-import { useAppTopBarBannerContext } from "utils/react/hooks/useAppTopBarBannerContext";
-import { CreateCSSProperties, CSSProperties } from "@material-ui/styles";
+import { useAppTopBarBannerContext } from "../../utils/react/hooks/useAppTopBarBannerContext";
+import { isValidJson } from "../../utils/json";
+import AppTopBarSpacer from "../common/AppTopBarSpacer";
 
 type TabPanelProps = {
   index: number;
@@ -110,19 +111,28 @@ export default function ConfigurationDrawer({
     },
   });
   const [rulesetHasPendingAction, setRulesetHasPendingAction] = useState(false);
-  const hasUnsavedChanges = useMemo(
+
+  const queryTemplateChanged = useMemo(
+    () =>
+      isValidJson(queryPanelData.query) &&
+      isValidJson(searchConfiguration?.queryTemplate.query as string)
+        ? JSON.stringify(JSON.parse(queryPanelData.query)) !==
+          JSON.stringify(
+            JSON.parse(searchConfiguration?.queryTemplate.query as string)
+          )
+        : true,
+    [queryPanelData, searchConfiguration]
+  );
+  const rulesetsChanged = useMemo(
     () =>
       JSON.stringify([...initialRulesetIds].sort()) !==
         JSON.stringify([...rulesetIds].sort()) || rulesetHasPendingAction,
     [initialRulesetIds, rulesetIds, rulesetHasPendingAction]
   );
+  const hasUnsavedChanges = queryTemplateChanged || rulesetsChanged;
+
   const { addErrorAlert } = useAlertsContext();
-  const {
-    runExecution,
-    isExecutionRunning,
-    canRunExecution,
-    currentExecution,
-  } = useLabContext();
+  const { runExecution, isExecutionRunning, canRunExecution } = useLabContext();
 
   React.useEffect(() => {
     if (searchConfiguration) {
@@ -192,7 +202,6 @@ export default function ConfigurationDrawer({
         id: searchConfiguration?.id,
         queryTemplateId,
         rulesetIds,
-        executionId: currentExecution?.id,
         knobs: knobs
           ? Object.entries(knobs).reduce(
               (result: { [key: string]: number }, item) => {
@@ -215,7 +224,6 @@ export default function ConfigurationDrawer({
         id: searchConfiguration?.id,
         queryTemplateId: searchConfiguration?.queryTemplate.id,
         rulesetIds,
-        executionId: currentExecution?.id,
       });
       router.replace(router.asPath);
     } catch (err) {
@@ -240,9 +248,7 @@ export default function ConfigurationDrawer({
   };
 
   const handleRun = async () => {
-    const { queryTemplate } = await updateQueryTemplate(queryPanelData);
-    await handleQueryTemplateUpdate(queryTemplate.id, queryPanelData);
-    runExecution(queryTemplate.id);
+    runExecution();
   };
 
   return (

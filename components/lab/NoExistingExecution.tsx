@@ -11,6 +11,7 @@ import {
 } from "@material-ui/core";
 import CreateIcon from "@material-ui/icons/Create";
 import classNames from "classnames";
+import { isValidJson } from "../../utils/json";
 import { apiRequest } from "../../lib/api";
 import Scrollable from "../common/Scrollable";
 import { QueryPanelValues, QueryTemplateEditor } from "./QueryTemplateEditor";
@@ -196,15 +197,6 @@ export default function NoExistingExecution({
     </div>
   );
 }
-
-const isValidJson = (string: string) => {
-  try {
-    JSON.parse(string);
-    return true;
-  } catch {
-    return false;
-  }
-};
 
 const useStyles = makeStyles((theme) => ({
   wrapper: {

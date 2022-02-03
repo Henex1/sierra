@@ -1,7 +1,6 @@
 import { Prisma, mockModels, mockSql } from "../../../lib/__mocks__/prisma";
 import {
   getApiRoute,
-  TEST_EXECUTION_ID,
   TEST_JUDGEMENT,
   TEST_PROJECT,
   TEST_PROJECT_ID,
@@ -19,18 +18,14 @@ import {
   handleUpdateSearchConfiguration,
 } from "./index";
 
+const testDate = new Date(2000, 0, 1);
+
 describe("api/searchconfigurations", () => {
   it("/update", async () => {
-    const NEW_QUERY_TEMPLATE_ID = "c111111110000tmpl11111111";
-    const { id, ...newQueryTemplate } = TEST_QUERYTEMPLATE;
     const newSearchConfiguration = {
       id: 1,
-      queryTemplateId: NEW_QUERY_TEMPLATE_ID,
+      queryTemplateId: TEST_QUERYTEMPLATE_ID,
       tags: [],
-    };
-    const newExecution = {
-      id: 1,
-      searchConfigurationId: newSearchConfiguration.id,
     };
 
     mockModels("searchConfiguration")
@@ -73,16 +68,11 @@ describe("api/searchconfigurations", () => {
       .with({ where: { AND: { id: TEST_SEARCHENDPOINT_ID } } })
       .resolvesTo(TEST_SEARCHENDPOINT);
 
-    mockModels("queryTemplate")
-      .action("create")
-      .with({ data: newQueryTemplate })
-      .resolvesTo({ ...TEST_QUERYTEMPLATE, id: NEW_QUERY_TEMPLATE_ID });
-
     mockModels("searchConfiguration")
       .action("create")
       .with({
         data: {
-          queryTemplate: { connect: { id: NEW_QUERY_TEMPLATE_ID } },
+          queryTemplate: { connect: { id: TEST_QUERYTEMPLATE_ID } },
           judgements: {
             create: [
               {
@@ -96,22 +86,16 @@ describe("api/searchconfigurations", () => {
           },
         },
       })
-      .resolvesTo(newSearchConfiguration);
+      .resolvesTo({
+        ...newSearchConfiguration,
+        createdAt: testDate,
+      });
 
-    mockModels("execution")
-      .action("update")
-      .with({
-        where: { id: TEST_EXECUTION_ID },
-        data: { searchConfigurationId: newSearchConfiguration.id },
-      })
-      .resolvesTo(newExecution);
-
-    const { searchConfiguration, execution } = await getApiRoute(
+    const { searchConfiguration } = await getApiRoute(
       handleUpdateSearchConfiguration,
       {
         id: TEST_SEARCHCONFIGURATION_ID,
         queryTemplateId: TEST_QUERYTEMPLATE_ID,
-        executionId: TEST_EXECUTION_ID,
       },
       { method: "POST" }
     );
@@ -120,10 +104,8 @@ describe("api/searchconfigurations", () => {
     expect(searchConfiguration).toMatchObject({
       id: newSearchConfiguration.id,
       tags: newSearchConfiguration.tags,
+      createdAt: testDate.toString(),
     });
-
-    expect(execution).toHaveProperty("id");
-    expect(execution).toMatchObject({ ...newExecution });
   });
 
   it.skip("/execute", async () => {

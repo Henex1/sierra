@@ -12,6 +12,7 @@ import prisma, {
   Judgement,
   SearchEndpointType,
 } from "../prisma";
+import { ExposedExecution, formatExecution } from "../execution";
 import { userCanAccessProject } from "../projects";
 
 export interface SearchConfiguration extends PrismaSearchConfiguration {
@@ -22,12 +23,18 @@ export interface SearchConfiguration extends PrismaSearchConfiguration {
 const scSelect = {
   id: true,
   knobs: true,
+  createdAt: true,
 };
 
 export type ExposedSearchConfiguration = Pick<
   SearchConfiguration,
   keyof typeof scSelect
-> & { tags: string[]; search_endpoint_type: SearchEndpointType };
+> & {
+  tags: string[];
+  search_endpoint_type: SearchEndpointType;
+  index: number;
+  latestExecution?: ExposedExecution;
+};
 
 type CreateSearchConfigurationInput = {
   queryTemplateId: string;
@@ -45,7 +52,7 @@ export function userCanAccessSearchConfiguration(
   rest?: Prisma.SearchConfigurationWhereInput
 ): Prisma.SearchConfigurationWhereInput {
   const result: Prisma.SearchConfigurationWhereInput = {
-    queryTemplate: { project: userCanAccessProject(user) },
+    project: userCanAccessProject(user),
   };
   if (rest) {
     result.AND = rest;
@@ -54,15 +61,21 @@ export function userCanAccessSearchConfiguration(
 }
 
 export function formatSearchConfiguration(
-  val: SearchConfiguration,
+  val: SearchConfiguration & { latestExecution?: ExposedExecution },
   type: SearchEndpointType
 ): ExposedSearchConfiguration {
   const formatted = (_.pick(
-    val,
-    _.keys(scSelect)
+    {
+      ...val,
+      createdAt: val.createdAt.toString(),
+    },
+    _.keys({ ...scSelect, index: true })
   ) as unknown) as ExposedSearchConfiguration;
   formatted.tags = val.tags.map((t) => t.name);
   formatted.search_endpoint_type = type;
+  if (val.latestExecution) {
+    formatted.latestExecution = val.latestExecution;
+  }
   return formatted;
 }
 
@@ -70,8 +83,6 @@ export async function getSearchConfiguration(
   user: User,
   id: string
 ): Promise<SearchConfiguration | null> {
-  // SearchConfiguration isn't actually joined to Project, so we check access
-  // on the associated QueryTemplate.
   const sc = await prisma.searchConfiguration.findFirst({
     where: userCanAccessSearchConfiguration(user, { id }),
     include: {
@@ -83,20 +94,13 @@ export async function getSearchConfiguration(
 }
 
 export async function getActiveSearchConfiguration(
-  project: Project,
-  executionId?: string
+  project: Project
 ): Promise<SearchConfiguration | null> {
   const where: any = {
     projectId: project.id,
   };
 
-  if (executionId) {
-    where.executions = {
-      some: {
-        id: executionId,
-      },
-    };
-  } else if (project.activeSearchConfigurationId) {
+  if (project.activeSearchConfigurationId) {
     where.id = project.activeSearchConfigurationId;
   }
 
@@ -117,15 +121,118 @@ export async function getExecutionSearchConfiguration(
   return sc!;
 }
 
-export async function listSearchConfigurations(
-  project: Project
-): Promise<SearchConfiguration[]> {
-  const results = await prisma.searchConfiguration.findMany({
-    where: { queryTemplate: { projectId: project.id } },
-    orderBy: [{ updatedAt: "desc" }],
-    include: { tags: true },
+export async function loadSearchConfigurations(
+  projectId: string,
+  refSearchConfigId?: string,
+  direction?: "left" | "right"
+): Promise<{
+  searchConfigurations: (SearchConfiguration & { index: number })[];
+  allSCsLength: number;
+}> {
+  const allSCsLength = await prisma.searchConfiguration.count({
+    where: { projectId },
   });
-  return results;
+
+  if (!refSearchConfigId) {
+    const searchConfigurations = await prisma.searchConfiguration.findMany({
+      where: { projectId },
+      orderBy: [{ updatedAt: "desc" }],
+      include: {
+        tags: true,
+        executions: {
+          take: 1,
+          orderBy: [{ createdAt: "desc" }],
+        },
+      },
+    });
+
+    return {
+      searchConfigurations: searchConfigurations.map((searchConfig, index) => {
+        const { executions, ...parsedSC } = searchConfig;
+
+        return {
+          ...parsedSC,
+          index,
+          latestExecution: executions[0] && formatExecution(executions[0]),
+        };
+      }),
+      allSCsLength,
+    };
+  }
+
+  let searchConfigurations: (PrismaSearchConfiguration & {
+    tags: PrismaSearchConfigurationTag[];
+    executions: Execution[];
+  })[];
+  if (direction === "left" || direction === "right") {
+    searchConfigurations = await prisma.searchConfiguration.findMany({
+      take: { left: -5, right: 5 }[direction],
+      skip: 1,
+      cursor: {
+        id: refSearchConfigId,
+      },
+      where: { projectId },
+      include: {
+        tags: true,
+        executions: {
+          take: 1,
+          orderBy: [{ createdAt: "desc" }],
+        },
+      },
+    });
+  } else {
+    const leftSCs = await prisma.searchConfiguration.findMany({
+      take: -2,
+      skip: 1,
+      cursor: {
+        id: refSearchConfigId,
+      },
+      where: { projectId },
+      include: {
+        tags: true,
+        executions: {
+          take: 1,
+          orderBy: [{ createdAt: "desc" }],
+        },
+      },
+    });
+    const rightSCsWithCursor = await prisma.searchConfiguration.findMany({
+      take: 3,
+      cursor: {
+        id: refSearchConfigId,
+      },
+      where: { projectId },
+      include: {
+        tags: true,
+        executions: {
+          take: 1,
+          orderBy: [{ createdAt: "desc" }],
+        },
+      },
+    });
+    searchConfigurations = [...leftSCs, ...rightSCsWithCursor];
+  }
+  const startIndex = await prisma.searchConfiguration.count({
+    where: {
+      projectId,
+      createdAt: {
+        lt: searchConfigurations[0].createdAt,
+      },
+    },
+  });
+
+  return {
+    searchConfigurations: searchConfigurations.map((searchConfig, index) => {
+      const { executions, ...parsedSC } = searchConfig;
+
+      return {
+        ...parsedSC,
+        index: startIndex + index,
+        latestExecution: executions[0] && formatExecution(executions[0]),
+      };
+    }),
+    allSCsLength,
+  };
 }
 
 // [Judgement, weight]

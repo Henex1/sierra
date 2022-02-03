@@ -1,8 +1,8 @@
 import _ from "lodash";
 
 import * as log from "../logging";
-import prisma, { Prisma, User, Org, UserOrgRole } from "../prisma";
-import { getClient } from "../sendgrid";
+import prisma, { Org, Prisma, User, UserOrgRole } from "../prisma";
+import { sendGridClient } from "../sendgrid";
 import { createInvitation, deleteInvitation } from "../invitation";
 import type { CreateOrg } from "./types/CreateOrg";
 import type { UpdateOrg } from "./types/UpdateOrg";
@@ -125,7 +125,13 @@ export async function createOrgUser(
   });
 
   if (!orgUser) {
-    throw new Error("Current user doesn't belong to this organization");
+    throw new Error(
+      "Current user needs to be an administrator an organization to invite more people."
+    );
+  }
+
+  if (!sendGridClient) {
+    throw new Error("Email sending issue");
   }
 
   const emailUser = await prisma.user.findFirst({
@@ -136,24 +142,29 @@ export async function createOrgUser(
 
   if (!emailUser) {
     try {
-      const client = getClient();
-
-      if (!client) {
-        throw new Error();
-      }
-
       const invitation = await createInvitation({
         email: data.email,
         role: data.role as UserOrgRole,
         orgId: id,
       });
       const invitationUrl = `${baseUrl}/auth/${invitation.id}`;
-      await client.send({
+      await sendGridClient.send({
         from: "info@bigdataboutique.com",
         to: data.email,
-        subject: `${user.name} invited you to a Sierra Organization`,
-        html: `Organization name: <b>${org!.name}</b> <br />
-             Sign in link: <a href=${invitationUrl}>${invitationUrl}</a>`,
+        subject: `${user.name} invited you to collaborate on Sierra`,
+        html: `<html><body>
+<p>Hi there,</p>
+<p>
+${
+  user.name
+} invited you to collaborate on search relevance engeineering projects on Sierra, in the <b>${
+          org!.name
+        }</b> organization.
+</p>
+<p>
+To begin, sign up via <a href=${invitationUrl}>${invitationUrl}</a>.
+</p>
+</body></html>`,
       });
     } catch (err: any) {
       log.error(err.stack ?? err);
@@ -201,6 +212,35 @@ export async function createOrgUser(
     },
   });
 
+  try {
+    await sendGridClient.send({
+      from: "info@bigdataboutique.com",
+      to: data.email,
+      subject: `[Sierra] You were added to the ${org!.name} organization`,
+      html: `<html><body>
+<p>Hi there,</p>
+<p>
+${user.name} added you to the <b>${org!.name}</b> organization on Sierra.
+</p>
+<p>
+Sign in via <a href=${baseUrl}>${baseUrl}</a>.
+</p>
+</body></html>`,
+    });
+  } catch (err: any) {
+    log.error(err.stack ?? err);
+
+    const createdInvitation = await prisma.invitation.findFirst({
+      where: {
+        email: data.email,
+        role: data.role as UserOrgRole,
+        orgId: id,
+      },
+    });
+    if (createdInvitation) await deleteInvitation(createdInvitation.id);
+    throw err;
+  }
+
   return {
     orgUserId: createdOrgUser?.id,
     message: "User added",
@@ -219,7 +259,7 @@ export async function getOrgUsers(user: User, id: string) {
     throw new Error("Current user doesn't belong to organization");
   }
 
-  const users = await prisma.orgUser.findMany({
+  return await prisma.orgUser.findMany({
     where: {
       orgId: id,
     },
@@ -227,8 +267,6 @@ export async function getOrgUsers(user: User, id: string) {
       user: true,
     },
   });
-
-  return users;
 }
 
 export async function getOrgUserRole(
