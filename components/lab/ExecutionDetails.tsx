@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import classnames from "classnames";
 import { Paper } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
-import { ExposedExecution } from "../../lib/execution";
+import { ExposedSearchConfiguration } from "../../lib/searchconfigurations";
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -49,13 +49,13 @@ const useStyles = makeStyles(() => ({
 type Props = {
   anchorEl: null | HTMLElement;
   floatingElRef: React.RefObject<HTMLElement>;
-  execution: null | ExposedExecution;
+  searchConfig: null | ExposedSearchConfiguration;
 };
 
 export default function ExecutionDetails({
   anchorEl,
   floatingElRef,
-  execution,
+  searchConfig,
 }: Props) {
   const classes = useStyles();
   const [arrowDir, setArrowDir] = useState("left");
@@ -71,9 +71,9 @@ export default function ExecutionDetails({
     );
   }, [floatingElRef.current]);
 
-  if (!execution) return null;
+  if (!searchConfig) return null;
 
-  const date = new Date(execution.createdAt);
+  const date = new Date(searchConfig.createdAt);
 
   return (
     <Paper className={classes.paper}>

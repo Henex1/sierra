@@ -1,4 +1,5 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
+import { io } from "socket.io-client";
 import { ExposedSearchPhrase } from "../../../lib/lab";
 import { ExposedSearchConfiguration } from "../../../lib/searchconfigurations";
 import { ExposedExecution } from "../../../lib/execution";
@@ -30,7 +31,7 @@ interface ILabContext {
   isExecutionRunning: boolean;
   activeSearchPhrase: ExposedSearchPhrase | null;
   setActiveSearchPhrase: (value: ExposedSearchPhrase) => void;
-  runExecution: (value: string) => void;
+  runExecution: () => void;
   canRunExecution: boolean;
 }
 
@@ -60,21 +61,27 @@ export const LabProvider = ({
   const [isExecutionRunning, setIsExecutionRunning] = useState(false);
   const { addErrorAlert } = useAlertsContext();
 
-  if (!currentExecution || !searchConfiguration) return <>{children}</>;
+  useEffect(() => {
+    const socket = io();
+    socket.on("running_tasks", ({ tasks }: { tasks: Array<string> }) => {
+      if (
+        tasks.some((task) => task.includes("Search Configuration Execution")) &&
+        !isExecutionRunning
+      ) {
+        setIsExecutionRunning(true);
+      }
+    });
+  }, []);
 
-  const runExecution = async (queryTemplateId: string) => {
+  if (!searchConfiguration) return <>{children}</>;
+
+  const runExecution = async () => {
     const searchConfigurationId = searchConfiguration.id;
     if (!searchConfigurationId) return;
 
     setIsExecutionRunning(true);
 
     try {
-      await apiRequest("/api/searchconfigurations/update", {
-        id: searchConfigurationId,
-        queryTemplateId,
-        executionId: currentExecution?.id,
-      });
-
       await apiRequest("/api/searchconfigurations/execute", {
         id: searchConfigurationId,
       });
