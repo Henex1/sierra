@@ -17,6 +17,7 @@ import { userCanAccessProject } from "../projects";
 
 export interface SearchConfiguration extends PrismaSearchConfiguration {
   tags: PrismaSearchConfigurationTag[];
+  rulesets?: RulesetVersion[];
   queryTemplate?: QueryTemplate;
 }
 
@@ -88,6 +89,7 @@ export async function getSearchConfiguration(
     include: {
       tags: true,
       queryTemplate: true,
+      rulesets: true,
     },
   });
   return sc;

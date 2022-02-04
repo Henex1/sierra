@@ -9,7 +9,7 @@ import SearchPhraseList from "../../components/lab/SearchPhraseList";
 import { ResultList } from "../../components/lab/ResultList";
 import Configuration from "../../components/lab/Configuration";
 import ExecutionSummary from "../../components/lab/ExecutionSummary";
-import { getProject } from "../../lib/projects";
+import { ExposedProject, formatProject, getProject } from "../../lib/projects";
 import {
   formatSearchConfiguration,
   ExposedSearchConfiguration,
@@ -67,6 +67,7 @@ const useStyles = makeStyles((theme) => ({
 const pageSize = 10;
 
 type Props = {
+  project: ExposedProject;
   searchConfiguration:
     | (ExposedSearchConfiguration & {
         queryTemplate: ExposedQueryTemplate;
@@ -229,6 +230,7 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
 
   return {
     props: {
+      project: formatProject(project),
       searchConfiguration,
       searchPhrases: formattedPhrases || null,
       searchPhrasesTotal,
@@ -257,6 +259,7 @@ export const getServerSideProps = authenticatedPage<Props>(async (context) => {
 });
 
 export default function Lab({
+  project,
   searchConfiguration,
   searchPhrases,
   searchPhrasesTotal,
@@ -348,6 +351,7 @@ export default function Lab({
 
   return (
     <LabProvider
+      project={project}
       currentExecution={currentExecution}
       searchConfiguration={searchConfiguration}
       rulesets={rulesets}

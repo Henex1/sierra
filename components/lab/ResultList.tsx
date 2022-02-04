@@ -16,6 +16,7 @@ import { ExposedSearchPhrase, MockSearchResult } from "../../lib/lab";
 import ResultScore from "./ResultScore/ResultScore";
 import ExplainBlock from "./ExplainBlock";
 import { ResultCard } from "./ResultCard";
+import ExpandedQueryPopover from "./ExpandedQueryPopover";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -149,6 +150,9 @@ export function ResultList({ displayFields, onClose, searchPhrase }: Props) {
         </Grid>
         <Grid item>
           <Button variant="outlined">Explain missing documents</Button>
+        </Grid>
+        <Grid item>
+          <ExpandedQueryPopover phrase={searchPhrase.phrase} />
         </Grid>
         <Grid item>
           <IconButton aria-label="close" onClick={onClose}>
