@@ -8,7 +8,7 @@ import "ace-builds/src-noconflict/theme-github";
 
 type Props = {
   value: string;
-  onChange: (value: string, event: React.ChangeEvent) => void;
+  onChange?: (value: string, event: React.ChangeEvent) => void;
   height?: number;
   className?: string;
   inputRef?: React.MutableRefObject<AceEditor>;

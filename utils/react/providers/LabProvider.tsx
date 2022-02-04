@@ -10,6 +10,7 @@ import {
 import { apiRequest } from "../../../lib/api";
 import { useAlertsContext } from "../hooks/useAlertsContext";
 import { ExposedQueryTemplate } from "../../../lib/querytemplates";
+import { ExposedProject } from "../../../lib/projects";
 
 type LabContextSearchConfiguration =
   | (ExposedSearchConfiguration & {
@@ -19,6 +20,7 @@ type LabContextSearchConfiguration =
   | null;
 interface LabProviderProps {
   children: JSX.Element | Array<JSX.Element>;
+  project: ExposedProject;
   currentExecution: ExposedExecution | null;
   searchConfiguration: LabContextSearchConfiguration;
   rulesets: Array<ExposedRulesetWithVersions>;
@@ -26,6 +28,7 @@ interface LabProviderProps {
 
 interface ILabContext {
   currentExecution: ExposedExecution | null;
+  project: ExposedProject | null;
   searchConfiguration: LabContextSearchConfiguration;
   rulesets: Array<ExposedRulesetWithVersions>;
   isExecutionRunning: boolean;
@@ -41,6 +44,7 @@ const defaultState = {
   canRunExecution: false,
   searchConfiguration: null,
   currentExecution: null,
+  project: null,
   rulesets: [],
   setActiveSearchPhrase: () => {},
   runExecution: () => {},
@@ -50,6 +54,7 @@ export const LabContext = createContext<ILabContext>(defaultState);
 
 export const LabProvider = ({
   children,
+  project,
   currentExecution,
   searchConfiguration,
   rulesets,
@@ -98,6 +103,7 @@ export const LabProvider = ({
     activeSearchPhrase,
     setActiveSearchPhrase,
     currentExecution,
+    project,
     searchConfiguration,
     rulesets,
     runExecution,
