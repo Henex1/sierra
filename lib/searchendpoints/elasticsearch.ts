@@ -76,13 +76,17 @@ export class ElasticsearchInterface implements QueryInterface {
       ...extra,
     });
 
+    const resData = await response.json();
+
     if (!response.ok) {
       throw new Error(
-        `HTTP ${response.status} (${response.statusText}) - ES query failed.`
+        `HTTP ${response.status} (${response.statusText}) - ${
+          resData.error?.reason ?? "ES query failed."
+        }`
       );
     }
 
-    return await response.json();
+    return resData;
   }
 
   async testConnection(): Promise<TestResult> {
