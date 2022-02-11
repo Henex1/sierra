@@ -19,6 +19,7 @@ export const getServerSideProps = authenticatedPage(async (context) => {
   return {
     props: {
       org: organization && formatOrg(organization),
+      isUserScoped: organization?.orgType === "USER_SPACE",
     },
   };
 });
@@ -32,9 +33,10 @@ const useStyles = makeStyles(() => ({
 
 type Props = {
   org: ExposedOrg;
+  isUserScoped: boolean;
 };
 
-export default function EditOrganization({ org }: Props) {
+export default function EditOrganization({ org, isUserScoped }: Props) {
   const classes = useStyles();
   const router = useRouter();
 
@@ -74,7 +76,11 @@ export default function EditOrganization({ org }: Props) {
           <Typography variant="h6">Organization details</Typography>
         </Grid>
         <Grid item xs={7}>
-          <CreateOrganizationForm onSubmit={onSubmit} initialValues={org} />
+          <CreateOrganizationForm
+            onSubmit={onSubmit}
+            initialValues={org}
+            isUserScoped={isUserScoped}
+          />
         </Grid>
       </Grid>
     </div>

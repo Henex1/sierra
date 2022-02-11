@@ -39,13 +39,14 @@ export interface Props {
   value?: string;
   onChange: (f: string) => void;
   onRemove: () => void;
-  disabled?: boolean;
+  disabled?: boolean | undefined;
 }
 
 export function AvatarUpload({
   value,
   onChange,
   onRemove,
+  disabled,
 }: Props): ReactElement {
   const classes = useStyles();
   const [error, setError] = useState<"size" | undefined>();
@@ -83,7 +84,7 @@ export function AvatarUpload({
           <Editor value={value} onChange={onChange} />
         </Badge>
       ) : (
-        <Input onChange={handleImageChange}>
+        <Input onChange={handleImageChange} disabled={disabled}>
           <img src="/images/no-image.svg" className={classes.none} />
         </Input>
       )}

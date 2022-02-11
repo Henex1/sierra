@@ -8,11 +8,12 @@ import { AvatarUpload } from "../AvatarUpload";
 
 export type FormProps = BaseFormProps<ExposedOrg> & {
   onDelete?: () => void;
+  isUserScoped?: boolean;
 };
 
 export function CreateOrganizationForm({ onDelete, ...rest }: FormProps) {
   const isNew = rest.initialValues?.id === undefined;
-
+  const disabled = rest.isUserScoped;
   return (
     <Form
       {...rest}
@@ -24,6 +25,7 @@ export function CreateOrganizationForm({ onDelete, ...rest }: FormProps) {
               name="name"
               required={true}
               variant="filled"
+              disabled={disabled}
             />
           </Box>
           <Box pb={2}>
@@ -32,6 +34,7 @@ export function CreateOrganizationForm({ onDelete, ...rest }: FormProps) {
               name="domain"
               variant="filled"
               type="url"
+              disabled={disabled}
             />
           </Box>
           <Box pb={2}>
@@ -39,6 +42,7 @@ export function CreateOrganizationForm({ onDelete, ...rest }: FormProps) {
               {(props) => {
                 return (
                   <AvatarUpload
+                    disabled={disabled}
                     value={props.input.value}
                     onChange={(f) => form.change("image", f)}
                     onRemove={() => form.change("image", null)}
@@ -50,7 +54,7 @@ export function CreateOrganizationForm({ onDelete, ...rest }: FormProps) {
           <Box pb={2}>
             <Button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || disabled}
               variant="contained"
               color="primary"
             >
