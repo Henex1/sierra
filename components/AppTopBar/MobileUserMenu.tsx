@@ -77,9 +77,6 @@ export default function MobileUserMenu({ activeProjectId }: Props) {
         <MobileSettingsMenu closeMenu={closeMenu} />
         <MobileFeedbackMenu />
         <Divider variant="middle" />
-        <MenuItemLink onClick={closeMenu} href="/me/organization">
-          Organization
-        </MenuItemLink>
         <MenuItemLink onClick={closeMenu} href="/me">
           Profile
         </MenuItemLink>

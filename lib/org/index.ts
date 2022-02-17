@@ -7,6 +7,7 @@ import { createInvitation, deleteInvitation } from "../invitation";
 import type { CreateOrg } from "./types/CreateOrg";
 import type { UpdateOrg } from "./types/UpdateOrg";
 import type { NewOrgUser } from "./types/NewOrgUser";
+import { OrgAggregates } from "./types/OrgAggregates";
 
 const selectKeys = {
   id: true,
@@ -281,4 +282,53 @@ export async function getOrgUserRole(
       },
     })
   )?.role;
+}
+
+export function userCanAccessOrgAggregates(
+  user: User,
+  rest?: Prisma.ProjectWhereInput
+): Prisma.ProjectWhereInput {
+  const result: Prisma.ProjectWhereInput = {
+    org: userCanAccessOrg(user),
+  };
+  if (rest) {
+    result.AND = rest;
+  }
+  return result;
+}
+
+export async function getOrgAggregates(
+  user: User,
+  id: string
+): Promise<OrgAggregates> {
+  const usersCount = await prisma.orgUser.count({
+    where: { orgId: id },
+  });
+
+  const projects = await prisma.project.findMany({
+    where: userCanAccessOrgAggregates(user, { orgId: id }),
+    include: {
+      Execution: {
+        take: 1,
+        orderBy: [{ createdAt: "desc" }],
+      },
+    },
+  });
+
+  const executionDates = projects
+    .filter((p) => p.Execution && p.Execution.length > 0)
+    .map((p) => p.Execution[0])
+    .map((e) => e.createdAt);
+  let lastExecution = null;
+  if (executionDates && executionDates.length > 0) {
+    lastExecution = executionDates?.reduce((a, b) => (a > b ? a : b));
+  }
+
+  return {
+    usersCount,
+    projectsCount: projects.length,
+    lastExecution: lastExecution?.toDateString()
+      ? lastExecution?.toDateString()
+      : null,
+  };
 }
