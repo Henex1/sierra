@@ -354,7 +354,11 @@ export default function Lab({
       project={project}
       currentExecution={currentExecution}
       searchConfiguration={searchConfiguration}
+      searchConfigurations={searchConfigurations}
+      allSCsLength={allSCsLength}
       rulesets={rulesets}
+      currentSearchConfigId={currentSearchConfigId}
+      setCurrentSearchConfigId={setCurrentSearchConfigId}
     >
       <BackdropLoadingSpinner open={propsLoading} />
       <div>
@@ -413,8 +417,6 @@ export default function Lab({
                     {activeSearchConfiguration && (
                       <ExecutionSummary
                         templates={templates}
-                        searchConfigurations={searchConfigurations}
-                        allSCsLength={allSCsLength}
                         activeSearchConfig={activeSearchConfiguration}
                         onSelected={(id: string) =>
                           setCurrentSearchConfigId(id)

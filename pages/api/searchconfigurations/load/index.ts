@@ -5,7 +5,7 @@ import {
   apiHandler,
   requireBody,
   SierraApiRequest,
-} from "../../../lib/apiServer";
+} from "../../../../lib/apiServer";
 
 export default apiHandler(
   async (req: SierraApiRequest, res: NextApiResponse): Promise<void> => {

@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { useRouter } from "next/router";
+import React from "react";
+import _ from "lodash";
 import classnames from "classnames";
 import {
   AppBar,
@@ -27,6 +27,8 @@ import { CreateCSSProperties, CSSProperties } from "@material-ui/styles";
 
 import { ExposedRulesetVersion } from "../../lib/rulesets";
 import { ExposedQueryTemplate } from "../../lib/querytemplates";
+import { ExposedSearchConfiguration } from "../../lib/searchconfigurations";
+import { RulesetVersionValue } from "../../lib/rulesets/rules";
 import { QueryTemplateEditor, QueryPanelValues } from "./QueryTemplateEditor";
 import { RulesetPanel } from "./RulesetPanel";
 import LoadingContent from "../common/LoadingContent";
@@ -35,6 +37,7 @@ import { apiRequest } from "../../lib/api";
 import { useAlertsContext } from "../../utils/react/hooks/useAlertsContext";
 import { useLabContext } from "../../utils/react/hooks/useLabContext";
 import { useAppTopBarBannerContext } from "../../utils/react/hooks/useAppTopBarBannerContext";
+import { LabContextSearchConfiguration } from "../../utils/react/providers/LabProvider";
 import { isValidJson } from "../../utils/json";
 import AppTopBarSpacer from "../common/AppTopBarSpacer";
 
@@ -96,7 +99,6 @@ export default function ConfigurationDrawer({
     pageHasBanner: !!banner && isPageAllowed(),
     width,
   });
-  const router = useRouter();
   const [activeTab, setActiveTab] = React.useState(0);
   const [isResizing, setIsResizing] = React.useState(false);
   const [initialRulesetIds, setInitialRulesetIds] = React.useState<string[]>(
@@ -110,29 +112,46 @@ export default function ConfigurationDrawer({
       [key: string]: any;
     },
   });
-  const [rulesetHasPendingAction, setRulesetHasPendingAction] = useState(false);
-
-  const queryTemplateChanged = useMemo(
+  const [selectedRulesetVData, setSelectedRulesetVData] = React.useState<
+    (RulesetVersionValue & { id: string }) | undefined
+  >(undefined);
+  const queryTemplateChanged = React.useMemo(
     () =>
       isValidJson(queryPanelData.query) &&
       isValidJson(searchConfiguration?.queryTemplate.query as string)
-        ? JSON.stringify(JSON.parse(queryPanelData.query)) !==
-          JSON.stringify(
+        ? !_.isEqual(
+            JSON.parse(queryPanelData.query),
             JSON.parse(searchConfiguration?.queryTemplate.query as string)
           )
         : true,
     [queryPanelData, searchConfiguration]
   );
-  const rulesetsChanged = useMemo(
-    () =>
-      JSON.stringify([...initialRulesetIds].sort()) !==
-        JSON.stringify([...rulesetIds].sort()) || rulesetHasPendingAction,
-    [initialRulesetIds, rulesetIds, rulesetHasPendingAction]
+  const rulesetIdsChanged = React.useMemo(
+    () => !_.isEqual(initialRulesetIds.sort(), rulesetIds.sort()),
+    [initialRulesetIds, rulesetIds]
   );
-  const hasUnsavedChanges = queryTemplateChanged || rulesetsChanged;
+
+  const rulesetChanged = React.useMemo(
+    () =>
+      !!selectedRulesetVData &&
+      !_.isEqual(
+        searchConfiguration?.rulesets.find(
+          (r) => r.id === selectedRulesetVData.id
+        )?.value,
+        _.omit(selectedRulesetVData, "id")
+      ),
+    [searchConfiguration, searchConfiguration?.rulesets, selectedRulesetVData]
+  );
+  const formChanged =
+    queryTemplateChanged || rulesetChanged || rulesetIdsChanged;
 
   const { addErrorAlert } = useAlertsContext();
-  const { runExecution, isExecutionRunning, canRunExecution } = useLabContext();
+  const {
+    runExecution,
+    isExecutionRunning,
+    canRunExecution,
+    searchConfigurations,
+  } = useLabContext();
 
   React.useEffect(() => {
     if (searchConfiguration) {
@@ -141,6 +160,16 @@ export default function ConfigurationDrawer({
       );
       setInitialRulesetIds(ids);
       setRulesetIds(ids);
+      if (searchConfiguration.rulesets[0]) {
+        setSelectedRulesetVData({
+          id: searchConfiguration.rulesets[0].id,
+          rules: (searchConfiguration.rulesets[0].value as any)?.rules ?? [],
+          conditions:
+            (searchConfiguration.rulesets[0].value as any)?.conditions ?? [],
+        });
+      } else {
+        setSelectedRulesetVData(undefined);
+      }
     }
   }, [searchConfiguration]);
 
@@ -193,62 +222,102 @@ export default function ConfigurationDrawer({
     setAnchorEl(null);
   };
 
-  async function handleQueryTemplateUpdate(
-    queryTemplateId: string,
-    { knobs }: QueryPanelValues
-  ) {
-    try {
-      await apiRequest(`/api/searchconfigurations/update`, {
-        id: searchConfiguration?.id,
-        queryTemplateId,
-        rulesetIds,
-        knobs: knobs
-          ? Object.entries(knobs).reduce(
-              (result: { [key: string]: number }, item) => {
-                result[item[0]] = parseFloat(item[1]) || 10;
-                return result;
-              },
-              {}
-            )
-          : {},
-      });
-      router.replace(router.asPath);
-    } catch (err) {
-      addErrorAlert(err);
-    }
-  }
-
-  async function handleRulesetUpdate() {
-    try {
-      await apiRequest(`/api/searchconfigurations/update`, {
-        id: searchConfiguration?.id,
-        queryTemplateId: searchConfiguration?.queryTemplate.id,
-        rulesetIds,
-      });
-      router.replace(router.asPath);
-    } catch (err) {
-      addErrorAlert(err);
-    }
-  }
-
   const handleQueryPanelChange = (data: QueryPanelValues) =>
     setQueryPanelData(data);
 
-  const updateQueryTemplate = async ({ query }: QueryPanelValues) => {
-    const newQueryTemplates: {
+  const handleRulesetPanelChange = (
+    data: RulesetVersionValue & {
+      id: string;
+    }
+  ) => setSelectedRulesetVData(data);
+
+  const updateQueryTemplate = async (
+    searchConfiguration: LabContextSearchConfiguration
+  ) => {
+    const newQueryTemplate: {
       queryTemplate: ExposedQueryTemplate;
     } = await apiRequest(`/api/querytemplates/update`, {
       parentId: searchConfiguration?.queryTemplate.id,
       description: searchConfiguration?.queryTemplate.description || "",
       projectId: searchConfiguration?.queryTemplate.projectId,
-      query,
+      query: queryPanelData.query,
     });
 
-    return newQueryTemplates;
+    return newQueryTemplate;
+  };
+
+  const updateRulesetVersion = async (
+    searchConfiguration: LabContextSearchConfiguration
+  ) => {
+    try {
+      await apiRequest(`/api/rulesets/createVersion`, {
+        value: {
+          rules: selectedRulesetVData?.rules || [],
+          conditions: selectedRulesetVData?.conditions || [],
+        },
+        rulesetId: searchConfiguration?.rulesets.find(
+          (r) => r.id === selectedRulesetVData?.id
+        )?.rulesetId,
+        parentId: selectedRulesetVData?.id,
+      });
+    } catch (error) {
+      addErrorAlert(error);
+    }
   };
 
   const handleRun = async () => {
-    runExecution();
+    if (!isValidJson(queryPanelData.query)) return;
+
+    const executionSC = searchConfiguration && { ...searchConfiguration };
+
+    let queryTemplateId = executionSC?.queryTemplate.id;
+    let searchConfigurationId = executionSC?.id;
+    let newSearchConfiguration:
+      | ExposedSearchConfiguration
+      | undefined = undefined;
+
+    if (queryTemplateChanged) {
+      const { queryTemplate: newQueryTemplate } = await updateQueryTemplate(
+        executionSC
+      );
+      queryTemplateId = newQueryTemplate.id;
+    }
+    if (rulesetChanged) {
+      await updateRulesetVersion(executionSC);
+    }
+
+    if (formChanged) {
+      try {
+        const res: {
+          searchConfiguration: ExposedSearchConfiguration;
+        } = await apiRequest(`/api/searchconfigurations/update`, {
+          id: executionSC?.id,
+          queryTemplateId,
+          rulesetIds,
+          knobs: queryPanelData.knobs
+            ? Object.entries(queryPanelData.knobs).reduce(
+                (result: { [key: string]: number }, item) => {
+                  result[item[0]] = parseFloat(item[1]) || 10;
+                  return result;
+                },
+                {}
+              )
+            : {},
+        });
+        searchConfigurationId = res.searchConfiguration.id;
+        newSearchConfiguration = await apiRequest(
+          `/api/searchconfigurations/load/${searchConfigurationId}`,
+          {
+            index:
+              searchConfigurations[searchConfigurations.length - 1].index + 1,
+          }
+        );
+      } catch (err) {
+        addErrorAlert(err);
+      }
+    }
+
+    runExecution(searchConfigurationId, newSearchConfiguration);
   };
 
   return (
@@ -328,8 +397,6 @@ export default function ConfigurationDrawer({
                       knobs: searchConfiguration.knobs,
                     }}
                     searchEndpointType={searchEndpointType}
-                    onUpdate={handleQueryTemplateUpdate}
-                    updateQueryTemplate={updateQueryTemplate}
                     onFormValuesChange={handleQueryPanelChange}
                   />
                 </TabPanel>
@@ -338,28 +405,19 @@ export default function ConfigurationDrawer({
                     formId={formId}
                     activeRulesetIds={rulesetIds}
                     setActiveRulesetIds={setRulesetIds}
-                    onUpdate={handleRulesetUpdate}
-                    setRulesetHasPendingAction={setRulesetHasPendingAction}
+                    onFormValuesChange={handleRulesetPanelChange}
                   />
                 </TabPanel>
               </Scrollable>
               <Toolbar className={classes.actions}>
-                <Button
-                  type="submit"
-                  variant="outlined"
-                  color="primary"
-                  size="medium"
-                  className={classes.saveButton}
-                  form={formId}
-                >
-                  Save {menu[activeTab].label}
-                </Button>
                 <Fab
                   color="primary"
                   variant="extended"
                   onClick={handleRun}
                   disabled={
-                    !canRunExecution || hasUnsavedChanges || isExecutionRunning
+                    !canRunExecution ||
+                    isExecutionRunning ||
+                    !isValidJson(queryPanelData.query)
                   }
                   className={classes.saveAndRunButton}
                   size="medium"

@@ -237,6 +237,33 @@ export async function loadSearchConfigurations(
   };
 }
 
+export async function loadSearchConfiguration(
+  user: User,
+  id: string,
+  index?: number
+) {
+  const searchConfiguration = await prisma.searchConfiguration.findFirst({
+    where: userCanAccessSearchConfiguration(user, { id }),
+    include: {
+      tags: true,
+      executions: {
+        take: 1,
+        orderBy: [{ createdAt: "desc" }],
+      },
+    },
+  });
+
+  if (!searchConfiguration) return null;
+
+  const { executions, ...parsedSC } = searchConfiguration;
+
+  return {
+    ...parsedSC,
+    index,
+    latestExecution: executions[0] && formatExecution(executions[0]),
+  };
+}
+
 // [Judgement, weight]
 export type WeightedJudgement = [Judgement, number];
 

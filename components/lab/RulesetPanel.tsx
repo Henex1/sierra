@@ -8,16 +8,13 @@ import {
   Button,
   Popover,
 } from "@material-ui/core";
-import { Form } from "react-final-form";
 import useSWR from "swr";
 import AddIcon from "@material-ui/icons/Add";
 
-import { apiRequest } from "../../lib/api";
 import RulesetEditor from "../rulesets/RulesetEditor";
 import { Props as RulesetEditorProps } from "../../pages/rulesets/[id]";
 import { RulesetVersionValue } from "../../lib/rulesets/rules";
 import LoadingContent from "../common/LoadingContent";
-import { useAlertsContext } from "../../utils/react/hooks/useAlertsContext";
 import { useLabContext } from "../../utils/react/hooks/useLabContext";
 
 const useStyles = makeStyles((theme) => ({
@@ -44,22 +41,19 @@ type RulesetPanelProps = {
   formId: string;
   activeRulesetIds: string[];
   setActiveRulesetIds: (ids: string[]) => void;
-  onUpdate: () => void;
-  setRulesetHasPendingAction?: (data: boolean) => void;
+  onFormValuesChange?: (data: RulesetVersionValue & { id: string }) => void;
 };
 
 export function RulesetPanel({
   formId,
   activeRulesetIds,
   setActiveRulesetIds,
-  onUpdate,
-  setRulesetHasPendingAction,
+  onFormValuesChange,
 }: RulesetPanelProps) {
   const classes = useStyles();
   const [rulesetId, setRulesetId] = React.useState("");
   const [popoverIsOpen, setPopoverIsOpen] = React.useState(false);
   const popoverAnchorEl = React.useRef<HTMLButtonElement>(null);
-  const { addErrorAlert } = useAlertsContext();
   const { rulesets } = useLabContext();
 
   React.useEffect(() => {
@@ -71,26 +65,14 @@ export function RulesetPanel({
   }, [activeRulesetIds, rulesetId]);
 
   const rulesetSelected = Boolean(rulesetId);
-  const { data, mutate } = useSWR<RulesetEditorProps>(
+  const { data } = useSWR<RulesetEditorProps>(
     rulesetSelected ? `/api/rulesets/${rulesetId}` : null
   );
 
-  async function onSubmit(value: RulesetVersionValue) {
-    if (data) {
-      try {
-        await apiRequest(`/api/rulesets/createVersion`, {
-          value,
-          rulesetId: rulesetId,
-          parentId: data.version.id,
-        });
-        await mutate({ ...data, version: { ...data.version, value } }, false);
-      } catch (error) {
-        addErrorAlert(error);
-      }
-    }
-    onUpdate();
-    return;
-  }
+  const onRulesetChange = (value: RulesetVersionValue) => {
+    onFormValuesChange &&
+      onFormValuesChange({ id: data?.version.id ?? "", ...value });
+  };
 
   return (
     <div>
@@ -161,20 +143,13 @@ export function RulesetPanel({
         <RulesetEditor
           compact
           formId={formId}
-          onSubmit={onSubmit}
+          onSubmit={() => {}}
           initialValues={data.version.value as RulesetVersionValue}
           facetFilterFields={data.facetFilterFields}
-          setHasPendingAction={setRulesetHasPendingAction}
+          onRulesetChange={onRulesetChange}
         />
-      ) : rulesetSelected ? (
-        <LoadingContent />
       ) : (
-        <Form
-          onSubmit={onSubmit}
-          render={({ handleSubmit }) => (
-            <form id={formId} onSubmit={handleSubmit} />
-          )}
-        />
+        rulesetSelected && <LoadingContent />
       )}
     </div>
   );
