@@ -46,7 +46,7 @@ export default function EditOrganization({ org, isUserScoped }: Props) {
       image: org.image === image ? undefined : image || null,
       domain: domain || null,
     });
-    router.push("/me/organization");
+    router.push("/me");
     // Keep the form stuck as pending
     return new Promise(() => {});
   }
@@ -55,7 +55,7 @@ export default function EditOrganization({ org, isUserScoped }: Props) {
     <div>
       <BreadcrumbsButtons>
         <Link href="/">Home</Link>
-        <Link href="/me/organization">Organization</Link>
+        <Link href="/me">Organization</Link>
         <Typography>{org.name}</Typography>
       </BreadcrumbsButtons>
       <Grid container spacing={3}>

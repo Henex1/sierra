@@ -20,14 +20,14 @@ export default function CreateOrganization() {
       name,
       domain,
       image,
-    }).then(() => router.push("/me/organizations"));
+    }).then(() => router.push("/me"));
   };
 
   return (
     <div>
       <BreadcrumbsButtons>
         <Link href="/">Home</Link>
-        <Link href="/me/organization">Organization</Link>
+        <Link href="/me">Organization</Link>
         <Typography>Create Organization</Typography>
       </BreadcrumbsButtons>
       <Grid container spacing={3}>

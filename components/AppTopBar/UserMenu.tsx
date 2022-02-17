@@ -27,6 +27,9 @@ const useStyles = makeStyles((theme) => ({
   dropMenu: {
     marginTop: theme.spacing(5),
   },
+  menuInfo: {
+    padding: "15px",
+  },
 }));
 
 type Props = {
@@ -89,7 +92,10 @@ export default function UserMenu({ user, org }: Props) {
           horizontal: "right",
         }}
       >
-        <MenuItemLink href="/me/organization">Organization</MenuItemLink>
+        <div className={classes.menuInfo}>
+          <div>User: {user.name}</div>
+          <div>Organization: {org.name}</div>
+        </div>
         <MenuItemLink href="/me">Profile</MenuItemLink>
         <MenuItemLink href="/settings">Settings</MenuItemLink>
         <MenuItem onClick={() => signOut()}>Logout</MenuItem>

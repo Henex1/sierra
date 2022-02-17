@@ -76,7 +76,7 @@ export default function Index({ orgs, canCreate }: Props) {
     <div>
       <BreadcrumbsButtons>
         <Link href="/">Home</Link>
-        <Link href="/me/organization">Organization</Link>
+        <Link href="/me">Organization</Link>
         <Typography>Organizations</Typography>
       </BreadcrumbsButtons>
       <Grid container spacing={3}>

@@ -98,7 +98,7 @@ export default function OrganizationUsers({ orgId, orgUserRole }: Props) {
     <div>
       <BreadcrumbsButtons>
         <Link href="/">Home</Link>
-        <Link href="/me/organization">Organization</Link>
+        <Link href="/me">Organization</Link>
         <Link href={`/me/organization/${orgId}`}>Organization Name</Link>
         <Typography>Organization Users</Typography>
       </BreadcrumbsButtons>
