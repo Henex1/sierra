@@ -39,8 +39,6 @@ const useStyles = makeStyles((theme) => ({
 
 type Props = {
   templates: ExposedQueryTemplate[];
-  searchConfigurations: ExposedSearchConfiguration[];
-  allSCsLength: number;
   activeSearchConfig: ExposedSearchConfiguration;
   onSelected: (id: string) => void;
 };
@@ -53,8 +51,6 @@ const getExecutionTime = (date: Date | string): string => {
 
 export default function ExecutionSummary({
   templates,
-  searchConfigurations,
-  allSCsLength,
   activeSearchConfig,
   onSelected,
 }: Props) {
@@ -87,8 +83,6 @@ export default function ExecutionSummary({
       <Typography variant="h5">Search Configurations</Typography>
       <Box mt={2} mb={3}>
         <ExecutionList
-          searchConfigurations={searchConfigurations}
-          allSCsLength={allSCsLength}
           activeSearchConfig={activeSearchConfig}
           onSelected={onSelected}
         />

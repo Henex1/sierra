@@ -158,6 +158,23 @@ const useStyles = makeStyles((theme) => ({
     border: "3px solid transparent",
     borderRadius: "50%",
   },
+  searchConfigLoader: {
+    display: "none!important",
+    position: "absolute!important" as "absolute",
+    width: "64px!important",
+    height: "64px!important",
+
+    "& svg": {
+      color: "#339EDA!important",
+      "& circle": {
+        strokeWidth: "2px!important",
+      },
+    },
+
+    "&.loading": {
+      display: "inline-block!important",
+    },
+  },
   latestExecutionScore: {
     width: "50px",
     height: "50px",
@@ -200,23 +217,24 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 type Props = {
-  searchConfigurations: ExposedSearchConfiguration[];
-  allSCsLength: number;
   activeSearchConfig: ExposedSearchConfiguration;
   onSelected: (id: string) => void;
 };
 
 export default function SearchConfigurationList({
-  searchConfigurations: initialSCs,
-  allSCsLength,
   activeSearchConfig,
   onSelected,
 }: Props) {
   const classes = useStyles();
   const router = useRouter();
-  const { searchConfiguration: currentSearchConfig } = useLabContext();
+  const {
+    currentSearchConfigId,
+    searchConfigurations,
+    setSearchConfigurations,
+    allSCsLength,
+    runningExecutionSCId,
+  } = useLabContext();
 
-  const [searchConfigurations, setSearchConfigurations] = useState(initialSCs);
   const [leftArrowIsLoading, setLeftArrowIsLoading] = useState(false);
   const [rightArrowIsLoading, setRightArrowIsLoading] = useState(false);
   const [hoveredExecutionId, setHoveredExecutionId] = useState<string | null>(
@@ -308,7 +326,8 @@ export default function SearchConfigurationList({
                 <div
                   className={classnames(classes.searchConfig, {
                     [classes.currentSearchConfig]:
-                      currentSearchConfig?.id === item.id,
+                      currentSearchConfigId === item.id &&
+                      runningExecutionSCId !== item.id,
                   })}
                   onMouseEnter={() =>
                     !popperAnchorEl && setHoveredExecutionId(item.id)
@@ -325,6 +344,11 @@ export default function SearchConfigurationList({
                       <InfoIcon />
                     </button>
                   </Zoom>
+                  <CircularProgress
+                    className={classnames(classes.searchConfigLoader, {
+                      loading: runningExecutionSCId === item.id,
+                    })}
+                  />
                   <button
                     className={classes.latestExecutionScore}
                     onClick={() => onSelected(item.id)}

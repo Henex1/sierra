@@ -2,6 +2,7 @@ import React from "react";
 import arrayMutators from "final-form-arrays";
 import { Form, FormProps } from "react-final-form";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
+import { OnChange } from "react-final-form-listeners";
 import {
   DragDropContext,
   Droppable,
@@ -280,14 +281,14 @@ export type RulesetEditorProps = FormProps<RulesetVersionValue> & {
   facetFilterFields: string[];
   formId?: string;
   compact?: boolean;
-  setHasPendingAction?: (data: boolean) => void;
+  onRulesetChange?: (data: RulesetVersionValue) => void;
 };
 
 export default function RulesetEditor({
   facetFilterFields,
   formId,
   compact,
-  setHasPendingAction,
+  onRulesetChange,
   ...rest
 }: RulesetEditorProps) {
   const [activeRuleset, setActiveRuleset] = React.useState(-1);
@@ -336,10 +337,6 @@ export default function RulesetEditor({
           setActiveRuleset(values.rules.length);
         }
 
-        React.useEffect(() => {
-          setHasPendingAction && setHasPendingAction(dirty);
-        }, [dirty]);
-
         return (
           <form id={formId} onSubmit={handleSubmit}>
             <Grid container spacing={4}>
@@ -382,6 +379,22 @@ export default function RulesetEditor({
                   />
                 )}
               </Grid>
+              <OnChange name="conditions">
+                {(conditions) =>
+                  onRulesetChange && onRulesetChange({ ...values, conditions })
+                }
+              </OnChange>
+              <OnChange name={`rules[${activeRuleset}]`}>
+                {(rule) =>
+                  onRulesetChange &&
+                  onRulesetChange({
+                    ...values,
+                    rules: values.rules.map((r, index) =>
+                      index === activeRuleset ? rule : r
+                    ),
+                  })
+                }
+              </OnChange>
               <DiscardChangesDialog
                 open={pendingAction !== null}
                 onCancel={() => setPendingAction(null)}
