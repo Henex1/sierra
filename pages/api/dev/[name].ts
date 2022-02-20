@@ -151,7 +151,12 @@ async function handleSolrSeed(
       name: "Crowd-sourced Judgements",
     },
   });
-  const votes = parseVotesCsv(fs.readFileSync(seedJudgementFile, "utf-8"));
+  const votes = parseVotesCsv(
+    fs.readFileSync(seedJudgementFile, "utf-8"),
+    "query",
+    "docid",
+    "rating"
+  );
   await setVotes(judgement, votes);
 
   const sc = await prisma.searchConfiguration.create({
@@ -236,7 +241,12 @@ async function handleSeed(
       name: "Crowd-sourced Judgements",
     },
   });
-  const votes = parseVotesCsv(fs.readFileSync(seedJudgementFile, "utf-8"));
+  const votes = parseVotesCsv(
+    fs.readFileSync(seedJudgementFile, "utf-8"),
+    "query",
+    "docid",
+    "rating"
+  );
   await setVotes(judgement, votes);
 
   const ruleset = await createRuleset(project, {
