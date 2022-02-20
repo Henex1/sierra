@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import csvParser from "csv-parse/lib/sync";
 import * as z from "zod";
 import { IncomingForm } from "formidable";
 import * as fs from "fs";
@@ -14,6 +15,7 @@ import {
   setVotesSchema,
   setVotes,
   parseVotesCsv,
+  parseVotesTsv,
 } from "../../../lib/judgements";
 import {
   apiHandler,
@@ -76,6 +78,51 @@ export const handleSetVotes = apiHandler(async (req, res) => {
   res.status(200).json({ success: true });
 });
 
+export const handleGetColumns = apiHandler(async (req, res) => {
+  requireMethod(req, "POST");
+  const columns: string[] = [];
+  try {
+    const raw = await new Promise<any>((res, rej) => {
+      const form = new IncomingForm();
+      form.parse(req, (err, fields, files) => {
+        if (err) rej(err);
+        res({
+          fields,
+          files,
+        });
+      });
+    });
+    const fileType = raw.files?.file?.type;
+    const fileContent = fs.readFileSync(raw?.files?.file?.path, {
+      encoding: "utf8",
+    });
+    let parsed;
+    switch (fileType) {
+      case "text/csv":
+        parsed = csvParser(fileContent, {
+          columns: true,
+          trim: true,
+          skip_empty_lines: true,
+        });
+        break;
+      case "text/tab-separated-values":
+        parsed = csvParser(fileContent.replaceAll("\t", ","), {
+          columns: true,
+          trim: true,
+          skip_empty_lines: true,
+        });
+        break;
+      default:
+        throw new Error("Invalid file type");
+    }
+    Object.keys(parsed[0]).forEach((column) => columns.push(column));
+  } catch (e: any) {
+    res.status(400).json({ success: false, error: e.message });
+    return;
+  }
+  res.status(200).json({ success: true, columns });
+});
+
 export const handleImport = apiHandler(async (req, res) => {
   requireMethod(req, "POST");
   const data: any = {};
@@ -90,9 +137,27 @@ export const handleImport = apiHandler(async (req, res) => {
         });
       });
     });
-    data.fileContent = parseVotesCsv(
-      fs.readFileSync(raw?.files?.file?.path, { encoding: "utf8" })
-    );
+    const fileType = raw.files?.file?.type;
+    switch (fileType) {
+      case "text/csv":
+        data.fileContent = parseVotesCsv(
+          fs.readFileSync(raw?.files?.file?.path, { encoding: "utf8" }),
+          raw.fields?.searchPhraseColumn,
+          raw.fields?.documentIdColumn,
+          raw.fields?.ratingColumn
+        );
+        break;
+      case "text/tab-separated-values":
+        data.fileContent = parseVotesTsv(
+          fs.readFileSync(raw?.files?.file?.path, { encoding: "utf8" }),
+          raw.fields?.searchPhraseColumn,
+          raw.fields?.documentIdColumn,
+          raw.fields?.ratingColumn
+        );
+        break;
+      default:
+        throw new Error("Invalid file type");
+    }
     data.projectId = raw?.fields?.projectId;
     data.name = raw?.fields?.name;
   } catch (e: any) {

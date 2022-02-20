@@ -4,14 +4,12 @@ import { makeStyles } from "@material-ui/core/styles";
 import FormControl from "@material-ui/core/FormControl";
 import Button from "@material-ui/core/Button";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     display: "flex",
     flexWrap: "wrap",
   },
-  formControl: {
-    margin: theme.spacing(1),
-  },
+  formControl: {},
   input: {
     display: "none",
   },

@@ -1,4 +1,10 @@
-import React, { ChangeEvent, useCallback, useRef, useState } from "react";
+import React, {
+  ChangeEvent,
+  useCallback,
+  useRef,
+  useState,
+  useMemo,
+} from "react";
 import { useRouter } from "next/router";
 
 import {
@@ -9,21 +15,21 @@ import {
   TextField,
   Typography,
   Grid,
+  MenuItem,
+  Select,
   Snackbar,
   IconButton,
   CircularProgress,
+  FormControl,
 } from "@material-ui/core";
-import CloudUploadIcon from "@material-ui/icons/CloudUpload";
-import CloseIcon from "@material-ui/icons/Close";
-import DescriptionIcon from "@material-ui/icons/Description";
-import CancelOutlinedIcon from "@material-ui/icons/CancelOutlined";
+import AttachFileIcon from "@material-ui/icons/AttachFile";
+import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import { Alert } from "@material-ui/lab";
 
-import Link from "components/common/Link";
-import BreadcrumbsButtons from "components/common/BreadcrumbsButtons";
-import { useActiveProject } from "components/Session";
-import FileInput from "components/common/FileInput";
-import classNames from "classnames";
+import Link from "../../../components/common/Link";
+import BreadcrumbsButtons from "../../../components/common/BreadcrumbsButtons";
+import { useActiveProject } from "../../../components/Session";
+import FileInput from "../../../components/common/FileInput";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -45,7 +51,7 @@ const useStyles = makeStyles((theme) =>
       marginTop: theme.spacing(3),
       "& > *": {
         margin: theme.spacing(1),
-        width: theme.spacing(45),
+        width: theme.spacing(70),
       },
     },
     fileInput: {
@@ -58,27 +64,24 @@ const useStyles = makeStyles((theme) =>
     fileInputLabel: {
       textOverflow: "ellipsis",
       overflow: "hidden",
-      maxWidth: theme.spacing(25),
+      maxWidth: theme.spacing(30),
       marginLeft: theme.spacing(2),
     },
     buttonActions: {
       display: "flex",
       alignItems: "center",
-      justifyContent: "space-evenly",
       paddingTop: theme.spacing(3),
-    },
-    actionBtn: {
-      width: "50%",
-      "&:first-of-type": {
-        marginRight: theme.spacing(1),
-      },
     },
     root: {
       height: "90%",
     },
-    upload: {},
   })
 );
+
+const steps: ["file-upload", "judgement-form"] = [
+  "file-upload",
+  "judgement-form",
+];
 
 function Import() {
   const { project } = useActiveProject();
@@ -87,11 +90,35 @@ function Import() {
   const project_id = project ? project.id : 0;
   const BASE_URL = `/${project_id}/judgements`;
 
+  const [step, setStep] = useState(0);
   const [chooseFile, setChooseFile] = useState<File>();
+  const [uploadedColumns, setUploadedColumns] = useState<string[]>([]);
+  const [voteColumns, setVoteColumns] = useState({
+    "Search phrase": "",
+    "Document Id": "",
+    Rating: "",
+  });
   const [judgementName, setJudgementName] = useState<string>("");
   const [error, setError] = useState("");
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const formIsValid = useMemo(() => {
+    const selectedVoteColumns = Object.values(voteColumns);
+    return (
+      judgementName.trim().length &&
+      !selectedVoteColumns.some((column) => !column.trim().length) &&
+      new Set(selectedVoteColumns).size === selectedVoteColumns.length
+    );
+  }, [judgementName, voteColumns]);
+
+  const handleNextStep = useCallback(() => {
+    if (step < steps.length - 1) setStep((step) => step + 1);
+  }, [step]);
+
+  const handlePreviousStep = useCallback(() => {
+    if (step > 0) setStep((step) => step - 1);
+  }, [step]);
 
   const onFileInputChange = useCallback((ev: ChangeEvent<HTMLInputElement>) => {
     if (ev?.target?.files && ev.target.files.length > 0 && ev.target.files[0]) {
@@ -99,9 +126,39 @@ function Import() {
     }
   }, []);
 
-  const handleClosePage = useCallback(() => {
-    router.push(BASE_URL);
-  }, [router, BASE_URL]);
+  const handleGetColumns = useCallback(() => {
+    const onFileUpload = async (file: File) => {
+      setIsUploading(true);
+      const data = new FormData();
+      data.append("file", file);
+      const response = await fetch("/api/judgements/getColumns", {
+        method: "POST",
+        body: data,
+      });
+      const json = await response.json();
+      if (!json.success) {
+        setError(json.error || "Unknown error");
+      } else {
+        setUploadedColumns(json.columns);
+        handleNextStep();
+      }
+
+      setIsUploading(false);
+    };
+    if (chooseFile) {
+      onFileUpload(chooseFile);
+    }
+  }, [chooseFile]);
+
+  const handleVoteColumnsChange = useCallback(
+    (column: string) => (e: any) => {
+      setVoteColumns((voteColumns) => ({
+        ...voteColumns,
+        [column]: e.target.value,
+      }));
+    },
+    []
+  );
 
   const handleFileUpload = useCallback(() => {
     const onFileUpload = async (file: File, filename: string) => {
@@ -110,6 +167,9 @@ function Import() {
       data.append("file", file);
       data.append("name", filename);
       data.append("projectId", `${project?.id}`);
+      data.append("searchPhraseColumn", voteColumns["Search phrase"]);
+      data.append("documentIdColumn", voteColumns["Document Id"]);
+      data.append("ratingColumn", voteColumns.Rating);
       const response = await fetch("/api/judgements/import", {
         method: "POST",
         body: data,
@@ -118,7 +178,7 @@ function Import() {
       if (!json.success) {
         setError(json.error || "Unknown error");
       } else {
-        handleClosePage();
+        router.push(BASE_URL);
       }
       setIsUploading(false);
 
@@ -129,10 +189,10 @@ function Import() {
       }
     };
 
-    if (chooseFile) {
+    if (chooseFile && formIsValid) {
       onFileUpload(chooseFile, judgementName);
     }
-  }, [handleClosePage, chooseFile, judgementName, fileInputRef]);
+  }, [chooseFile, judgementName, fileInputRef, formIsValid, voteColumns]);
 
   const clearError = useCallback(() => {
     setError("");
@@ -145,46 +205,28 @@ function Import() {
         <Link href="/judgements">Judgements</Link>
         <Typography>Import</Typography>
       </BreadcrumbsButtons>
-      <Grid container spacing={3}>
-        <Grid item xs={12} container justify="space-between">
-          <Typography variant="h4">Import judgements</Typography>
-          <IconButton
-            aria-label="close page"
-            component="span"
-            onClick={handleClosePage}
-          >
-            <CancelOutlinedIcon />
-          </IconButton>
-        </Grid>
-        <Grid item xs={12}>
+      <Grid item xs={12}>
+        {steps[step] === "file-upload" && (
           <form className={classes.form} noValidate autoComplete="off">
-            <TextField
-              value={judgementName}
-              label="Judgement Name"
-              onChange={(ev) => setJudgementName(ev?.target?.value)}
-            />
             <div className={classes.fileInputWrapper}>
               <FileInput
                 id="contained-button-file"
                 accept="*.csv"
                 buttonProps={{
                   color: "primary",
-                  variant: "contained",
+                  variant: "outlined",
                   component: "span",
-                  startIcon: <DescriptionIcon />,
+                  startIcon: <AttachFileIcon />,
                 }}
                 inputProps={{ ref: fileInputRef }}
-                label="Open"
+                label={chooseFile ? chooseFile.name : "Import file"}
                 onChange={onFileInputChange}
               />
-              <InputLabel className={classes.fileInputLabel}>
-                {chooseFile ? chooseFile.name : "Select a CSV file to import"}
-              </InputLabel>
             </div>
 
             <div>
-              The imported file can be an export from Chorus or a Detailed
-              Export from Quepid.
+              Select a CSV / TSV file to import. The imported file can be an
+              export from Chorus or a Detailed Export from Quepid.
             </div>
 
             <div className={classes.buttonActions}>
@@ -193,32 +235,75 @@ function Import() {
                 variant="contained"
                 color="primary"
                 component="span"
-                className={classNames(classes.upload, classes.actionBtn)}
                 startIcon={
-                  isUploading ? (
-                    <CircularProgress size={24} />
-                  ) : (
-                    <CloudUploadIcon />
-                  )
+                  isUploading ? <CircularProgress size={24} /> : undefined
                 }
-                onClick={handleFileUpload}
+                onClick={handleGetColumns}
               >
-                Upload
-              </Button>
-
-              <Button
-                variant="contained"
-                color="default"
-                component="span"
-                className={classes.actionBtn}
-                startIcon={<CloseIcon />}
-                onClick={handleClosePage}
-              >
-                Close
+                Continue
               </Button>
             </div>
           </form>
-        </Grid>
+        )}
+        {steps[step] === "judgement-form" && (
+          <form className={classes.form} noValidate autoComplete="off">
+            <TextField
+              value={judgementName}
+              label="Judgement Name *"
+              variant="filled"
+              onChange={(ev) => setJudgementName(ev?.target?.value)}
+            />
+
+            <div>
+              Select columns for <strong>Search phrase</strong>,{" "}
+              <strong>Document Id</strong>, and <strong>Rating</strong>
+            </div>
+
+            {Object.keys(voteColumns).map((key) => (
+              <FormControl key={key}>
+                <InputLabel id={`${key}-select-label`} variant="filled">
+                  {key} *
+                </InputLabel>
+                <Select
+                  labelId={`${key}-select-label`}
+                  id={`${key}-select`}
+                  value={(voteColumns as any)[key]}
+                  onChange={handleVoteColumnsChange(key)}
+                  label={`${key} *`}
+                  variant="filled"
+                >
+                  {uploadedColumns.map((column) => (
+                    <MenuItem key={column} value={column}>
+                      {column}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            ))}
+
+            <div className={classes.buttonActions}>
+              <IconButton
+                color="primary"
+                component="span"
+                onClick={handlePreviousStep}
+              >
+                <ArrowBackIcon />
+              </IconButton>
+              <Button
+                disabled={!chooseFile || !formIsValid || isUploading}
+                variant="contained"
+                color="primary"
+                component="span"
+                startIcon={
+                  isUploading ? <CircularProgress size={24} /> : undefined
+                }
+                onClick={handleFileUpload}
+              >
+                Confirm
+              </Button>
+            </div>
+          </form>
+        )}
       </Grid>
       <Snackbar
         open={Boolean(error)}
