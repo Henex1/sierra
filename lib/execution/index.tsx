@@ -465,7 +465,7 @@ async function executeQuery(
   } catch (error: any) {
     failedExecutions[phrase] = (failedExecutions[phrase] ?? 0) + 1;
     if (failedExecutions[phrase] >= 4) {
-      log.error(
+      log.info(
         "Failed to create search phrase execution: " + (error.stack ?? error)
       );
       return {
@@ -510,8 +510,6 @@ async function newSearchPhraseExecution(
       jp.phrase
     );
   } catch (error: any) {
-    log.error(error.stack ?? error);
-
     queryResult = {
       tookMs: 0,
       totalResults: 0,
