@@ -319,7 +319,7 @@ export default function Lab({
   });
   const [currentSearchConfigId, setCurrentSearchConfigId] = React.useState<
     string | null
-  >(null);
+  >(searchConfiguration?.id ?? null);
   const [page, setPage] = React.useState(props.page);
 
   React.useEffect(() => {

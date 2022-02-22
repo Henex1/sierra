@@ -78,12 +78,27 @@ export class ElasticsearchInterface implements QueryInterface {
 
     const resData = await response.json();
 
+    const getErrorMsg = (reason: string) =>
+      `Request to Search Endpoint failed, reason: ${reason}. Please check your cluster, or go to Search Endpoint and fix the connection details.`;
+
     if (!response.ok) {
-      throw new Error(
-        `HTTP ${response.status} (${response.statusText}) - ${
-          resData.error?.reason ?? "ES query failed."
-        }`
-      );
+      let errorMsg = `HTTP ${response.status} (${response.statusText}) - ${
+        resData.error?.reason ?? "ES query failed."
+      }`;
+
+      if (
+        resData.error?.reason?.includes("missing authentication credentials")
+      ) {
+        errorMsg = getErrorMsg("missing authentication credentials");
+      } else if (
+        resData.error?.reason?.includes("unable to authenticate user")
+      ) {
+        errorMsg = getErrorMsg(
+          "unable to authenticate user - invalid credentials"
+        );
+      }
+
+      throw new Error(errorMsg);
     }
 
     return resData;
