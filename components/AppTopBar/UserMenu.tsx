@@ -9,8 +9,7 @@ import {
 } from "@material-ui/core";
 import { Avatar as OrgAvatar } from "../../components/organization/Avatar";
 import { MenuItemLink } from "../common/Link";
-import { BarChart } from "@material-ui/icons";
-import { BoxArrowRight } from "react-bootstrap-icons";
+import { BarChart, GearFill, BoxArrowRight } from "react-bootstrap-icons";
 
 const useStyles = makeStyles((theme) => ({
   content: {
@@ -111,12 +110,15 @@ export default function UserMenu({ user, org }: Props) {
         </div>
         <MenuItemLink href="/me">
           <BarChart className={classes.icons} />
-          <b>Account Activity</b>
+          Profile
         </MenuItemLink>
-        <hr />
+        <MenuItemLink href="/settings">
+          <GearFill className={classes.icons} />
+          Settings
+        </MenuItemLink>
         <MenuItem onClick={() => signOut()}>
           <BoxArrowRight className={classes.icons} />
-          <b>Logout</b>
+          Logout
         </MenuItem>
       </Menu>
     </>
