@@ -48,7 +48,6 @@ type Props = {
   user: {
     name: string;
     image: string;
-    email: string;
   };
   org: {
     name: string;
