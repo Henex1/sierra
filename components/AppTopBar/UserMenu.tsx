@@ -2,13 +2,14 @@ import React from "react";
 import { signOut } from "next-auth/client";
 import {
   Menu,
-  MenuItem,
   Avatar,
   ButtonBase,
   makeStyles,
+  MenuItem,
 } from "@material-ui/core";
 import { Avatar as OrgAvatar } from "../../components/organization/Avatar";
 import { MenuItemLink } from "../common/Link";
+import { BarChart, GearFill, BoxArrowRight } from "react-bootstrap-icons";
 
 const useStyles = makeStyles((theme) => ({
   content: {
@@ -28,7 +29,18 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(5),
   },
   menuInfo: {
+    marginTop: "-8px",
     padding: "15px",
+    background: "#00001a",
+    color: "white",
+  },
+  p1: {
+    fontSize: "13px",
+    color: "#ccccff",
+  },
+  icons: {
+    paddingRight: "8px",
+    fontSize: "24px",
   },
 }));
 
@@ -36,13 +48,13 @@ type Props = {
   user: {
     name: string;
     image: string;
+    email: string;
   };
   org: {
     name: string;
     image: string;
   };
 };
-
 export default function UserMenu({ user, org }: Props) {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -93,12 +105,21 @@ export default function UserMenu({ user, org }: Props) {
         }}
       >
         <div className={classes.menuInfo}>
-          <div>User: {user.name}</div>
-          <div>Organization: {org.name}</div>
+          <div>{org.name} </div>
+          <p className={classes.p1}>{user.name}</p>
         </div>
-        <MenuItemLink href="/me">Profile</MenuItemLink>
-        <MenuItemLink href="/settings">Settings</MenuItemLink>
-        <MenuItem onClick={() => signOut()}>Logout</MenuItem>
+        <MenuItemLink href="/me">
+          <BarChart className={classes.icons} />
+          Profile
+        </MenuItemLink>
+        <MenuItemLink href="/settings">
+          <GearFill className={classes.icons} />
+          Settings
+        </MenuItemLink>
+        <MenuItem onClick={() => signOut()}>
+          <BoxArrowRight className={classes.icons} />
+          Logout
+        </MenuItem>
       </Menu>
     </>
   );
