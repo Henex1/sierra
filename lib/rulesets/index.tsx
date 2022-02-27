@@ -106,10 +106,21 @@ export async function createRuleset(
 }
 
 export async function getLatestRulesetVersion(
-  ruleset: Ruleset
+  ruleset: Ruleset,
+  searchConfigurationId?: string
 ): Promise<RulesetVersion | null> {
+  const where: Prisma.RulesetVersionWhereInput = {
+    ruleset: { id: ruleset.id },
+  };
+  if (searchConfigurationId) {
+    where.searchConfigurations = {
+      some: {
+        id: searchConfigurationId,
+      },
+    };
+  }
   const version = await prisma.rulesetVersion.findFirst({
-    where: { ruleset: { id: ruleset.id } },
+    where,
     orderBy: [{ updatedAt: "desc" }],
   });
   return version;
