@@ -91,6 +91,7 @@ export default function AppTopBar() {
               user={{
                 name: session.user.name || "",
                 image: session.user.image || "",
+                email: session.user.email || "",
               }}
               org={{
                 name: activeOrg?.name || "",
