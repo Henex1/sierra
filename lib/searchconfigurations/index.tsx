@@ -218,7 +218,7 @@ export async function loadSearchConfigurations(
     where: {
       projectId,
       createdAt: {
-        lt: searchConfigurations[0].createdAt,
+        lt: searchConfigurations[0]?.createdAt,
       },
     },
   });

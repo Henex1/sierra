@@ -1,4 +1,5 @@
 import React from "react";
+import useSWR from "swr";
 import {
   Box,
   Typography,
@@ -8,7 +9,6 @@ import {
   Button,
   Popover,
 } from "@material-ui/core";
-import useSWR from "swr";
 import AddIcon from "@material-ui/icons/Add";
 
 import RulesetEditor from "../rulesets/RulesetEditor";
@@ -41,7 +41,9 @@ type RulesetPanelProps = {
   formId: string;
   activeRulesetIds: string[];
   setActiveRulesetIds: (ids: string[]) => void;
-  onFormValuesChange?: (data: RulesetVersionValue & { id: string }) => void;
+  onFormValuesChange?: (
+    data: RulesetVersionValue & { id: string; rulesetId: string }
+  ) => void;
 };
 
 export function RulesetPanel({
@@ -54,7 +56,15 @@ export function RulesetPanel({
   const [rulesetId, setRulesetId] = React.useState("");
   const [popoverIsOpen, setPopoverIsOpen] = React.useState(false);
   const popoverAnchorEl = React.useRef<HTMLButtonElement>(null);
-  const { rulesets } = useLabContext();
+  const { rulesets, currentSearchConfigId } = useLabContext();
+
+  const rulesetSelected = Boolean(rulesetId);
+
+  const { data } = useSWR<RulesetEditorProps>(
+    rulesetSelected
+      ? `/api/rulesets/${rulesetId}?searchConfigurationId=${currentSearchConfigId}`
+      : null
+  );
 
   React.useEffect(() => {
     if (!activeRulesetIds.length) {
@@ -64,14 +74,13 @@ export function RulesetPanel({
     }
   }, [activeRulesetIds, rulesetId]);
 
-  const rulesetSelected = Boolean(rulesetId);
-  const { data } = useSWR<RulesetEditorProps>(
-    rulesetSelected ? `/api/rulesets/${rulesetId}` : null
-  );
-
   const onRulesetChange = (value: RulesetVersionValue) => {
     onFormValuesChange &&
-      onFormValuesChange({ id: data?.version.id ?? "", ...value });
+      onFormValuesChange({
+        id: data?.version.id ?? "",
+        rulesetId: data?.ruleset.id ?? "",
+        ...value,
+      });
   };
 
   return (

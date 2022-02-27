@@ -13,7 +13,7 @@ import RulesetEditor from "../../components/rulesets/RulesetEditor";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const id = requireParam(context, "id");
-  const props = await getRulesetEditorProps(id, context.user);
+  const props = await getRulesetEditorProps(context.user, id);
   if (props.notFound) {
     return {
       notFound: true,

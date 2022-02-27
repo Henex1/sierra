@@ -23,13 +23,21 @@ import { notFound } from "../../../lib/errors";
 import { ErrorMessage } from "../../../lib/errors/constants";
 import * as log from "../../../lib/logging";
 
-export async function getRulesetEditorProps(id: string, user: User) {
+export async function getRulesetEditorProps(
+  user: User,
+  id: string,
+  searchConfigurationId?: string
+) {
   const ruleset = await getRuleset(user, id);
   if (!ruleset) {
     return { notFound: true };
   }
 
-  let version = await getLatestRulesetVersion(ruleset);
+  let version = await getLatestRulesetVersion(ruleset, searchConfigurationId);
+
+  if (!version) {
+    version = await getLatestRulesetVersion(ruleset);
+  }
   if (!version) {
     // Create a fake initial version
     version = {
@@ -75,9 +83,12 @@ export async function getRulesetEditorProps(id: string, user: User) {
 export default apiHandler(
   async (req: SierraApiRequest, res: NextApiResponse): Promise<any> => {
     const user = requireUser(req);
-    const { id } = requireQuery(req, z.object({ id: z.string() }));
+    const { id, searchConfigurationId } = requireQuery(
+      req,
+      z.object({ id: z.string(), searchConfigurationId: z.string().optional() })
+    );
 
-    const props = await getRulesetEditorProps(id, user);
+    const props = await getRulesetEditorProps(user, id, searchConfigurationId);
     if (props.notFound) {
       return notFound(res, ErrorMessage.RulesetNotFound);
     }

@@ -113,7 +113,7 @@ export default function ConfigurationDrawer({
     },
   });
   const [selectedRulesetVData, setSelectedRulesetVData] = React.useState<
-    (RulesetVersionValue & { id: string }) | undefined
+    (RulesetVersionValue & { id: string; rulesetId: string }) | undefined
   >(undefined);
   const queryTemplateChanged = React.useMemo(
     () =>
@@ -138,8 +138,9 @@ export default function ConfigurationDrawer({
         searchConfiguration?.rulesets.find(
           (r) => r.id === selectedRulesetVData.id
         )?.value,
-        _.omit(selectedRulesetVData, "id")
+        _.omit(selectedRulesetVData, ["id", "rulesetId"])
       ),
+
     [searchConfiguration, searchConfiguration?.rulesets, selectedRulesetVData]
   );
   const formChanged =
@@ -151,6 +152,7 @@ export default function ConfigurationDrawer({
     isExecutionRunning,
     canRunExecution,
     searchConfigurations,
+    rulesets,
   } = useLabContext();
 
   React.useEffect(() => {
@@ -163,6 +165,7 @@ export default function ConfigurationDrawer({
       if (searchConfiguration.rulesets[0]) {
         setSelectedRulesetVData({
           id: searchConfiguration.rulesets[0].id,
+          rulesetId: searchConfiguration.rulesets[0].rulesetId,
           rules: (searchConfiguration.rulesets[0].value as any)?.rules ?? [],
           conditions:
             (searchConfiguration.rulesets[0].value as any)?.conditions ?? [],
@@ -228,6 +231,7 @@ export default function ConfigurationDrawer({
   const handleRulesetPanelChange = (
     data: RulesetVersionValue & {
       id: string;
+      rulesetId: string;
     }
   ) => setSelectedRulesetVData(data);
 
@@ -247,18 +251,23 @@ export default function ConfigurationDrawer({
   };
 
   const updateRulesetVersion = async (
-    searchConfiguration: LabContextSearchConfiguration
+    rulesetVersion:
+      | {
+          id?: string;
+          rulesetId: string;
+          rules?: any[];
+          conditions?: any[];
+        }
+      | undefined
   ) => {
     try {
       await apiRequest(`/api/rulesets/createVersion`, {
         value: {
-          rules: selectedRulesetVData?.rules || [],
-          conditions: selectedRulesetVData?.conditions || [],
+          rules: rulesetVersion?.rules || [],
+          conditions: rulesetVersion?.conditions || [],
         },
-        rulesetId: searchConfiguration?.rulesets.find(
-          (r) => r.id === selectedRulesetVData?.id
-        )?.rulesetId,
-        parentId: selectedRulesetVData?.id,
+        rulesetId: rulesetVersion?.rulesetId,
+        parentId: rulesetVersion?.id || null,
       });
     } catch (error) {
       addErrorAlert(error);
@@ -283,7 +292,19 @@ export default function ConfigurationDrawer({
       queryTemplateId = newQueryTemplate.id;
     }
     if (rulesetChanged) {
-      await updateRulesetVersion(executionSC);
+      await updateRulesetVersion(selectedRulesetVData);
+    }
+    if (rulesetIdsChanged) {
+      const selectedRulesets = rulesets.filter((r) =>
+        rulesetIds.includes(r.id)
+      );
+      const noVersionsRulesets = selectedRulesets.filter(
+        (r) =>
+          !r.rulesetVersions.length && r.id !== selectedRulesetVData?.rulesetId
+      );
+      await Promise.all(
+        noVersionsRulesets.map((r) => updateRulesetVersion({ rulesetId: r.id }))
+      );
     }
 
     if (formChanged) {
