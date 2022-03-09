@@ -149,13 +149,13 @@ yarn dev
 To access the Prisma database admin management console, use:
 
 ```bash
-prisma studio
+yarn prisma studio
 ```
 
 If the database schema is out of date, you should toss your local database and recreate it:
 
 ```bash
-prisma migrate reset --force
+yarn prisma migrate reset --force
 ```
 
 ### Run the tests
@@ -180,7 +180,7 @@ yarn prisma migrate reset --force
 Make your change to `prisma/schema.prisma`, then:
 
 ```bash
-prisma migrate dev
+yarn prisma migrate dev
 ```
 
 ### Build the docker image
@@ -207,7 +207,7 @@ DATABASE_URL="postgresql://postgres:<db_pass>@postgres-postgresql.sierra-staging
 # clear all existing migrations
 rm -rf ./prisma/migrations/
 # Create a new one and apply
-prisma migrate dev --name init
+yarn prisma migrate dev --name init
 ```
 
 ### Test datasets
