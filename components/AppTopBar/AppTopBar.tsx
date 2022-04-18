@@ -96,6 +96,8 @@ export default function AppTopBar() {
               org={{
                 name: activeOrg?.name || "",
                 image: activeOrg?.image || "",
+                bgColor: activeOrg?.bgColor || "",
+                textColor: activeOrg?.textColor || "",
               }}
             />
           ) : (

@@ -87,6 +87,8 @@ model Org {
   updatedAt DateTime @updatedAt
   name      String
   image     String?
+  bgColor   String @default("#8bab5d")
+  textColor String @default("#ffffff")
   domain    String?
   orgType   OrgType  @default(FULL)
 

@@ -15,6 +15,8 @@ const selectKeys = {
   image: true,
   domain: true,
   orgType: true,
+  bgColor: true,
+  textColor: true,
 };
 
 export type ExposedOrg = Pick<Org, keyof typeof selectKeys>;
