@@ -12,6 +12,7 @@ import { ExposedOrg, formatOrg, getOrg } from "../../../../lib/org";
 import { CreateOrganizationForm } from "../../../../components/organization/CreateOrganizationForm";
 import { apiRequest } from "../../../../lib/api";
 import { useRouter } from "next/router";
+import { useSession } from "../../../../components/Session";
 
 export const getServerSideProps = authenticatedPage(async (context) => {
   const orgId = requireParam(context, "orgId");
@@ -39,13 +40,22 @@ type Props = {
 export default function EditOrganization({ org, isUserScoped }: Props) {
   const classes = useStyles();
   const router = useRouter();
-
-  async function onSubmit({ name, image, domain }: ExposedOrg) {
+  const { refresh } = useSession();
+  async function onSubmit({
+    name,
+    image,
+    domain,
+    bgColor,
+    textColor,
+  }: ExposedOrg) {
     await apiRequest(`/api/organization/update/${org.id}`, {
       name: name || null,
       image: org.image === image ? undefined : image || null,
       domain: domain || null,
+      bgColor: bgColor || null,
+      textColor: textColor || null,
     });
+    refresh();
     router.push("/me");
     // Keep the form stuck as pending
     return new Promise(() => {});

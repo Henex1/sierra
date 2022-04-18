@@ -11,16 +11,28 @@ import {
 } from "../../../../components/organization/CreateOrganizationForm";
 import { apiRequest } from "../../../../lib/api";
 import { useRouter } from "next/router";
+import { useSession } from "../../../../components/Session";
 
 export default function CreateOrganization() {
   const router = useRouter();
-
-  const onSubmit: FormProps["onSubmit"] = async ({ name, image, domain }) => {
+  const { refresh } = useSession();
+  const onSubmit: FormProps["onSubmit"] = async ({
+    name,
+    image,
+    domain,
+    bgColor,
+    textColor,
+  }) => {
     return apiRequest(`/api/organization/create`, {
       name,
       domain,
       image,
-    }).then(() => router.push("/me"));
+      bgColor,
+      textColor,
+    }).then(() => {
+      refresh();
+      router.push("/me");
+    });
   };
 
   return (

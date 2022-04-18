@@ -1,6 +1,7 @@
 import { ReactElement } from "react";
 import _Avatar from "@material-ui/core/Avatar";
 import { makeStyles } from "@material-ui/styles";
+import { OrgPlaceholder } from "../common/icons";
 
 export interface Props {
   name: string;
@@ -18,6 +19,10 @@ const useStyles = makeStyles(() => ({
 
 export const Avatar = ({ name, image, size, square }: Props): ReactElement => {
   const classes = useStyles();
+
+  if (!image) {
+    return <OrgPlaceholder fontSize="large" />;
+  }
 
   return (
     <_Avatar

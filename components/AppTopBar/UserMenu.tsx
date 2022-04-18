@@ -6,19 +6,20 @@ import {
   ButtonBase,
   makeStyles,
   MenuItem,
+  Theme,
 } from "@material-ui/core";
 import { Avatar as OrgAvatar } from "../../components/organization/Avatar";
 import { MenuItemLink } from "../common/Link";
-import { BarChart, GearFill, BoxArrowRight } from "react-bootstrap-icons";
+import { CogIcon, LogoutIcon, ProfileIcon } from "../common/icons";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme, MenuInfoColors>((theme) => ({
   content: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     gap: "2px",
     padding: "2px",
     margin: 4,
-    background: "#fff",
+    background: ({ bgColor }) => bgColor,
     borderRadius: theme.shape.borderRadius,
   },
   avatar: {
@@ -30,17 +31,26 @@ const useStyles = makeStyles((theme) => ({
   },
   menuInfo: {
     marginTop: "-8px",
+    background: ({ bgColor }) => bgColor,
+    color: ({ textColor }) => textColor,
+    width: "150px",
     padding: "15px",
-    background: "#00001a",
-    color: "white",
   },
+  menuOptions: {},
   p1: {
-    fontSize: "13px",
-    color: "#ccccff",
+    fontSize: "15px",
+    color: "#FFFFF",
+    fontWeight: 700,
+  },
+  p2: {
+    fontSize: "15px",
+    color: "#FFFFF",
+    opacity: "75%",
+    fontWeight: 400,
   },
   icons: {
     paddingRight: "8px",
-    fontSize: "24px",
+    fontSize: "30px",
   },
 }));
 
@@ -53,10 +63,22 @@ type Props = {
   org: {
     name: string;
     image: string;
+    bgColor: string;
+    textColor: string;
   };
 };
+
+interface MenuInfoColors {
+  bgColor: string;
+  textColor: string;
+}
+
 export default function UserMenu({ user, org }: Props) {
-  const classes = useStyles();
+  const menuInfoColors: MenuInfoColors = {
+    bgColor: org.bgColor,
+    textColor: org.textColor,
+  };
+  const classes = useStyles(menuInfoColors);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   return (
@@ -105,21 +127,23 @@ export default function UserMenu({ user, org }: Props) {
         }}
       >
         <div className={classes.menuInfo}>
-          <div>{org.name} </div>
-          <p className={classes.p1}>{user.name}</p>
+          <div className={classes.p1}>{user.name}</div>
+          <div className={classes.p2}>{org.name}</div>
         </div>
-        <MenuItemLink href="/me">
-          <BarChart className={classes.icons} />
-          Profile
-        </MenuItemLink>
-        <MenuItemLink href="/settings">
-          <GearFill className={classes.icons} />
-          Settings
-        </MenuItemLink>
-        <MenuItem onClick={() => signOut()}>
-          <BoxArrowRight className={classes.icons} />
-          Logout
-        </MenuItem>
+        <div className={classes.menuOptions}>
+          <MenuItemLink href="/me">
+            <ProfileIcon className={classes.icons} />
+            Profile
+          </MenuItemLink>
+          <MenuItemLink href="/settings">
+            <CogIcon className={classes.icons} />
+            Settings
+          </MenuItemLink>
+          <MenuItem onClick={() => signOut()}>
+            <LogoutIcon className={classes.icons} />
+            Logout
+          </MenuItem>
+        </div>
       </Menu>
     </>
   );

@@ -52,8 +52,10 @@ export const TEST_ORG: NoTimestamps<Org> = {
   id: TEST_ORG_ID,
   orgType: OrgType.FULL,
   name: "Test Org",
-  domain: "http://test.org",
+  domain: "test.org",
   image: "https://placekitten.com/200/200",
+  bgColor: "#9ec16b",
+  textColor: "#FFFFFF",
 };
 
 export const TEST_ORGUSER: NoTimestamps<OrgUser> = {

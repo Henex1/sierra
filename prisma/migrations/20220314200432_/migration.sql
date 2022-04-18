@@ -13,6 +13,7 @@ CREATE TYPE "SearchEndpointType" AS ENUM ('ELASTICSEARCH', 'OPENSEARCH', 'SOLR',
 -- CreateTable
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
+    "active" BOOLEAN NOT NULL DEFAULT false,
     "name" TEXT,
     "email" TEXT,
     "email_verified" TIMESTAMP(3),
@@ -62,6 +63,8 @@ CREATE TABLE "Org" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "name" TEXT NOT NULL,
     "image" TEXT,
+    "bgColor" TEXT NOT NULL DEFAULT E'#8bab5d',
+    "textColor" TEXT NOT NULL DEFAULT E'#ffffff',
     "domain" TEXT,
     "orgType" "OrgType" NOT NULL DEFAULT E'FULL',
 

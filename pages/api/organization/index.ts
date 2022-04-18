@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import fetch from "node-fetch";
 
 import {
   apiHandler,
@@ -18,16 +19,26 @@ import { NewOrgUserSchema } from "../../../lib/org/types/NewOrgUser";
 const getType = (s: string): string =>
   s.match(/[^:/]\w+(?=[;,])/)?.[0] as string;
 
+const getBase64Img = async (img: string) => {
+  const res = await fetch(img);
+  return `data:${res.headers.get("content-type")};base64,${Buffer.from(
+    await res.arrayBuffer()
+  ).toString("base64")}`;
+};
+
 const orgImage = async (
   orgId: string,
   org: CreateOrg | UpdateOrg
 ): Promise<string | null | undefined> => {
   // TODO use orgId for image name (thus overriding existing image) instead of randomizing
+  const parsedImg = org.image?.startsWith("https://logo.clearbit.com/")
+    ? await getBase64Img(org.image)
+    : org.image;
   return (
-    org.image &&
+    parsedImg &&
     (await uploadFileToGCS(
-      `org-${orgId}.${getType(org.image)}`,
-      org.image,
+      `org-${orgId}.${getType(parsedImg)}`,
+      parsedImg,
       "avatars/",
       true
     ))
