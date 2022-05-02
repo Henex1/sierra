@@ -20,8 +20,6 @@ variables:
 services:
   - docker:20.10.6-dind
 
-before_script:
-  - echo "$CI_BUILD_TOKEN" | docker login -u gitlab-ci-token --password-stdin $STAGING_REGISTRY
 
 stages:
   - deps
@@ -104,3 +102,27 @@ dockerize:
   only:
     - master
 
+deploy_dev:
+  stage: deploy_dev
+  variables:
+    ARGO_APP_NAME: $CI_PROJECT_NAME
+    RELEASE_IMAGE: "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}"
+    PARENT_PATH: $CI_PROJECT_PATH
+    ENVIRONMENT: dev
+  trigger:
+    project: project-sierra/sierra-manifests
+  when: manual
+  only:
+    - master
+
+deploy_staging:
+  stage: deploy_staging
+  variables:
+    ARGO_APP_NAME: $CI_PROJECT_NAME
+    RELEASE_IMAGE: "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}"
+    PARENT_PATH: $CI_PROJECT_PATH
+    ENVIRONMENT: staging
+  trigger:
+    project: project-sierra/sierra-manifests
+  only:
+    - master
