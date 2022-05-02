@@ -1,0 +1,63 @@
+# Use postgres/example user/password credentials
+version: "3.1"
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: example
+    ports:
+      - 5432:5432
+
+  elasticsearch:
+    build:
+      context: ./es-docker
+      dockerfile: Elasticsearch-Dockerfile
+    environment:
+      - discovery.type=single-node
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+    ports:
+      - 9200:9200
+        
+  solr:
+    image: solr:8.10.0
+    ports:
+      - "8983:8983"
+    volumes:
+      - solrData:/var/solr
+    command:
+      - solr-precreate
+      - gettingstarted
+
+  redis:
+    image: redis
+    container_name: sierra_redis
+    ports:
+      - 6379:6379
+
+#  query_expander:
+#    image: registry.gitlab.com/project-sierra/sierra-query-expander:39d55a6363f4ce72c827398311776672c5f0ce2e
+#    ports:
+#      - 8080:9000
+#    environment:
+#      - SIERRA_LICENSE=eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9.eyJwcm9kdWN0Ijoic2llcnJhIiwidmVyc2lvbiI6MSwiaWF0IjoxNjI4NzA4NTAwLCJleHAiOjE2MzI5NDkyMDAsIm93bmVyIjoiZnF1bGY4MThhY3QiLCJtYXhfcHJvamVjdHMiOjEwMH0.APlOGNKLytih8rYWElV5hvNsSgLQHMnPy-iIcAuiMZOwfjTXEpovUMh3uauBY3fv8zlQnFACExochSJwZLZ_FtVFADzpj-53rZ17WV1H0a6dtlnkcFjwyv49MRyxeF08QiuYzlLSI32IXPX47PqHhySnukrR8swqsNQhBk7TKbM5kCFR
+   
+  google-storage:
+    image: fsouza/fake-gcs-server
+    entrypoint: ["/bin/fake-gcs-server", "-public-host", "localhost"]
+    ports:
+      - "4443:4443"
+    volumes:
+      - "./fakeGoogleStorageData:/data"
+
+volumes:
+  solrData:
+    
+#  adminer:
+#    image: adminer
+#    restart: always
+#    links:
+#      - db
+#    ports:
+#      - 8080:8081
